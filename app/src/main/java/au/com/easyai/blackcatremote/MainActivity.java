@@ -77,15 +77,15 @@ public class MainActivity extends Activity {
 
         text = new EditText(this);
         text.setHint("Type text to send");
-        text.setMinLines(3);
-        text.setGravity(Gravity.TOP);
-        root.addView(text, new LinearLayout.LayoutParams(-1, dp(110)));
+        text.setSingleLine(true);
+        text.setGravity(Gravity.CENTER_VERTICAL);
+        root.addView(text, new LinearLayout.LayoutParams(-1, dp(52)));
 
         Button send = btn("SEND TEXT");
-        root.addView(send, new LinearLayout.LayoutParams(-1, dp(58)));
+        root.addView(send, new LinearLayout.LayoutParams(-1, dp(48)));
 
         TextView label = tv("TOUCHPAD — drag to move • tap to click", 15, true);
-        label.setPadding(0, dp(16), 0, dp(8));
+        label.setPadding(0, dp(8), 0, dp(6));
         root.addView(label);
 
         TouchpadView pad = new TouchpadView();
