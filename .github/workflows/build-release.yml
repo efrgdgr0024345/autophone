@@ -40,8 +40,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          cp BlackCatRemote.apk ./BlackCatRemote.apk
-          cp BlackCatRemote.apk.sha256 ./BlackCatRemote.apk.sha256
           git add BlackCatRemote.apk BlackCatRemote.apk.sha256
           if ! git diff --cached --quiet; then
             git commit -m "Update latest public APK [skip ci]"
