@@ -1,0 +1,56 @@
+name: Android CI
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+      - name: Unit tests, Android Lint and debug build
+        env:
+          ANDROID_HOME: /usr/local/lib/android/sdk
+          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+        run: gradle testDebugUnitTest lintDebug assembleDebug --stacktrace
+      - name: Enforce security invariants
+        shell: bash
+        run: |
+          set -euo pipefail
+          manifest="app/src/main/AndroidManifest.xml"
+          if grep -q 'android.permission.INTERNET' "$manifest"; then echo '::error::INTERNET permission is forbidden for V1'; exit 1; fi
+          if grep -R -E -i --exclude-dir=build --exclude='*.md' '(firebase-analytics|google-analytics|appsflyer|adjust|mixpanel|amplitude)' app build.gradle settings.gradle 2>/dev/null; then echo '::error::Potential analytics/telemetry dependency detected'; exit 1; fi
+          if grep -q 'android.permission.BIND_ACCESSIBILITY_SERVICE' "$manifest"; then echo '::error::Accessibility Service is forbidden for V1'; exit 1; fi
+          if ! grep -q 'android:allowBackup="false"' "$manifest"; then echo '::error::android:allowBackup must remain false'; exit 1; fi
+      - name: Check APK manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          test -f "$APK"
+          "${ANDROID_HOME}/build-tools/35.0.0/aapt" dump permissions "$APK" | tee apk-permissions.txt
+          if grep -q 'android.permission.INTERNET' apk-permissions.txt; then echo '::error::Built APK unexpectedly contains INTERNET permission'; exit 1; fi
+      - name: Generate checksum
+        run: sha256sum app/build/outputs/apk/debug/app-debug.apk | tee app-debug.apk.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BlackCatRemote-CI-${{ github.sha }}
+          path: |
+            app/build/outputs/apk/debug/app-debug.apk
+            app-debug.apk.sha256
+            apk-permissions.txt
+            app/build/reports/lint-results-debug.html
+          if-no-files-found: error
