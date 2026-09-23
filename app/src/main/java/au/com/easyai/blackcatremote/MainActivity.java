@@ -6,6 +6,7 @@ import android.bluetooth.*;
 import android.content.*;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.*;
 import android.view.*;
@@ -76,5 +77,5 @@ public class MainActivity extends Activity implements HidService.Listener {
 
     private class TouchpadView extends View{float lx,ly,dx0,dy0;long down;TouchpadView(){super(MainActivity.this);GradientDrawable g=new GradientDrawable();g.setColor(Color.WHITE);g.setStroke(dp(2),Color.DKGRAY);g.setCornerRadius(dp(16));setBackground(g);}@Override public boolean onTouchEvent(MotionEvent e){switch(e.getActionMasked()){case MotionEvent.ACTION_DOWN:lx=dx0=e.getX();ly=dy0=e.getY();down=System.currentTimeMillis();return true;case MotionEvent.ACTION_MOVE:int dx=Math.round((e.getX()-lx)*1.6f),dy=Math.round((e.getY()-ly)*1.6f);lx=e.getX();ly=e.getY();move(dx,dy);return true;case MotionEvent.ACTION_UP:if(System.currentTimeMillis()-down<250&&Math.hypot(e.getX()-dx0,e.getY()-dy0)<dp(12))click(1);return true;case MotionEvent.ACTION_CANCEL:HidService s=HidService.get();if(s!=null)s.releaseAll();onLog("TOUCH cancelled -> RELEASE_ALL_INPUT");return true;}return true;}}
 
-    private TextView tv(String s,int sp,boolean bold){TextView t=new TextView(this);t.setText(s);t.setTextSize(sp);t.setTextColor(Color.BLACK);if(bold)t.setTypeface(null,1);return t;} private Button btn(String s){Button b=new Button(this);b.setText(s);return b;} private LinearLayout.LayoutParams weight(){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,dp(50),1);p.setMargins(dp(2),dp(2),dp(2),dp(2));return p;} private int dp(int n){return(int)(n*getResources().getDisplayMetrics().density+.5f);}
+    private TextView tv(String s,int sp,boolean bold){TextView t=new TextView(this);t.setText(s);t.setTextSize(sp);t.setTextColor(Color.BLACK);if(bold)t.setTypeface(null,Typeface.BOLD);return t;} private Button btn(String s){Button b=new Button(this);b.setText(s);return b;} private LinearLayout.LayoutParams weight(){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,dp(50),1);p.setMargins(dp(2),dp(2),dp(2),dp(2));return p;} private int dp(int n){return(int)(n*getResources().getDisplayMetrics().density+.5f);}
 }
