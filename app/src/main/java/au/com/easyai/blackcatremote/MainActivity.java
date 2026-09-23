@@ -17,7 +17,7 @@ public class MainActivity extends Activity implements HidService.Listener {
     private TextView status,logView; private Spinner devices; private EditText text;
     private final ArrayList<BluetoothDevice> bonded=new ArrayList<>(); private final ArrayDeque<String> uiLogs=new ArrayDeque<>();
     private boolean expanded=false; private LinearLayout root; private View controls;
-    private static final int REQ_BT=7;
+    private static final int REQ_BT=7, REQ_DISCOVERABLE=8;
 
     @Override public void onCreate(Bundle b){ super.onCreate(b); buildUi(); onLog("APP Activity created API="+Build.VERSION.SDK_INT+" "+Build.MANUFACTURER+" "+Build.MODEL); ensurePermissionAndService(); }
     @Override protected void onResume(){ super.onResume(); HidService.setListener(this); refreshDevices(); onLog("ACTIVITY onResume"); }
@@ -25,12 +25,12 @@ public class MainActivity extends Activity implements HidService.Listener {
 
     private void ensurePermissionAndService(){
         if(Build.VERSION.SDK_INT>=31 && checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT)!=PackageManager.PERMISSION_GRANTED){
-            requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT},REQ_BT); return;
+            requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_ADVERTISE},REQ_BT); return;
         }
         startHidService();
     }
     private void startHidService(){ Intent i=new Intent(this,HidService.class); if(Build.VERSION.SDK_INT>=26) startForegroundService(i); else startService(i); HidService.setListener(this); }
-    @Override public void onRequestPermissionsResult(int r,String[] p,int[] g){ super.onRequestPermissionsResult(r,p,g); if(r==REQ_BT&&g.length>0&&g[0]==PackageManager.PERMISSION_GRANTED) startHidService(); else { status.setText("Bluetooth permission denied"); onLog("ERROR BLUETOOTH_CONNECT denied"); } }
+    @Override public void onRequestPermissionsResult(int r,String[] p,int[] g){ super.onRequestPermissionsResult(r,p,g); if(r==REQ_BT){ boolean connectOk=Build.VERSION.SDK_INT<31 || checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT)==PackageManager.PERMISSION_GRANTED; boolean advertiseOk=Build.VERSION.SDK_INT<31 || checkSelfPermission(Manifest.permission.BLUETOOTH_ADVERTISE)==PackageManager.PERMISSION_GRANTED; onLog("PERMISSION result CONNECT="+connectOk+" ADVERTISE="+advertiseOk); if(connectOk&&advertiseOk){ onLog("PASS Bluetooth permissions"); startHidService(); } else { status.setText("Bluetooth permission denied"); onLog("FAIL Bluetooth permission requirements"); } } }
 
     private void buildUi(){
         root=new LinearLayout(this); root.setOrientation(LinearLayout.VERTICAL); root.setPadding(dp(14),dp(12),dp(14),dp(12)); root.setBackgroundColor(Color.rgb(245,245,245));
@@ -39,14 +39,14 @@ public class MainActivity extends Activity implements HidService.Listener {
         LinearLayout body=new LinearLayout(this); body.setOrientation(LinearLayout.VERTICAL); controls=body;
         status=tv("Starting Bluetooth HID…",14,true); body.addView(status);
         devices=new Spinner(this); body.addView(devices,new LinearLayout.LayoutParams(-1,dp(50)));
-        LinearLayout row=new LinearLayout(this); Button refresh=btn("Refresh"); Button connect=btn("Connect"); Button disconnect=btn("Disconnect"); row.addView(refresh,weight());row.addView(connect,weight());row.addView(disconnect,weight());body.addView(row);
+        Button pair=btn("PAIR NEW COMPUTER"); body.addView(pair,new LinearLayout.LayoutParams(-1,dp(48))); LinearLayout row=new LinearLayout(this); Button refresh=btn("Refresh"); Button connect=btn("Connect"); Button disconnect=btn("Disconnect"); row.addView(refresh,weight());row.addView(connect,weight());row.addView(disconnect,weight());body.addView(row);
         text=new EditText(this); text.setHint("Type text to send (US keyboard layout)"); text.setSingleLine(true); body.addView(text,new LinearLayout.LayoutParams(-1,dp(52)));
         Button send=btn("SEND TEXT"); body.addView(send,new LinearLayout.LayoutParams(-1,dp(48)));
         TextView label=tv("TOUCHPAD — drag to move • tap to click",14,true); body.addView(label);
         body.addView(new TouchpadView(),new LinearLayout.LayoutParams(-1,0,1f));
         LinearLayout clicks=new LinearLayout(this); Button left=btn("Left click"),right=btn("Right click"); clicks.addView(left,weight());clicks.addView(right,weight());body.addView(clicks);
         root.addView(body,new LinearLayout.LayoutParams(-1,0,1f)); setContentView(root);
-        refresh.setOnClickListener(v->refreshDevices()); connect.setOnClickListener(v->connectSelected()); disconnect.setOnClickListener(v->{HidService s=HidService.get();if(s!=null)s.disconnect();});
+        pair.setOnClickListener(v->startPairing()); refresh.setOnClickListener(v->refreshDevices()); connect.setOnClickListener(v->connectSelected()); disconnect.setOnClickListener(v->{HidService s=HidService.get();if(s!=null)s.disconnect();});
         send.setOnClickListener(v->sendText()); left.setOnClickListener(v->click(1)); right.setOnClickListener(v->click(2));
     }
 
@@ -57,6 +57,16 @@ public class MainActivity extends Activity implements HidService.Listener {
     }
     private void addDiagButtons(){ LinearLayout bar=new LinearLayout(this); bar.setTag("diagbar"); Button copy=btn("COPY"),clear=btn("CLEAR"),back=btn("BACK"); bar.addView(copy,weight());bar.addView(clear,weight());bar.addView(back,weight());root.addView(bar); copy.setOnClickListener(v->{HidService s=HidService.get();String d=s==null?joinedLogs():s.diagnostics();((android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("Black Cat Remote diagnostics",d));Toast.makeText(this,"Diagnostics copied",Toast.LENGTH_SHORT).show();}); clear.setOnClickListener(v->{uiLogs.clear();HidService s=HidService.get();if(s!=null)s.clearDiagnostics();renderLogs();}); back.setOnClickListener(v->recreate()); }
     private String joinedLogs(){StringBuilder b=new StringBuilder();for(String s:uiLogs)b.append(s).append('\n');return b.toString();}
+
+    private void startPairing(){
+        HidService s=HidService.get();
+        if(s==null){ onLog("FAIL PAIR service not running"); status.setText("HID service not ready"); return; }
+        if(!s.readyForPairing()){ onLog("FAIL PAIR HID not registered yet"); status.setText("Wait for HID_REGISTERED"); return; }
+        if(Build.VERSION.SDK_INT>=31 && checkSelfPermission(Manifest.permission.BLUETOOTH_ADVERTISE)!=PackageManager.PERMISSION_GRANTED){ onLog("FAIL PAIR ADVERTISE permission missing"); requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT,Manifest.permission.BLUETOOTH_ADVERTISE},REQ_BT); return; }
+        try{ onLog("PAIR request discoverable duration=120s"); Intent i=new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE); i.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION,120); startActivityForResult(i,REQ_DISCOVERABLE); }
+        catch(Throwable t){ onLog("FAIL PAIR discoverability "+t.getClass().getSimpleName()+": "+String.valueOf(t.getMessage())); status.setText("Pairing request failed"); }
+    }
+    @Override protected void onActivityResult(int requestCode,int resultCode,Intent data){ super.onActivityResult(requestCode,resultCode,data); if(requestCode==REQ_DISCOVERABLE){ if(resultCode>0){ onLog("PASS DISCOVERABLE duration="+resultCode+"s"); status.setText("Discoverable — add Bluetooth device on PC"); } else { onLog("FAIL DISCOVERABLE cancelled result="+resultCode); status.setText("Discoverability cancelled"); } } }
 
     private void refreshDevices(){ HidService s=HidService.get(); if(s==null)return; bonded.clear();bonded.addAll(s.bonded());ArrayList<String> names=new ArrayList<>();for(BluetoothDevice d:bonded)names.add(safeName(d));devices.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,names));onLog("UI bonded host count="+bonded.size()); }
     private void connectSelected(){ HidService s=HidService.get();int i=devices.getSelectedItemPosition();if(s==null||i<0||i>=bonded.size()){status.setText("Choose a paired computer");return;}s.connect(bonded.get(i)); }
