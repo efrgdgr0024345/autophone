@@ -83,6 +83,7 @@ public class HidService extends Service {
         catch(SecurityException e){ fail("connect SecurityException",e); target=null; return false; }
     }
     public void disconnect(){ BluetoothDevice d=target; releaseAll(); if(hid!=null&&d!=null&&permitted()) try{ boolean accepted=hid.disconnect(d); log("disconnect submitted accepted="+accepted); }catch(SecurityException e){ fail("disconnect SecurityException",e); } }
+    public boolean readyForPairing(){ return registered&&hid!=null; }
     public boolean ready(){ return registered&&hid!=null&&target!=null; }
 
     public boolean keyboard(byte mod,byte code){
