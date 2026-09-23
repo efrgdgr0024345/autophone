@@ -4,6 +4,10 @@ import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.*;
 import android.content.pm.PackageManager;
+import android.content.*;
+import android.text.method.ScrollingMovementMethod;
+import java.io.*;
+import java.text.SimpleDateFormat;
 import android.os.*;
 import android.view.*;
 import android.widget.*;
@@ -21,6 +25,9 @@ public class MainActivity extends Activity {
     private TextView status;
     private Spinner devices;
     private EditText text;
+    private TextView logView;
+    private final StringBuilder logBuffer = new StringBuilder();
+    private static final String LOG_FILE = "blackcat_remote.log";
     private final ArrayList<BluetoothDevice> bonded = new ArrayList<>();
 
     private static final int REPORT_KEYBOARD = 1;
@@ -47,6 +54,8 @@ public class MainActivity extends Activity {
     @Override public void onCreate(Bundle b) {
         super.onCreate(b);
         buildUi();
+        loadOldLog();
+        log("APP START Android " + Build.VERSION.RELEASE + " API " + Build.VERSION.SDK_INT + " / " + Build.MANUFACTURER + " " + Build.MODEL);
         requestBtAndInit();
     }
 
@@ -99,6 +108,26 @@ public class MainActivity extends Activity {
         clicks.addView(right, weight());
         root.addView(clicks);
 
+        TextView diagTitle = tv("DIAGNOSTICS", 14, true);
+        diagTitle.setPadding(0, dp(8), 0, dp(4));
+        root.addView(diagTitle);
+
+        logView = tv("", 11, false);
+        logView.setBackgroundColor(Color.WHITE);
+        logView.setPadding(dp(8),dp(8),dp(8),dp(8));
+        logView.setMovementMethod(new ScrollingMovementMethod());
+        root.addView(logView, new LinearLayout.LayoutParams(-1, dp(150)));
+
+        LinearLayout logButtons = new LinearLayout(this);
+        logButtons.setOrientation(LinearLayout.HORIZONTAL);
+        Button copyLog = btn("COPY LOG");
+        Button shareLog = btn("SHARE LOG");
+        Button clearLog = btn("CLEAR");
+        logButtons.addView(copyLog, weight());
+        logButtons.addView(shareLog, weight());
+        logButtons.addView(clearLog, weight());
+        root.addView(logButtons);
+
         setContentView(root);
 
         refresh.setOnClickListener(v -> populateDevices());
@@ -111,6 +140,24 @@ public class MainActivity extends Activity {
         send.setOnClickListener(v -> sendText(text.getText().toString()));
         left.setOnClickListener(v -> mouseClick(1));
         right.setOnClickListener(v -> mouseClick(2));
+        copyLog.setOnClickListener(v -> {
+            ClipboardManager cm = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+            cm.setPrimaryClip(ClipData.newPlainText("Black Cat Remote diagnostics", logBuffer.toString()));
+            Toast.makeText(this, "Log copied", Toast.LENGTH_SHORT).show();
+        });
+        shareLog.setOnClickListener(v -> {
+            Intent i = new Intent(Intent.ACTION_SEND);
+            i.setType("text/plain");
+            i.putExtra(Intent.EXTRA_SUBJECT, "Black Cat Remote diagnostics");
+            i.putExtra(Intent.EXTRA_TEXT, logBuffer.toString());
+            startActivity(Intent.createChooser(i, "Share diagnostics"));
+        });
+        clearLog.setOnClickListener(v -> {
+            logBuffer.setLength(0);
+            if (logView != null) logView.setText("");
+            deleteFile(LOG_FILE);
+            log("LOG CLEARED");
+        });
     }
 
     private LinearLayout.LayoutParams weight() {
@@ -136,32 +183,77 @@ public class MainActivity extends Activity {
 
     private int dp(int n) { return (int)(n * getResources().getDisplayMetrics().density + .5f); }
 
+    private synchronized void log(String m) {
+        String ts = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US).format(new Date());
+        String line = ts + "  " + m + "\n";
+        logBuffer.append(line);
+        try (FileOutputStream fos = openFileOutput(LOG_FILE, MODE_APPEND)) {
+            fos.write(line.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        } catch (Exception ignored) {}
+        runOnUiThread(() -> {
+            if (logView != null) {
+                logView.setText(logBuffer.toString());
+                final int scroll = logView.getLayout() == null ? 0 :
+                    logView.getLayout().getLineTop(logView.getLineCount()) - logView.getHeight();
+                if (scroll > 0) logView.scrollTo(0, scroll);
+            }
+        });
+    }
+
+    private void loadOldLog() {
+        try (FileInputStream fis = openFileInput(LOG_FILE)) {
+            byte[] b = new byte[(int)new File(getFilesDir(), LOG_FILE).length()];
+            int n = fis.read(b);
+            if (n > 0) logBuffer.append(new String(b,0,n,java.nio.charset.StandardCharsets.UTF_8));
+        } catch (Exception ignored) {}
+        if (logView != null) logView.setText(logBuffer.toString());
+    }
+
+    private String bondStateName(int s) {
+        if (s == BluetoothDevice.BOND_BONDED) return "BONDED";
+        if (s == BluetoothDevice.BOND_BONDING) return "BONDING";
+        return "NONE";
+    }
+
+    private String connStateName(int s) {
+        if (s == BluetoothProfile.STATE_CONNECTED) return "CONNECTED";
+        if (s == BluetoothProfile.STATE_CONNECTING) return "CONNECTING";
+        if (s == BluetoothProfile.STATE_DISCONNECTING) return "DISCONNECTING";
+        return "DISCONNECTED";
+    }
+
     private boolean hasBtPermission() {
         return Build.VERSION.SDK_INT < 31 ||
             checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED;
     }
 
     private void requestBtAndInit() {
+        log("Permission BLUETOOTH_CONNECT=" + hasBtPermission());
         if (Build.VERSION.SDK_INT >= 31 && !hasBtPermission()) {
+            log("Requesting Bluetooth runtime permissions");
             requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN}, 7);
         } else initBt();
     }
 
     @Override public void onRequestPermissionsResult(int r, String[] p, int[] g) {
         super.onRequestPermissionsResult(r,p,g);
+        log("Permission result request=" + r + " granted=" + hasBtPermission());
         if (r == 7 && hasBtPermission()) initBt();
-        else status.setText("Bluetooth permission denied");
+        else { status.setText("Bluetooth permission denied"); log("ERROR Bluetooth permission denied"); }
     }
 
     private void initBt() {
+        log("initBt()");
         BluetoothManager bm = getSystemService(BluetoothManager.class);
         adapter = bm == null ? null : bm.getAdapter();
-        if (adapter == null) { status.setText("No Bluetooth adapter"); return; }
-        if (!adapter.isEnabled()) { status.setText("Turn Bluetooth on, then tap Refresh"); }
+        if (adapter == null) { status.setText("No Bluetooth adapter"); log("ERROR adapter=null"); return; }
+        log("Adapter present enabled=" + adapter.isEnabled());
+        if (!adapter.isEnabled()) { status.setText("Turn Bluetooth on, then tap Refresh"); log("WARN Bluetooth disabled"); }
         populateDevices();
 
         adapter.getProfileProxy(this, new BluetoothProfile.ServiceListener() {
             @Override public void onServiceConnected(int profile, BluetoothProfile proxy) {
+                log("Profile proxy connected profile=" + profile + " expected=" + BluetoothProfile.HID_DEVICE);
                 if (profile != BluetoothProfile.HID_DEVICE) return;
                 hid = (BluetoothHidDevice) proxy;
 
@@ -174,24 +266,29 @@ public class MainActivity extends Activity {
                         DESCRIPTOR
                     );
 
-                hid.registerApp(sdp, null, null, Executors.newSingleThreadExecutor(),
+                boolean registerStarted = hid.registerApp(sdp, null, null, Executors.newSingleThreadExecutor(),
                     new BluetoothHidDevice.Callback() {
                         @Override public void onAppStatusChanged(BluetoothDevice d, boolean registered) {
+                            log("HID onAppStatusChanged registered=" + registered + " device=" + safeName(d));
                             runOnUiThread(() -> status.setText(registered ? "Ready — choose paired computer" : "HID registration failed"));
                         }
                         @Override public void onConnectionStateChanged(BluetoothDevice d, int state) {
+                            log("HID connection state=" + connStateName(state) + " device=" + safeName(d));
                             if (state == BluetoothProfile.STATE_CONNECTED) target = d;
                             runOnUiThread(() -> status.setText(state == BluetoothProfile.STATE_CONNECTED ?
                                     "Connected: " + safeName(d) :
                                     state == BluetoothProfile.STATE_CONNECTING ? "Connecting…" : "Disconnected"));
                         }
                     });
+                log("registerApp() returned=" + registerStarted);
             }
             @Override public void onServiceDisconnected(int profile) {
+                log("Profile proxy disconnected profile=" + profile);
                 hid = null;
                 status.setText("Bluetooth HID unavailable");
             }
         }, BluetoothProfile.HID_DEVICE);
+        log("getProfileProxy(HID_DEVICE) requested");
     }
 
     private String safeName(BluetoothDevice d) {
@@ -209,11 +306,14 @@ public class MainActivity extends Activity {
             for (BluetoothDevice d : adapter.getBondedDevices()) {
                 bonded.add(d);
                 names.add(safeName(d) + "  •  " + d.getAddress());
+                log("Bonded device: " + safeName(d) + " bond=" + bondStateName(d.getBondState()));
             }
         } catch (SecurityException e) {
+            log("ERROR populateDevices SecurityException: " + e);
             status.setText("Bluetooth permission required");
         }
         devices.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, names));
+        log("Bonded device count=" + names.size());
         if (names.isEmpty()) status.setText("Pair the computer in Android Bluetooth settings first");
     }
 
@@ -224,18 +324,25 @@ public class MainActivity extends Activity {
         target = bonded.get(i);
         try {
             status.setText("Connecting…");
-            hid.connect(target);
+            log("connect() target=" + safeName(target) + " bond=" + bondStateName(target.getBondState()));
+            boolean ok = hid.connect(target);
+            log("connect() returned=" + ok);
         } catch (SecurityException e) {
+            log("ERROR connect SecurityException: " + e);
             status.setText("Bluetooth permission required");
+        } catch (Throwable t) {
+            log("ERROR connect Throwable: " + t);
+            status.setText("Connect failed — see log");
         }
     }
 
     private void sendText(String s) {
         if (!ready()) return;
+        log("sendText length=" + s.length());
         new Thread(() -> {
             for (char c : s.toCharArray()) {
                 Key k = keyFor(c);
-                if (k == null) continue;
+                if (k == null) { log("WARN unsupported char U+" + Integer.toHexString(c)); continue; }
                 sendKey(k.mod, k.code);
                 try { Thread.sleep(18); } catch (InterruptedException ignored) {}
             }
@@ -252,9 +359,11 @@ public class MainActivity extends Activity {
 
     private void sendKey(byte mod, byte code) {
         try {
-            hid.sendReport(target, REPORT_KEYBOARD, new byte[]{mod,0,code,0,0,0,0,0});
-            hid.sendReport(target, REPORT_KEYBOARD, new byte[]{0,0,0,0,0,0,0,0});
-        } catch (SecurityException ignored) {}
+            boolean down = hid.sendReport(target, REPORT_KEYBOARD, new byte[]{mod,0,code,0,0,0,0,0});
+            boolean up = hid.sendReport(target, REPORT_KEYBOARD, new byte[]{0,0,0,0,0,0,0,0});
+            if (!down || !up) log("ERROR keyboard sendReport down=" + down + " up=" + up + " code=" + (code & 0xff));
+        } catch (SecurityException e) { log("ERROR keyboard SecurityException: " + e); }
+          catch (Throwable t) { log("ERROR keyboard Throwable: " + t); }
     }
 
     private void mouseMove(int dx, int dy) {
