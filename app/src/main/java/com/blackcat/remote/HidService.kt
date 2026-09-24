@@ -92,7 +92,7 @@ class HidService : Service() {
                     device ?: return
                     val bondState = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR)
                     val prevBondState = intent.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, BluetoothDevice.ERROR)
-                    Log.i(TAG, "Bond state changed for ${device.address}: prev=$prevBondState new=$bondState")
+                    Log.i(TAG, "Bond state changed for [host]: prev=$prevBondState new=$bondState")
 
                     if (bondState == BluetoothDevice.BOND_BONDED) {
                         val state = _connectionState.value
@@ -125,7 +125,7 @@ class HidService : Service() {
                     device ?: return
                     val connState = _connectionState.value
                     if (connState is ConnectionState.Connected && connState.device.address == device.address) {
-                        Log.i(TAG, "ACL_DISCONNECTED from ${device.address} — immediate disconnect")
+                        Log.i(TAG, "ACL_DISCONNECTED from [host] — immediate disconnect")
                         _connectionState.value = ConnectionState.Disconnected
                         reportSender.attach(null, null)
                         updateNotification("Disconnected")
@@ -222,7 +222,7 @@ class HidService : Service() {
         }
         serviceScope.launch {
             try {
-                Log.i(TAG, "connectToDevice: addr=${device.address} bond=$bond")
+                Log.i(TAG, "connectToDevice: addr=[host] bond=$bond")
                 _connectionState.value = ConnectionState.Connecting(device)
                 if (bond != BluetoothDevice.BOND_BONDED) {
                     Log.i(TAG, "Device not bonded. Creating bond first...")
@@ -239,7 +239,7 @@ class HidService : Service() {
                         delay(15_000L)
                         val cur = _connectionState.value
                         if (cur is ConnectionState.Connecting && cur.device.address == device.address) {
-                            Log.w(TAG, "Connection timed out for ${device.address}")
+                            Log.w(TAG, "Connection timed out for [host]")
                             _connectionState.value = ConnectionState.Error("Connection timed out")
                         }
                     }
@@ -267,7 +267,7 @@ class HidService : Service() {
     // BUG 2 — Auto-reconnect with exponential backoff
     private fun scheduleAutoReconnect(device: BluetoothDevice) {
         if (reconnectAttempts >= maxReconnectAttempts) {
-            Log.i(TAG, "Max reconnect attempts reached for ${device.address}")
+            Log.i(TAG, "Max reconnect attempts reached for [host]")
             return
         }
         val delayMs = when (reconnectAttempts) {
@@ -282,7 +282,7 @@ class HidService : Service() {
         serviceScope.launch {
             delay(delayMs)
             if (_connectionState.value !is ConnectionState.Connected && !userInitiatedDisconnect) {
-                Log.i(TAG, "Auto-reconnecting to ${device.address}")
+                Log.i(TAG, "Auto-reconnecting to [host]")
                 connectToDevice(device)
             }
         }
@@ -385,7 +385,7 @@ class HidService : Service() {
     private val callback = object : BluetoothHidDevice.Callback() {
         override fun onAppStatusChanged(pluggedDevice: BluetoothDevice?, registered: Boolean) {
             super.onAppStatusChanged(pluggedDevice, registered)
-            Log.i(TAG, "onAppStatusChanged: registered=$registered plugged=${pluggedDevice?.address}")
+            Log.i(TAG, "onAppStatusChanged: registered=$registered plugged=[host]")
             _appRegistered.value = registered
             if (!registered) {
                 reportSender.attach(null, null)
@@ -404,7 +404,7 @@ class HidService : Service() {
                 val proxy = hidDevice
                 if (proxy != null) {
                     val curState = try { proxy.getConnectionState(target) } catch (_: Throwable) { BluetoothProfile.STATE_DISCONNECTED }
-                    Log.i(TAG, "post-register state=$curState for ${target.address}")
+                    Log.i(TAG, "post-register state=$curState for [host]")
                     if (curState == BluetoothProfile.STATE_CONNECTED) {
                         lastNotificationText = "Connected: ${safeName(target)}"
                         _connectionState.value = ConnectionState.Connected(target)
@@ -428,7 +428,7 @@ class HidService : Service() {
         override fun onConnectionStateChanged(device: BluetoothDevice?, state: Int) {
             super.onConnectionStateChanged(device, state)
             device ?: return
-            Log.i(TAG, "onConnectionStateChanged: ${device.address} state=$state")
+            Log.i(TAG, "onConnectionStateChanged: [host] state=$state")
             when (state) {
                 BluetoothProfile.STATE_CONNECTED -> {
                     lastNotificationText = "Connected: ${safeName(device)}"
@@ -490,7 +490,7 @@ class HidService : Service() {
 
         override fun onVirtualCableUnplug(device: BluetoothDevice?) {
             super.onVirtualCableUnplug(device)
-            Log.i(TAG, "onVirtualCableUnplug: ${device?.address}")
+            Log.i(TAG, "onVirtualCableUnplug: [host]")
             lastNotificationText = "Disconnected"
             _connectionState.value = ConnectionState.Disconnected
             reportSender.attach(null, null)
