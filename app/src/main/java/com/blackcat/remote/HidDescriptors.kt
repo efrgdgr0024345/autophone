@@ -1,4 +1,5 @@
-/* Derived from Linkpad by Devdas Kumar / Devdas-gupta (MIT).\n * https://github.com/Devdas-gupta/linkpad — see LINKPAD_LICENSE. */\npackage com.blackcat.remote
+/* Derived from Linkpad by Devdas Kumar / Devdas-gupta (MIT). */
+package com.blackcat.remote
 
 object HidDescriptors {
 
