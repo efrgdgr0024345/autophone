@@ -511,7 +511,8 @@ class HidService : Service() {
     }
     private fun updateNotification(text: String) {
         lastNotificationText = text
-        if (isForeground) (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).notify(NOTIFICATION_ID, buildNotification(text))
+        // Avoid requesting notification permission solely for cosmetic status updates.
+        // The required foreground-service notification is created by startForeground().
     }
     private fun buildNotification(text: String): Notification =
         Notification.Builder(this, CHANNEL_ID).setSmallIcon(android.R.drawable.stat_sys_data_bluetooth)
