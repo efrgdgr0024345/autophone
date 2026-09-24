@@ -5,7 +5,13 @@ plugins {
 android {
     namespace 'com.blackcat.remote'
     compileSdk 35
-    defaultConfig { applicationId 'com.blackcat.remote'; minSdk 28; targetSdk 35; versionCode 1; versionName '1.0-linkpad-minimal' }
+    defaultConfig {
+        applicationId 'com.blackcat.remote'
+        minSdk 28
+        targetSdk 35
+        versionCode 2
+        versionName '2.0-hid-computer-pairing'
+    }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = '17' }
 }
