@@ -24,7 +24,8 @@ data class DiscoveredDevice(
     val address: String,
     val rssi: Int,
     val raw: BluetoothDevice,
-    val bonded: Boolean = false
+    val bonded: Boolean = false,
+    val seenNow: Boolean = false
 )
 
 class BluetoothManager(private val context: Context) {
@@ -65,7 +66,7 @@ class BluetoothManager(private val context: Context) {
                     val name = runCatching { d.name }.getOrNull() ?: "(unknown)"
                     val bonded = runCatching { d.bondState == BluetoothDevice.BOND_BONDED }.getOrDefault(false)
                     synchronized(seen) {
-                        seen[d.address] = DiscoveredDevice(name, d.address, rssi, d, bonded)
+                        seen[d.address] = DiscoveredDevice(name, d.address, rssi, d, bonded, true)
                     }
                     scheduleEmit()
                 }
@@ -89,7 +90,8 @@ class BluetoothManager(private val context: Context) {
                 address = it.address,
                 rssi = 0,
                 raw = it,
-                bonded = true
+                bonded = true,
+                seenNow = false
             )
         }
     }
