@@ -1,0 +1,68 @@
+package com.blackcat.remote
+
+import android.Manifest
+import android.bluetooth.BluetoothDevice
+import android.content.*
+import android.content.pm.PackageManager
+import android.os.*
+import android.view.*
+import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
+import kotlinx.coroutines.*
+
+class MainActivity : android.app.Activity() {
+    private val scope=CoroutineScope(Dispatchers.Main+SupervisorJob())
+    private lateinit var bt:BluetoothManager
+    private var service:HidService?=null
+    private var bound=false
+    private lateinit var status:TextView
+    private lateinit var devices:Spinner
+    private lateinit var log:TextView
+    private val found=mutableListOf<DiscoveredDevice>()
+
+    private val permissions=registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){ startCore() }
+    private val connection=object:ServiceConnection{
+        override fun onServiceConnected(n:ComponentName?,b:IBinder?){service=(b as? HidService.LocalBinder)?.service();bound=service!=null;write("PASS HID service bound");observe()}
+        override fun onServiceDisconnected(n:ComponentName?){service=null;bound=false;write("WARN HID service disconnected")}
+    }
+
+    override fun onCreate(s:Bundle?){super.onCreate(s);bt=BluetoothManager(this);buildUi();ensurePermissions()}
+    private fun ensurePermissions(){
+        if(Build.VERSION.SDK_INT>=31&&(checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT)!=PackageManager.PERMISSION_GRANTED||checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN)!=PackageManager.PERMISSION_GRANTED))
+            permissions.launch(arrayOf(Manifest.permission.BLUETOOTH_CONNECT,Manifest.permission.BLUETOOTH_SCAN))
+        else startCore()
+    }
+    private fun startCore(){val i=Intent(this,HidService::class.java);if(Build.VERSION.SDK_INT>=26)startForegroundService(i)else startService(i);bindService(i,connection,BIND_AUTO_CREATE);write("INFO starting Linkpad-derived HID core")}
+    private fun observe(){val s=service?:return;scope.launch{s.connectionState.collect{st->status.text=when(st){is ConnectionState.Connected->"READY";is ConnectionState.Connecting->"CONNECTING";is ConnectionState.Error->"ERROR: "+st.message;ConnectionState.Disconnected->"DISCONNECTED";ConnectionState.Idle->"IDLE"};write("STATE "+status.text)}}}
+    private fun buildUi(){
+        val root=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;setPadding(16,16,16,16)}
+        val title=TextView(this).apply{text="BLACK CAT REMOTE";textSize=22f};root.addView(title)
+        log=TextView(this).apply{text="DEBUG\n";textSize=10f;setPadding(8,8,8,8)}
+        val logScroll=ScrollView(this).apply{addView(log);setOnClickListener{layoutParams.height=if(layoutParams.height<500)dp(360) else dp(100)}}
+        root.addView(logScroll,LinearLayout.LayoutParams(-1,dp(100)))
+        status=TextView(this).apply{text="STARTING";textSize=16f};root.addView(status)
+        val find=Button(this).apply{text="FIND COMPUTER";setOnClickListener{bt.startScan();write("INFO scan started");watchScan()}};root.addView(find)
+        devices=Spinner(this);root.addView(devices)
+        val conn=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
+        conn.addView(Button(this).apply{text="CONNECT";setOnClickListener{val i=devices.selectedItemPosition;if(i in found.indices){write("INFO connect selected");service?.connectToDevice(found[i].raw)}}},weight())
+        conn.addView(Button(this).apply{text="DISCONNECT";setOnClickListener{service?.disconnectCurrent()}},weight());root.addView(conn)
+        val text=EditText(this).apply{hint="Type text to send"};root.addView(text)
+        root.addView(Button(this).apply{this.text="SEND";setOnClickListener{val v=text.text.toString();scope.launch{service?.reportSender?.sendString(v)};text.text.clear();write("PASS text submitted (content not logged)")}})
+        val pad=TextView(this).apply{text="TOUCHPAD";gravity=Gravity.CENTER;textSize=18f;setBackgroundColor(0xffdddddd.toInt())}
+        var lx=0f;var ly=0f
+        pad.setOnTouchListener{_,e->when(e.actionMasked){MotionEvent.ACTION_DOWN->{lx=e.x;ly=e.y;true};MotionEvent.ACTION_MOVE->{val dx=(e.x-lx).toInt();val dy=(e.y-ly).toInt();lx=e.x;ly=e.y;service?.reportSender?.queueMouseMove(dx,dy);true};else->true}}
+        root.addView(pad,LinearLayout.LayoutParams(-1,0,1f))
+        val clicks=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
+        fun clickButton(label:String,mask:Int)=Button(this).apply{text=label;setOnClickListener{scope.launch{service?.reportSender?.tapMouseClick(mask)}}}
+        clicks.addView(clickButton("LEFT",MouseButtonMask.LEFT.mask),weight());clicks.addView(clickButton("MIDDLE",MouseButtonMask.MIDDLE.mask),weight());clicks.addView(clickButton("RIGHT",MouseButtonMask.RIGHT.mask),weight());root.addView(clicks)
+        val keys=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
+        fun key(label:String,k:HidKeyCode,mod:Int=0)=Button(this).apply{text=label;setOnClickListener{scope.launch{service?.reportSender?.pressAndRelease(k,mod)}}}
+        keys.addView(key("ESC",HidKeyCode.ESCAPE),weight());keys.addView(key("TAB",HidKeyCode.TAB),weight());keys.addView(key("CTRL",HidKeyCode.NONE,MODIFIER_LEFT_CTRL),weight());keys.addView(key("ALT",HidKeyCode.NONE,MODIFIER_LEFT_ALT),weight());keys.addView(key("ENTER",HidKeyCode.ENTER),weight());root.addView(keys)
+        setContentView(root)
+    }
+    private fun watchScan(){scope.launch{bt.scanResults.collect{list->found.clear();found.addAll(list);devices.adapter=ArrayAdapter(this@MainActivity,android.R.layout.simple_spinner_dropdown_item,list.map{(if(it.bonded)"★ " else "")+it.name});write("INFO devices found="+list.size)}}}
+    private fun write(s:String){log.append("\n"+s);if(log.text.length>12000)log.text=log.text.takeLast(9000)}
+    private fun weight()=LinearLayout.LayoutParams(0,dp(48),1f)
+    private fun dp(n:Int)=(n*resources.displayMetrics.density).toInt()
+    override fun onDestroy(){scope.cancel();bt.stopScan();if(bound)try{unbindService(connection)}catch(_:Throwable){};super.onDestroy()}
+}
