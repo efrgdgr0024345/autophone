@@ -39,12 +39,12 @@ public class HidService extends Service {
             .setContentTitle("Black Cat Remote")
             .setContentText("Bluetooth keyboard/mouse service active")
             .setSmallIcon(android.R.drawable.stat_sys_data_bluetooth).build());
-        log("SERVICE created Android="+Build.VERSION.RELEASE+" API="+Build.VERSION.SDK_INT);
+        log("SERVICE created Android="+Build.VERSION.RELEASE+" API="+Build.VERSION.SDK_INT); IntentFilter bf=new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED); if(Build.VERSION.SDK_INT>=33) registerReceiver(bondReceiver,bf,Context.RECEIVER_NOT_EXPORTED); else registerReceiver(bondReceiver,bf);
         initBluetooth();
     }
     @Override public int onStartCommand(Intent i,int flags,int id){ log("SERVICE startCommand flags="+flags+" startId="+id); return START_STICKY; }
     @Override public android.os.IBinder onBind(Intent i){ return null; }
-    @Override public void onDestroy(){ log("SERVICE destroy"); releaseAll(); closeProfile(); callbackExecutor.shutdownNow(); instance=null; super.onDestroy(); }
+    @Override public void onDestroy(){ log("SERVICE destroy"); releaseAll(); try{unregisterReceiver(bondReceiver);}catch(Throwable ignored){} closeProfile(); callbackExecutor.shutdownNow(); instance=null; super.onDestroy(); }
 
     private void createChannel(){ if(Build.VERSION.SDK_INT>=26){ NotificationManager n=getSystemService(NotificationManager.class); n.createNotificationChannel(new NotificationChannel("hid","Bluetooth HID",NotificationManager.IMPORTANCE_LOW)); } }
     private boolean permitted(){ return Build.VERSION.SDK_INT<31 || checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT)==PackageManager.PERMISSION_GRANTED; }
@@ -71,10 +71,38 @@ public class HidService extends Service {
         @Override public void onServiceDisconnected(int profile){ log("HID proxy disconnected profile="+profile); registered=false; hid=null; target=null; state("HID_PROXY_LOST"); }
     };
 
+    private final BroadcastReceiver bondReceiver=new BroadcastReceiver(){
+        @Override public void onReceive(Context c,Intent i){
+            if(!BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(i.getAction())) return;
+            BluetoothDevice d;
+            if(Build.VERSION.SDK_INT>=33) d=i.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE,BluetoothDevice.class); else d=i.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            if(d==null||target==null||!d.equals(target)) return;
+            int b=i.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE,BluetoothDevice.ERROR);
+            log("BOND callback host="+name(d)+" state="+b);
+            if(b==BluetoothDevice.BOND_BONDED){ log("PASS BOND completed; starting HID connect"); connect(d); }
+            else if(b==BluetoothDevice.BOND_NONE){ log("FAIL BOND ended without bond"); target=null; state("WAITING_HOST"); }
+        }
+    };
+
     private final BluetoothHidDevice.Callback hidCallback=new BluetoothHidDevice.Callback(){
         @Override public void onAppStatusChanged(BluetoothDevice d,boolean r){ registered=r; log("onAppStatusChanged registered="+r+" host="+name(d)); state(r?"HID_REGISTERED":"HID_UNREGISTERED"); if(!r){ target=null; } }
         @Override public void onConnectionStateChanged(BluetoothDevice d,int s){ log("onConnectionStateChanged state="+conn(s)+" host="+name(d)); if(s==BluetoothProfile.STATE_CONNECTED){ target=d; state("READY"); } else if(s==BluetoothProfile.STATE_CONNECTING) state("CONNECTING"); else { if(target!=null && target.equals(d)) target=null; releaseLocal(); state("WAITING_HOST"); } }
     };
+
+    public boolean pairAndConnect(BluetoothDevice d){
+        if(!registered||hid==null||d==null||!permitted()){ log("FAIL PAIR_CONNECT precondition registered="+registered+" hid="+(hid!=null)+" device="+(d!=null)); return false; }
+        try{
+            int bond=d.getBondState();
+            log("PAIR_CONNECT selected host="+name(d)+" bond="+bond);
+            target=d; state("CONNECTING");
+            if(bond!=BluetoothDevice.BOND_BONDED){
+                boolean accepted=d.createBond();
+                log((accepted?"PASS":"FAIL")+" createBond submitted accepted="+accepted+" host="+name(d));
+                return accepted;
+            }
+            return connect(d);
+        }catch(SecurityException e){ fail("pairAndConnect SecurityException",e); return false; }
+    }
 
     public boolean connect(BluetoothDevice d){
         if(!registered||hid==null||d==null||!permitted()){ log("CONNECT rejected precondition registered="+registered+" hid="+(hid!=null)+" device="+(d!=null)); return false; }
