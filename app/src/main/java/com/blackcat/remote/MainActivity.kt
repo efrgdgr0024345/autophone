@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.os.*
 import android.view.*
 import android.widget.*
-import androidx.activity.result.contract.ActivityResultContracts
 import kotlinx.coroutines.*
 
 class MainActivity : android.app.Activity() {
@@ -20,16 +19,16 @@ class MainActivity : android.app.Activity() {
     private lateinit var log:TextView
     private val found=mutableListOf<DiscoveredDevice>()
 
-    private val permissions=registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){ startCore() }
+    override fun onRequestPermissionsResult(r:Int,p:Array<out String>,g:IntArray){super.onRequestPermissionsResult(r,p,g);if(r==7&&g.isNotEmpty()&&g.all{it==PackageManager.PERMISSION_GRANTED})startCore()else write("FAIL Bluetooth permission denied")}
     private val connection=object:ServiceConnection{
-        override fun onServiceConnected(n:ComponentName?,b:IBinder?){service=(b as? HidService.LocalBinder)?.service();bound=service!=null;write("PASS HID service bound");observe()}
+        override fun onServiceConnected(n:ComponentName?,b:IBinder?){service=(b as? HidService.LocalBinder)?.getService();bound=service!=null;write("PASS HID service bound");observe()}
         override fun onServiceDisconnected(n:ComponentName?){service=null;bound=false;write("WARN HID service disconnected")}
     }
 
     override fun onCreate(s:Bundle?){super.onCreate(s);bt=BluetoothManager(this);buildUi();ensurePermissions()}
     private fun ensurePermissions(){
         if(Build.VERSION.SDK_INT>=31&&(checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT)!=PackageManager.PERMISSION_GRANTED||checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN)!=PackageManager.PERMISSION_GRANTED))
-            permissions.launch(arrayOf(Manifest.permission.BLUETOOTH_CONNECT,Manifest.permission.BLUETOOTH_SCAN))
+            requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_CONNECT,Manifest.permission.BLUETOOTH_SCAN),7)
         else startCore()
     }
     private fun startCore(){val i=Intent(this,HidService::class.java);if(Build.VERSION.SDK_INT>=26)startForegroundService(i)else startService(i);bindService(i,connection,BIND_AUTO_CREATE);write("INFO starting Linkpad-derived HID core")}
@@ -46,8 +45,8 @@ class MainActivity : android.app.Activity() {
         val conn=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
         conn.addView(Button(this).apply{text="CONNECT";setOnClickListener{val i=devices.selectedItemPosition;if(i in found.indices){write("INFO connect selected");service?.connectToDevice(found[i].raw)}}},weight())
         conn.addView(Button(this).apply{text="DISCONNECT";setOnClickListener{service?.disconnectCurrent()}},weight());root.addView(conn)
-        val text=EditText(this).apply{hint="Type text to send"};root.addView(text)
-        root.addView(Button(this).apply{this.text="SEND";setOnClickListener{val v=text.text.toString();scope.launch{service?.reportSender?.sendString(v)};text.text.clear();write("PASS text submitted (content not logged)")}})
+        val input=EditText(this).apply{hint="Type text to send"};root.addView(input)
+        root.addView(Button(this).apply{this.text="SEND";setOnClickListener{val v=input.text.toString();scope.launch{service?.reportSender?.sendString(v)};input.text.clear();write("PASS text submitted (content not logged)")}})
         val pad=TextView(this).apply{text="TOUCHPAD";gravity=Gravity.CENTER;textSize=18f;setBackgroundColor(0xffdddddd.toInt())}
         var lx=0f;var ly=0f
         pad.setOnTouchListener{_,e->when(e.actionMasked){MotionEvent.ACTION_DOWN->{lx=e.x;ly=e.y;true};MotionEvent.ACTION_MOVE->{val dx=(e.x-lx).toInt();val dy=(e.y-ly).toInt();lx=e.x;ly=e.y;service?.reportSender?.queueMouseMove(dx,dy);true};else->true}}
