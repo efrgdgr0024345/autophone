@@ -181,17 +181,6 @@ class MainActivity : android.app.Activity() {
         setContentView(root)
     }
 
-    private fun startKeyboardPairing(){
-        val s=service
-        if(s==null){write("FAIL HID service unavailable");return}
-        if(!s.appRegistered.value){write("FAIL HID not registered yet");status.text="HID REGISTERING";return}
-        write("PASS HID registered before discoverability")
-        status.text="WAITING FOR COMPUTER"
-        val i=Intent(android.bluetooth.BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE).apply{putExtra(android.bluetooth.BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION,300)}
-        write("INFO requesting 300s discoverable pairing mode")
-        startActivityForResult(i,200)
-    }
-    override fun onActivityResult(r:Int,result:Int,data:Intent?){super.onActivityResult(r,result,data);if(r==200){if(result>0){write("PASS discoverable enabled seconds="+result);status.text="DISCOVERABLE — ADD ON COMPUTER"}else{write("FAIL discoverability declined");status.text="READY TO PAIR"}}}
     private fun write(s:String){
         log.append("\n"+s)
         if(log.text.length>12000)log.text=log.text.takeLast(9000)
