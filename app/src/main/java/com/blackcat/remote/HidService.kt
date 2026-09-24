@@ -208,9 +208,6 @@ class HidService : Service() {
         userInitiatedDisconnect = false
         reconnectAttempts = 0
         val bond = device.bondState
-        if (bond != BluetoothDevice.BOND_BONDED) {
-            ensureDiscoverable()
-        }
         val proxy = hidDevice
         if (proxy == null) {
             pendingTarget = device
@@ -305,21 +302,6 @@ class HidService : Service() {
             registerReceiver(btStateReceiver, filter)
         }
         btStateReceiverRegistered = true
-    }
-
-    private fun ensureDiscoverable() {
-        val adapter = bluetoothAdapter ?: return
-        try {
-            if (adapter.scanMode != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
-                val intent = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE).apply {
-                    putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300)
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-                startActivity(intent)
-            }
-        } catch (t: Throwable) {
-            Log.w(TAG, "ensureDiscoverable: ${t.message}")
-        }
     }
 
     @android.annotation.SuppressLint("MissingPermission")
