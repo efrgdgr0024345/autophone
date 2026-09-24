@@ -6,20 +6,13 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager as AndroidBluetoothManager
-import android.bluetooth.le.BluetoothLeScanner
-import android.bluetooth.le.ScanCallback
-import android.bluetooth.le.ScanFilter
-import android.bluetooth.le.ScanResult
-import android.bluetooth.le.ScanSettings
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
-import android.os.ParcelUuid
 import android.util.Log
-import java.util.UUID
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -45,7 +38,6 @@ class BluetoothManager(private val context: Context) {
     private val _scanning = MutableStateFlow(false)
     val scanning: StateFlow<Boolean> = _scanning.asStateFlow()
 
-    private var scanner: BluetoothLeScanner? = null
     private val seen = mutableMapOf<String, DiscoveredDevice>()
     private var classicReceiverRegistered = false
 
@@ -144,31 +136,12 @@ class BluetoothManager(private val context: Context) {
             Log.w(TAG, "startDiscovery: ${t.message}")
         }
 
-        // Also start BLE scan in parallel
-        scanner = a.bluetoothLeScanner
-        val settings = ScanSettings.Builder()
-            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-            .build()
-        // BUG 24 — Filter BLE scan to HID Service UUID 0x1812 to avoid polluted results
-        val hidFilter = ScanFilter.Builder()
-            .setServiceUuid(ParcelUuid(UUID.fromString("00001812-0000-1000-8000-00805f9b34fb")))
-            .build()
-        try {
-            scanner?.startScan(listOf(hidFilter), settings, scanCallback)
-        } catch (t: Throwable) {
-            Log.w(TAG, "startScan(BLE): ${t.message}")
-        }
         _scanning.value = true
     }
 
     @SuppressLint("MissingPermission")
     fun stopScan() {
         if (!_scanning.value) return
-        try {
-            scanner?.stopScan(scanCallback)
-        } catch (t: Throwable) {
-            Log.w(TAG, "stopScan(BLE): ${t.message}")
-        }
         try {
             if (adapter?.isDiscovering == true) adapter.cancelDiscovery()
         } catch (t: Throwable) {
@@ -184,24 +157,6 @@ class BluetoothManager(private val context: Context) {
     private fun sortedView(): List<DiscoveredDevice> {
         val snapshot = synchronized(seen) { seen.values.toList() }
         return snapshot.sortedWith(compareByDescending<DiscoveredDevice> { it.bonded }.thenByDescending { it.rssi })
-    }
-
-    private val scanCallback = object : ScanCallback() {
-        @SuppressLint("MissingPermission")
-        override fun onScanResult(callbackType: Int, result: ScanResult?) {
-            val r = result ?: return
-            val device = r.device ?: return
-            val name = runCatching { device.name }.getOrNull() ?: r.scanRecord?.deviceName ?: "(unknown)"
-            val bonded = runCatching { device.bondState == BluetoothDevice.BOND_BONDED }.getOrDefault(false)
-            synchronized(seen) {
-                seen[device.address] = DiscoveredDevice(name, device.address, r.rssi, device, bonded)
-            }
-            scheduleEmit()
-        }
-
-        override fun onScanFailed(errorCode: Int) {
-            Log.w(TAG, "scan failed: $errorCode")
-        }
     }
 
     private fun scheduleEmit() {
