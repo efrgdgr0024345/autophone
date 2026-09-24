@@ -498,7 +498,11 @@ class HidService : Service() {
         }
     }
 
-    private fun safeName(device: BluetoothDevice): String = runCatching { device.name }.getOrNull() ?: "(device)"
+    @android.annotation.SuppressLint("MissingPermission")
+    private fun safeName(device: BluetoothDevice): String {
+        if (!hasBluetoothConnectPermission()) return "(device)"
+        return try { device.name ?: "(device)" } catch (_: SecurityException) { "(device)" }
+    }
     private fun startForegroundServiceNow() {
         if (!isForeground) {
             startForeground(NOTIFICATION_ID, buildNotification(lastNotificationText))
