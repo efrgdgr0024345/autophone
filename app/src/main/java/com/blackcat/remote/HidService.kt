@@ -172,6 +172,7 @@ class HidService : Service() {
 
     override fun onBind(intent: Intent?): IBinder = binder
 
+    @android.annotation.SuppressLint("MissingPermission")
     override fun onDestroy() {
         serviceScope.cancel()
         try {
