@@ -64,6 +64,7 @@ class HidService : Service() {
 
     private var btStateReceiverRegistered = false
 
+    @android.annotation.SuppressLint("MissingPermission")
     private val btStateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
@@ -341,6 +342,7 @@ class HidService : Service() {
         }
     }
 
+    @android.annotation.SuppressLint("MissingPermission")
     private val profileListener = object : BluetoothProfile.ServiceListener {
         override fun onServiceConnected(profile: Int, proxy: BluetoothProfile?) {
             if (profile != BluetoothProfile.HID_DEVICE) return
@@ -396,6 +398,7 @@ class HidService : Service() {
         }
     }
 
+    @android.annotation.SuppressLint("MissingPermission")
     private val callback = object : BluetoothHidDevice.Callback() {
         override fun onAppStatusChanged(pluggedDevice: BluetoothDevice?, registered: Boolean) {
             super.onAppStatusChanged(pluggedDevice, registered)
