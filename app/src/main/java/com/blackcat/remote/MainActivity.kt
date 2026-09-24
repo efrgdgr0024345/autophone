@@ -26,8 +26,22 @@ class MainActivity:Activity(){
   val da=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL};da.addView(Button(this).apply{text="COPY LOG";setOnClickListener{(getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager).setPrimaryClip(android.content.ClipData.newPlainText("Black Cat diagnostics",diagnostics.snapshot()))}},weight());da.addView(Button(this).apply{text="CLEAR";setOnClickListener{diagnostics.clear()}},weight());root.addView(da)
   val input=EditText(this).apply{hint="Type text to send"};root.addView(input);root.addView(Button(this).apply{text="SEND";setOnClickListener{sendText(input.text.toString());input.text.clear()}})
   val pad=TextView(this).apply{text="TOUCHPAD";gravity=Gravity.CENTER;setBackgroundColor(0xffdddddd.toInt())};var x=0f;var y=0f;pad.setOnTouchListener{_,e->when(e.actionMasked){MotionEvent.ACTION_DOWN->{x=e.x;y=e.y;true};MotionEvent.ACTION_MOVE->{hid.sendMouse(0,(e.x-x).toInt(),(e.y-y).toInt());x=e.x;y=e.y;true};else->true}};root.addView(pad,LinearLayout.LayoutParams(-1,0,1f))
-  val clicks=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL};fun mb(t:String,m:Int)=Button(this).apply{text=t;setOnClickListener{hid.sendMouse(m,0,0);hid.sendMouse(0,0,0)}};clicks.addView(mb("LEFT",HidReports.LEFT),weight());clicks.addView(mb("MIDDLE",HidReports.MIDDLE),weight());clicks.addView(mb("RIGHT",HidReports.RIGHT),weight());root.addView(clicks)
-  val kb=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;visibility=View.GONE};root.addView(Button(this).apply{text="FULL KEYBOARD";setOnClickListener{kb.visibility=if(kb.visibility==View.GONE)View.VISIBLE else View.GONE}});fun k(t:String,key:Int,mod:Int=0)=Button(this).apply{text=t;setOnClickListener{hid.sendKeyboard(mod,key)}};fun row(vararg b:Button)=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL;b.forEach{addView(it,weight())}}
+  val clicks=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
+  fun mb(label:String,mask:Int):Button {
+   return Button(this).apply {
+    text=label
+    setOnClickListener { hid.sendMouse(mask,0,0); hid.sendMouse(0,0,0) }
+   }
+  }
+  clicks.addView(mb("LEFT",HidReports.LEFT),weight());clicks.addView(mb("MIDDLE",HidReports.MIDDLE),weight());clicks.addView(mb("RIGHT",HidReports.RIGHT),weight());root.addView(clicks)
+  val kb=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;visibility=View.GONE}
+  root.addView(Button(this).apply{text="FULL KEYBOARD";setOnClickListener{kb.visibility=if(kb.visibility==View.GONE)View.VISIBLE else View.GONE}})
+  fun k(label:String,key:Int,mod:Int=0):Button {
+   return Button(this).apply{text=label;setOnClickListener{hid.sendKeyboard(mod,key)}}
+  }
+  fun row(vararg buttons:Button):LinearLayout {
+   return LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL;buttons.forEach{addView(it,weight())}}
+  }
   kb.addView(row(k("ESC",41),k("TAB",43),k("BKSP",42),k("DEL",76),k("ENTER",40)));kb.addView(row(k("CTRL",0,HidReports.CTRL),k("SHIFT",0,HidReports.SHIFT),k("ALT",0,HidReports.ALT),k("GUI",0,HidReports.GUI)));kb.addView(row(k("INS",73),k("HOME",74),k("END",77),k("PGUP",75),k("PGDN",78)));kb.addView(row(k("←",80),k("↑",82),k("↓",81),k("→",79)));kb.addView(row(k("F1",58),k("F2",59),k("F3",60),k("F4",61),k("F5",62),k("F6",63)));kb.addView(row(k("F7",64),k("F8",65),k("F9",66),k("F10",67),k("F11",68),k("F12",69)));root.addView(kb);setContentView(root)
  }
  private fun sendText(v:String){scope.launch{var unsupported=0;for(c in v){val p=HidReports.char(c);if(p!=null){hid.sendKeyboard(p.second,p.first);delay(12)}else unsupported++};event("PASS text submitted chars="+v.length+" unsupported="+unsupported+" content-not-logged")}}
