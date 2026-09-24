@@ -50,11 +50,13 @@ class HidManager(private val context: Context, private val events:(String)->Unit
         try{val accepted=h.registerApp(sdp,null,qos,executor,callback);events(if(accepted)"PASS HID registerApp accepted" else "FAIL HID registerApp rejected")}catch(t:Throwable){events("FAIL HID registerApp: "+(t.message?:"unknown"))}
     }
 
+    @SuppressLint("MissingPermission")
     private val listener=object:BluetoothProfile.ServiceListener{
         override fun onServiceConnected(profile:Int,proxy:BluetoothProfile){if(profile!=BluetoothProfile.HID_DEVICE)return;hid=proxy as BluetoothHidDevice;events("PASS HID_DEVICE profile acquired");register(hid!!)}
         override fun onServiceDisconnected(profile:Int){if(profile==BluetoothProfile.HID_DEVICE){registered=false;connected=null;hid=null;events("WARN HID_DEVICE profile disconnected")}}
     }
 
+    @SuppressLint("MissingPermission")
     private val callback=object:BluetoothHidDevice.Callback(){
         override fun onAppStatusChanged(device:BluetoothDevice?,ok:Boolean){registered=ok;events(if(ok)"PASS HID_REGISTERED — ready for computer-side pairing" else "FAIL HID unregistered")}
         override fun onConnectionStateChanged(device:BluetoothDevice,state:Int){when(state){BluetoothProfile.STATE_CONNECTED->{connected=device;events("PASS HID_CONNECTED — READY")};BluetoothProfile.STATE_CONNECTING->events("INFO HID_CONNECTING");BluetoothProfile.STATE_DISCONNECTED->{if(connected==device)connected=null;events("INFO HID_DISCONNECTED")};BluetoothProfile.STATE_DISCONNECTING->events("INFO HID_DISCONNECTING")}}
@@ -62,6 +64,7 @@ class HidManager(private val context: Context, private val events:(String)->Unit
         override fun onSetReport(device:BluetoothDevice?,type:Byte,id:Byte,data:ByteArray?){try{hid?.reportError(device,BluetoothHidDevice.ERROR_RSP_SUCCESS)}catch(_:Throwable){}}
     }
 
+    @SuppressLint("MissingPermission")
     fun close(){try{if(canConnect())hid?.unregisterApp()}catch(_:Throwable){};try{adapter?.closeProfileProxy(BluetoothProfile.HID_DEVICE,hid)}catch(_:Throwable){};executor.shutdownNow();hid=null;registered=false;connected=null}
     private fun canConnect()=Build.VERSION.SDK_INT<31||context.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT)==PackageManager.PERMISSION_GRANTED
 }
