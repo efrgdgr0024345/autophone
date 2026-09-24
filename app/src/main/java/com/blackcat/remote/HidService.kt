@@ -98,7 +98,7 @@ class HidService : Service() {
                         if (state is ConnectionState.Connecting && state.device.address == device.address) {
                             Log.i(TAG, "Device bonded successfully. Connecting HID...")
                             val proxy = hidDevice
-                            if (proxy != null && _appRegistered.value) {
+                            if (proxy != null && _appRegistered.value && hasBluetoothConnectPermission()) {
                                 try {
                                     proxy.connect(device)
                                 } catch (t: Throwable) {
@@ -197,6 +197,7 @@ class HidService : Service() {
     }
 
     // BUG 1 — Connection timeout: wrap connect in withTimeout(15s)
+    @android.annotation.SuppressLint("MissingPermission")
     fun connectToDevice(device: BluetoothDevice) {
         if (!hasBluetoothConnectPermission()) {
             _connectionState.value = ConnectionState.Error("Missing BLUETOOTH_CONNECT permission")
@@ -250,6 +251,7 @@ class HidService : Service() {
         }
     }
 
+    @android.annotation.SuppressLint("MissingPermission")
     fun disconnectCurrent() {
         val proxy = hidDevice ?: return
         val state = _connectionState.value
@@ -318,6 +320,7 @@ class HidService : Service() {
         }
     }
 
+    @android.annotation.SuppressLint("MissingPermission")
     private fun registerHidProxy() {
         val adapter = bluetoothAdapter ?: run {
             _connectionState.value = ConnectionState.Error("Bluetooth not available")
@@ -363,6 +366,7 @@ class HidService : Service() {
         }
     }
 
+    @android.annotation.SuppressLint("MissingPermission")
     private fun registerApp(proxy: BluetoothHidDevice) {
         // BUG 21 fix: BluetoothHidDeviceAppSdpSettings takes exactly 5 params
         // (name, description, provider, subclass, descriptor) — no COUNTRY arg in Android API
