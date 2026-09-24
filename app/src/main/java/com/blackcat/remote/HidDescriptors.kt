@@ -15,7 +15,7 @@ object HidDescriptors {
     const val SDP_DESCRIPTION = "Wireless Keyboard & Mouse"
     const val SDP_PROVIDER = "Linkpad-derived / Black Cat"
     // 0xC0 = Combo (Keyboard + Pointing) per HID 1.1 SDP.
-    const val SUBCLASS: Byte = 0xC0.toByte()
+    const val SUBCLASS: Byte = android.bluetooth.BluetoothHidDevice.SUBCLASS1_COMBO
     const val COUNTRY: Byte = 0x21  // US
 
     /**
