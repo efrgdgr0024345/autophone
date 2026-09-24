@@ -14,9 +14,4 @@ sealed class ConnectionState {
 val ConnectionState.isConnected: Boolean
     get() = this is ConnectionState.Connected
 
-val ConnectionState.deviceName: String?
-    get() = when (this) {
-        is ConnectionState.Connected -> try { device.name } catch (_: SecurityException) { null }
-        is ConnectionState.Connecting -> runCatching { device.name }.getOrNull()
-        else -> null
-    }
+/* Device display names are intentionally resolved only by permission-aware UI/service code. */
