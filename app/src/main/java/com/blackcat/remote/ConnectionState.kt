@@ -16,7 +16,7 @@ val ConnectionState.isConnected: Boolean
 
 val ConnectionState.deviceName: String?
     get() = when (this) {
-        is ConnectionState.Connected -> runCatching { device.name }.getOrNull()
+        is ConnectionState.Connected -> try { device.name } catch (_: SecurityException) { null }
         is ConnectionState.Connecting -> runCatching { device.name }.getOrNull()
         else -> null
     }
