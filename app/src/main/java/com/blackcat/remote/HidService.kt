@@ -126,7 +126,7 @@ class HidService : Service() {
                         Log.i(TAG, "ACL_DISCONNECTED from ${device.address} — immediate disconnect")
                         _connectionState.value = ConnectionState.Disconnected
                         reportSender.attach(null, null)
-                        updateNotification(getString(R.string.notification_text_disconnected))
+                        updateNotification("Disconnected")
                         // BUG 2 — Trigger auto-reconnect if not user-initiated
                         if (!userInitiatedDisconnect) {
                             scheduleAutoReconnect(device)
@@ -451,7 +451,7 @@ class HidService : Service() {
                     _connectionState.value = ConnectionState.Connecting(device)
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
-                    lastNotificationText = getString(R.string.notification_text_disconnected)
+                    lastNotificationText = "Disconnected"
                     if (_connectionState.value is ConnectionState.Connected ||
                         _connectionState.value is ConnectionState.Connecting) {
                         _connectionState.value = ConnectionState.Disconnected
@@ -500,7 +500,7 @@ class HidService : Service() {
         override fun onVirtualCableUnplug(device: BluetoothDevice?) {
             super.onVirtualCableUnplug(device)
             Log.i(TAG, "onVirtualCableUnplug: ${device?.address}")
-            lastNotificationText = getString(R.string.notification_text_disconnected)
+            lastNotificationText = "Disconnected"
             _connectionState.value = ConnectionState.Disconnected
             reportSender.attach(null, null)
             updateNotification(lastNotificationText)
