@@ -37,8 +37,11 @@ class MainActivity : android.app.Activity() {
         val root=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;setPadding(16,16,16,16)}
         val title=TextView(this).apply{text="BLACK CAT REMOTE";textSize=22f};root.addView(title)
         log=TextView(this).apply{text="DEBUG\n";textSize=10f;setPadding(8,8,8,8)}
-        val logScroll=ScrollView(this).apply{addView(log);setOnClickListener{layoutParams.height=if(layoutParams.height<500)dp(360) else dp(100)}}
+        val logScroll=ScrollView(this).apply{addView(log);setOnClickListener{layoutParams.height=if(layoutParams.height<500)dp(360) else dp(100);requestLayout()}}
         root.addView(logScroll,LinearLayout.LayoutParams(-1,dp(100)))
+        val debugActions=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
+        debugActions.addView(Button(this).apply{text="COPY LOG";setOnClickListener{(getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager).setPrimaryClip(android.content.ClipData.newPlainText("Black Cat diagnostics",log.text));write("PASS diagnostics copied")}},weight())
+        debugActions.addView(Button(this).apply{text="CLEAR";setOnClickListener{log.text="DEBUG\n"}},weight());root.addView(debugActions)
         status=TextView(this).apply{text="STARTING";textSize=16f};root.addView(status)
         val find=Button(this).apply{text="FIND COMPUTER";setOnClickListener{bt.startScan();write("INFO scan started");watchScan()}};root.addView(find)
         devices=Spinner(this);root.addView(devices)
@@ -54,9 +57,17 @@ class MainActivity : android.app.Activity() {
         val clicks=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
         fun clickButton(label:String,mask:Int)=Button(this).apply{text=label;setOnClickListener{scope.launch{service?.reportSender?.tapMouseClick(mask)}}}
         clicks.addView(clickButton("LEFT",MouseButtonMask.LEFT.mask),weight());clicks.addView(clickButton("MIDDLE",MouseButtonMask.MIDDLE.mask),weight());clicks.addView(clickButton("RIGHT",MouseButtonMask.RIGHT.mask),weight());root.addView(clicks)
-        val keys=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
+        val keyboard=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;visibility=View.GONE}
         fun key(label:String,k:HidKeyCode,mod:Int=0)=Button(this).apply{text=label;setOnClickListener{scope.launch{service?.reportSender?.pressAndRelease(k,mod)}}}
-        keys.addView(key("ESC",HidKeyCode.ESCAPE),weight());keys.addView(key("TAB",HidKeyCode.TAB),weight());keys.addView(key("CTRL",HidKeyCode.NONE,MODIFIER_LEFT_CTRL),weight());keys.addView(key("ALT",HidKeyCode.NONE,MODIFIER_LEFT_ALT),weight());keys.addView(key("ENTER",HidKeyCode.ENTER),weight());root.addView(keys)
+        fun row(vararg b:Button)=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL;b.forEach{addView(it,weight())}}
+        root.addView(Button(this).apply{text="FULL KEYBOARD";setOnClickListener{keyboard.visibility=if(keyboard.visibility==View.GONE)View.VISIBLE else View.GONE}})
+        keyboard.addView(row(key("ESC",HidKeyCode.ESCAPE),key("TAB",HidKeyCode.TAB),key("BKSP",HidKeyCode.BACKSPACE),key("DEL",HidKeyCode.DELETE),key("ENTER",HidKeyCode.ENTER)))
+        keyboard.addView(row(key("CTRL",HidKeyCode.NONE,MODIFIER_LEFT_CTRL),key("SHIFT",HidKeyCode.NONE,MODIFIER_LEFT_SHIFT),key("ALT",HidKeyCode.NONE,MODIFIER_LEFT_ALT),key("GUI",HidKeyCode.NONE,MODIFIER_LEFT_GUI)))
+        keyboard.addView(row(key("INS",HidKeyCode.INSERT),key("HOME",HidKeyCode.HOME),key("END",HidKeyCode.END),key("PGUP",HidKeyCode.PAGE_UP),key("PGDN",HidKeyCode.PAGE_DOWN)))
+        keyboard.addView(row(key("←",HidKeyCode.LEFT_ARROW),key("↑",HidKeyCode.UP_ARROW),key("↓",HidKeyCode.DOWN_ARROW),key("→",HidKeyCode.RIGHT_ARROW)))
+        keyboard.addView(row(key("F1",HidKeyCode.F1),key("F2",HidKeyCode.F2),key("F3",HidKeyCode.F3),key("F4",HidKeyCode.F4),key("F5",HidKeyCode.F5),key("F6",HidKeyCode.F6)))
+        keyboard.addView(row(key("F7",HidKeyCode.F7),key("F8",HidKeyCode.F8),key("F9",HidKeyCode.F9),key("F10",HidKeyCode.F10),key("F11",HidKeyCode.F11),key("F12",HidKeyCode.F12)))
+        root.addView(keyboard)
         setContentView(root)
     }
     private fun watchScan(){scope.launch{bt.scanResults.collect{list->found.clear();found.addAll(list);devices.adapter=ArrayAdapter(this@MainActivity,android.R.layout.simple_spinner_dropdown_item,list.map{(if(it.bonded)"★ " else "")+it.name});write("INFO devices found="+list.size)}}}
