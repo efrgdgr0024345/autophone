@@ -1,9 +1,9 @@
 package com.blackcat.remote
 
 import android.app.Activity
+import android.widget.LinearLayout
 
-/** The offline build does not package AI networking or API-key storage. */
+/** Offline variant: no AI UI, credentials or networking; V2 behaviour is unchanged. */
 object AiEntry {
-    const val enabled = false
-    fun open(activity: Activity, target: CommandTarget): () -> Unit = {}
+    fun attach(activity: Activity, row: LinearLayout, manager: () -> HidManager) {}
 }

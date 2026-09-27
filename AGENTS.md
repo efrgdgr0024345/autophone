@@ -1,37 +1,16 @@
-# Black Cat Remote — Project Rules
+# Black Cat — governing development rules
 
-## Required development pipeline
+## Golden behaviour
+The physically successful V2 source is 9771772bbe25dd8eba8d7303f7e4680aa84175df. Do not write to locked branches or overwrite BlackCat-v2.apk. The computer discovers/pairs with the phone; no phone-side scan-first architecture.
 
-All substantive code changes must use a branch and pull request. Do not treat a successful compile as proof of Bluetooth correctness.
+Freeze the full input path, not just files named HID. check_policy.py must verify MainActivity equals the golden blob after removal of exactly one reviewed lazy AI button hook. Normal manual Send, mouse, permission flow, pairing and lifecycle must not depend on AI state. Freeze HidManager, HidDescriptor, HidReports and Diagnostics byte-for-byte. Any future changes require a separately approved regression experiment and physical evidence; never silently relax these gates.
 
-Before merge, the project should pass:
-1. clean Android build on GitHub-hosted runner;
-2. unit tests;
-3. Android Lint;
-4. manifest/security policy checks;
-5. CodeQL analysis where supported;
-6. AI/code review plus review of its findings;
-7. artifact checksum tied to exact source commit;
-8. physical Bluetooth acceptance testing for behaviours that CI cannot emulate.
+## AI separation and credentials
+AI is optional and lazy. Offline variant has no Internet permission or AI client. User explicitly approved INTERNET only in the AI variant for direct requests to OpenAI. Key entry/storage stays on the phone: no hardcoded key, website, proxy or credential in git/CI/logs. Optional Android Keystore storage has no plaintext fallback. Do not claim it makes a compromised phone safe.
 
-## Security invariants
+Model responses are untrusted proposals. No API handler can type, press Enter, execute a process or manage Bluetooth. The user reviews one command and explicitly confirms TYPE ONLY. Guard AI input/cancellation/session changes without changing ordinary manual input. Do not log API keys, goals, commands or derived key identities. Preserve licences/attribution.
 
-- No INTERNET permission.
-- No analytics, advertising, telemetry or crash-reporting SDKs.
-- No Accessibility Service.
-- No logging or persistence of text typed by the user or derived key identities.
-- Minimum Bluetooth permissions only; every added permission requires justification.
-- android:allowBackup remains false unless a reviewed design change explicitly requires otherwise.
-- Bluetooth HID lifecycle must not depend on the Activity remaining visible.
-- Asynchronous Bluetooth/HID operations are considered successful only after their documented callback/state confirms success.
-- Debug diagnostics may be extensive but must redact user input.
+## Verification and release
+Use a feature branch and PR. Run full build, actual tests, Lint, policy/APK checks and CodeQL; upload complete reports on failure. No suppressions merely to get green. Report test counts and inherited limitations honestly. Publish the exact tested APK bytes with commit/checksum/certificate; never rebuild solely for a filename change or overwrite a prior preview. No merge to main until physical regression review.
 
-## Review priorities
-
-Reviewers and AI tools should prioritize Android Bluetooth HID correctness/lifecycle, HID descriptor/report correctness, key/button release, reconnection races, API-level permissions, exported components, sensitive logging, accidental networking, unnecessary dependencies, and unintended input.
-
-## Definition of CI success
-
-A green CI run means the source compiled and passed automated checks. It does NOT claim that physical Android and PC Bluetooth stacks successfully paired. Physical tests remain a release gate.
-
-See docs/V1_CODING_PLAN.md for V1 architecture and acceptance criteria.
+A green run is not proof of Bluetooth hardware, on-device Keystore, host keyboard layout, background survival or successful shell execution. Root cause remains unconfirmed without handset evidence. See AI_COMMAND_ASSISTANT.md and docs/AI02_INSTALL.md.

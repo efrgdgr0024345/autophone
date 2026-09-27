@@ -9,18 +9,17 @@ android {
         applicationId 'com.blackcat.remote'
         minSdk 28
         targetSdk 35
-        versionCode 3
-        versionName '2.1-ai-preview.1'
+        versionCode 4
+        versionName '2.1-ai-repair.2'
     }
     flavorDimensions 'capability'
     productFlavors {
         offline { dimension 'capability' }
         ai {
             dimension 'capability'
-            applicationIdSuffix '.ai'
         }
     }
-    // CI produces test-signed previews, but API credentials must not live in a debuggable APK.
+    // Preview is non-debuggable. Both flavors use the original identity, never a second HID app.
     buildTypes { debug { debuggable false } }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = '17' }

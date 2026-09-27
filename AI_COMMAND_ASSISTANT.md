@@ -1,90 +1,40 @@
-# AI Command Assistant — scope, safeguards and validation
+# Black Cat AI repair 02 — phone-held key, V2 behaviour preserved
 
-## Approved goal
+## Governing requirement
 
-Branch from the exact locked, physically tested BlackCat-v2 source. Keep computer-initiated Bluetooth
-HID pairing, keyboard and mouse. Add an OPTIONAL OpenAI command-proposal interface. A user supplies
-a natural-language goal and target OS/shell; OpenAI returns explanation, assumptions, questions and
-ordered commands. The user reviews/selects exactly one command before typing it over the existing HID.
-The AI must never send commands automatically or claim it can read the computer.
+Computer discovers/pairs with the phone as a standard Bluetooth HID keyboard/mouse. Do not introduce phone-side scanning or a companion program. The user-reported physically successful source is 9771772bbe25dd8eba8d7303f7e4680aa84175df. That commit and its locked branches/APK are not modified by this repair.
 
-## Implementation
+## What changes in this repair
 
-- The four V2 HID/diagnostics files are byte-for-byte pinned in `tools/check_policy.py`.
-- MainActivity retains pairing/manual controller UI and opens AI as a dialog in the SAME Activity,
-  avoiding destruction of the Activity-owned V2 HID manager when entering AI.
-- Product flavors: offline has no network/client/vault; ai adds only INTERNET and uses a separate app ID.
-- OpenAI Responses API, fixed `https://api.openai.com/v1/responses`, JSON Schema structured output,
-  no tools, `store=false`, bounded input/output, finite timeouts, no retries or redirect following.
-- Initial selectable API models: gpt-4.1-mini (default), gpt-4.1. Availability depends on the user's account.
-- Goal <=2000 chars, target <=500, max 12 commands, command <=512 printable US-ASCII characters.
-- Invalid JSON, refusals, incomplete responses, unsupported characters and ambiguous mixed
-  questions/commands produce no sendable plan. Schema conformance does NOT imply safe commands.
-- Output is plain native text, not HTML/WebView or executable Markdown.
-- The network client receives only the entered goal/target/model and key for authentication. It never
-  receives device names/MACs, HID diagnostics, screen, clipboard, terminal output or control callbacks.
-- A selected command is snapshotted with the exact local HID host session for confirmation.
-- Two explicit checks require human review and an empty terminal/US-layout/Caps-Lock-off confirmation.
-- One-use approval; no input merely from generating/selecting. TYPE ONLY sends one line, never Enter.
-- Stop/background/dismiss/disconnect/session change cancel remaining keystrokes. There is no durable queue.
-- All API/key operations are off the main thread; UI updates and HID send admission are on the main thread.
-- Results describe Android report acceptance, NOT host delivery, execution or task success.
+Restore MainActivity from that exact baseline, including initialisation, permission requests, discoverability, callback handling, manual Send, mouse controls and lifecycle. One explicitly delimited hook adds an AI button to the existing diagnostics action row; it does not access HID, credentials or the network at startup. Removing this hook must reproduce the exact golden Activity blob. Four companion HID/diagnostic files remain byte-for-byte frozen too. CI enforces both checks, with tests proving that unauthorised Activity modifications fail.
 
-## Credentials and privacy
+The AI panel is a dialog within the existing Activity. Its own lifecycle observer cancels only AI work. It does not register, pair, connect, disconnect or close the Bluetooth service. Normal manual input never depends on AI readiness, host metadata, connection epochs or model results. The AI-only transport adapter observes system connection changes and rejects stale command approvals. Android report acceptance does not prove delivery or execution; review actual text before pressing Enter.
 
-No key is requested through ChatGPT, embedded, logged, shipped or committed. User-entered personal
-BYOK mode is deliberate; shared production credentials should instead remain behind a controlled
-backend. OpenAI recommends not deploying keys into mobile apps: this preview cannot make a phone
-impossible to compromise. Use your own restricted project key, monitor billing and revoke when needed.
-Key saving is optional. A fresh Android Keystore AES-GCM nonce protects ciphertext in noBackupFilesDir;
-no plaintext fallback; Forget removes ciphertext and its wrapping key. It does NOT revoke the API key.
-Key/goal fields disable view-state saving, autofill and personalised-learning hints. AI dialogs use
-FLAG_SECURE; the original Bluetooth diagnostics panel remains available for troubleshooting photos.
-Plaintext exists transiently while sending API requests; JVM Strings cannot be reliably zeroised.
-No automatic goal/response/history persistence. Closing/backgrounding cancels and clears the AI UI.
-`store=false` does not promise zero retention; OpenAI abuse monitoring/other platform retention applies.
-INTERNET permission is app-wide in the AI APK; code restricts its client to OpenAI, not an OS-enforced
-per-domain sandbox. There are no third-party runtime network libraries or telemetry SDKs added.
+Both build variants use the original com.blackcat.remote application identity. This removes the deliberate side-by-side identity introduced in CatAI-01. An already-installed CatAI-01 still has its old separate identity and must be stopped/removed for the next test. Multiple installed apps alone do not prove the cause of the reported failure: actual logs from the failing phone were not supplied. Competing HID registrations and altered Activity input paths are regression risks addressed here, not a conclusively isolated root cause.
 
-## What this does NOT prove/fix
+## Phone-only API key
 
-V2's successful physical report is the user-reported baseline, not an AI/hardware integration test.
-The V2 Activity-owned HID lifecycle and manual modifier-button limitations are inherited; this change
-makes no new guarantee about background HID survival or full keyboard combinations. No descriptor,
-pairing or radio code changes are mixed into the AI extension. The human must verify terminal focus,
-layout, existing input and the final characters before pressing Enter. Privileged/destructive shell
-commands remain possible and potentially harmful even if a model labels them low risk. A prompt,
-keyword list or JSON schema cannot certify their semantics. Cancellation cannot retract already-typed
-characters or guarantee an already-accepted API request incurs no cost.
+There is no website proxy, key download or embedded credential. The user enters a replacement personal key in the app. Optional Save encrypts it using Android Keystore-backed AES-GCM and excludes ciphertext from backup. Forget removes the local copy, not the provider credential. No key from chat is used, copied, logged or compiled. A compromised phone can still expose a usable credential; this personal BYOK arrangement is not the recommended architecture for shared production keys.
 
-## Tests / release gates
+Requests go directly to the fixed HTTPS OpenAI Responses endpoint after explicit Generate consent, with store=false, no tools, finite limits and no redirects or automatic retries. Only the goal/target/model and authentication are sent. Bluetooth metadata, clipboard and terminal output are not uploaded. Responses are proposals only; unknown/incomplete/malformed outputs are not sendable.
 
-Automated tests include: all 95 printable ASCII mappings; rejection of LF/CR/TAB/ESC/bidi/Unicode;
-full pre-validation; no Enter/modifier injection; one-use approval; wrong host; reconnected session;
-mid-command disconnect; cancellation release; report failure; schema payload; no tools/storage;
-model refusal, malformed/truncated response, command limits and clarification handling.
-Both offline and AI APKs undergo full lint, unit tests, manifest/identity/credential-debuggability
-inspection and CodeQL. Reports are uploaded on failure, not only on success. Golden blob checks must pass.
+## User control
 
-Physical/API gates BEFORE promoting beyond preview:
-1. Install the AI app alongside, but do not RUN concurrently with, the locked V2 keyboard app.
-2. Verify the original computer-side discover/pair, text and mouse path on the actual phone/laptop.
-3. Open AI panel; check the HID remains registered/connected. No API request before Generate consent.
-4. Use your own key IN THE APP: wrong key, offline, denied quota, valid request, cancellation.
-5. Generate an initial read-only goal (show the current user). Verify selection alone types nothing.
-6. Review and TYPE ONLY; verify every character and absence of Enter, then deliberately run it.
-7. Disconnect/background/cancel halfway through a long benign command; inspect partial text; no replay.
-8. Try a new session/host before confirming: approval must be rejected, never silently redirected.
-9. Save/close/reopen/Forget; test Android Keystore on the actual device, including reinstall/lost-key handling.
-10. Check tiny-screen layout, keyboard opening, credential masking and no content in copied Bluetooth logs.
+Explanation, assumptions, questions and separate commands remain visible. Selection alone types nothing. The user confirms the exact command and destination. TYPE ONLY sends a bounded single printable-ASCII line, never Enter. Hidden controls and unsupported characters are rejected before transmission. Changing goal/target/model invalidates the old proposal. Dismiss, background, disconnect and cancellation invalidate AI work; nested confirmation windows are dismissed too. No output is treated as proof of task completion.
 
-Live API requests are NOT testable without an authorised user key. Do not fabricate passing results.
-CI-signed previews are not production signing: signing-key management remains a release task.
+## Scope and validation
 
-## Primary references checked for this implementation
+This repair deliberately does not refactor frozen V2's background lifecycle, modifier-key semantics or low-level reports. Background HID persistence is NOT newly guaranteed. It fixes integration regressions by restoring the tested path, not by proving every inherited behaviour correct.
 
-- OpenAI Structured Outputs: https://developers.openai.com/api/docs/guides/structured-outputs
-- OpenAI GPT-4.1 mini: https://developers.openai.com/api/docs/models/gpt-4.1-mini
-- OpenAI API key safety: https://help.openai.com/en/articles/5112595-best-practices-for-api-key-safety
-- OpenAI data controls: https://developers.openai.com/api/docs/guides/your-data
+CI builds/tests/lints both variants, reviews full reports, verifies packaged identity/permissions/licences/debug flags/signatures, and runs CodeQL. The APK built in that run is the APK published; no packaging-time rebuild. Every preview has a commit-specific release tag and checksum; no clobbering the golden APK or earlier previews.
+
+Physical Bluetooth regression, on-phone key storage, live user-key API, small-screen UI and cancellation tests remain mandatory. See docs/AI02_INSTALL.md. Green automated checks cannot establish that the reported radio failure is fixed on the user's handset.
+
+## Credits and primary references
+
+GhostBoard / ToxicOrca HID lineage and original MIT licence are retained. Linkpad / Devdas Kumar references and licence remain credited. No upstream work is claimed as original.
+
+- Android BluetoothHidDevice: https://developer.android.com/reference/android/bluetooth/BluetoothHidDevice
 - Android Keystore: https://developer.android.com/privacy-and-security/keystore
+- OpenAI key safety: https://help.openai.com/en/articles/5112595-best-practices-for-api-key-safety
+- OpenAI structured output: https://developers.openai.com/api/docs/guides/structured-outputs
