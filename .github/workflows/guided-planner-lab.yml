@@ -1,0 +1,75 @@
+name: Guided planner and photo lab
+on:
+  push:
+    branches: [test/guided-photo-planner]
+    paths: [planner_lab/**, GUIDED_PLAN_AND_PHOTO.md, .github/workflows/guided-planner-lab.yml]
+  pull_request:
+    paths: [planner_lab/**, GUIDED_PLAN_AND_PHOTO.md, .github/workflows/guided-planner-lab.yml]
+  workflow_dispatch:
+    inputs:
+      live:
+        description: 'Explicitly authorise up to 12 synthetic API requests (no shell execution)'
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: planner-lab-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify no Android or protection-file changes in this experiment
+        run: |
+          git diff --exit-code 7712ea981230a2782a83b0920d3da5f09bc47c1d HEAD -- app build.gradle settings.gradle tools/check_policy.py tools/test_policy.py
+          python tools/check_policy.py
+          python tools/test_policy.py -v
+      - run: python -m pip install -r planner_lab/requirements.txt
+      - name: Deterministic photo, plan and approval tests
+        run: python -m unittest planner_lab.test_contract -v
+      - name: Construct synthetic requests without calling API
+        run: python -m planner_lab.run_eval --output planner-results/dry
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: planner-dry-${{ github.run_id }}
+          path: planner-results/dry/
+          if-no-files-found: warn
+  live:
+    needs: checks
+    if: >-
+      github.repository == 'efrgdgr0024345/autophone' && github.run_attempt == 1 &&
+      ((github.event_name == 'push' && github.ref == 'refs/heads/test/guided-photo-planner' &&
+      contains(github.event.head_commit.message, '[live-planner-12]')) ||
+      (github.event_name == 'workflow_dispatch' && inputs.live && github.ref == 'refs/heads/test/guided-photo-planner'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r planner_lab/requirements.txt
+      - name: Explicit small live batch, secret never printed
+        env:
+          OPENAI_API_KEY: ${{ secrets.openai_api_key }}
+        run: python -m planner_lab.run_eval --live --max-cases 12 --output planner-results/live
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: planner-live-${{ github.run_id }}
+          path: planner-results/live/
+          if-no-files-found: warn
+          retention-days: 7
