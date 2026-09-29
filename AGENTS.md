@@ -14,3 +14,10 @@ Model responses are untrusted proposals. No API handler can type, press Enter, e
 Use a feature branch and PR. Run full build, actual tests, Lint, policy/APK checks and CodeQL; upload complete reports on failure. No suppressions merely to get green. Report test counts and inherited limitations honestly. Publish the exact tested APK bytes with commit/checksum/certificate; never rebuild solely for a filename change or overwrite a prior preview. No merge to main until physical regression review.
 
 A green run is not proof of Bluetooth hardware, on-device Keystore, host keyboard layout, background survival or successful shell execution. Root cause remains unconfirmed without handset evidence. See AI_COMMAND_ASSISTANT.md and docs/AI02_INSTALL.md.
+
+## Codex handover and latest user-approved UI decisions
+Read CODEX_START_HERE.md and docs/codex/NEXT_TASK.md before implementation. They distinguish the immediate UI port from the later guided-photo integration and list the exact preserved references. The new UI uses the clearly labelled action button as one-time approval, without redundant approval checkboxes; it still retains explicit review, exact destination/command, stale-session checks and no automatic Enter/replay.
+
+The approved PHP demo and artwork arrive in the companion BlackCat-Codex-Handoff.zip; verify/import them, do not invent replacements or silently claim they are present. Reuse existing API/key-storage/transport code for the UI milestone. Do not use arbitrary HTML/model text in privileged WebView bridges.
+
+Migration is not authorisation for paid model batches, publishing, baseline changes or auto-merge. The previous isolated lab's explicitly authorised Actions-secret use was test-only; its secret must not be exported, embedded or copied into the app or Codex workspace. Current key validity is unknown. Keep the user-provided-key flow and the credential-free deterministic tests.

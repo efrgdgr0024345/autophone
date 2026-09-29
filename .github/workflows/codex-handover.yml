@@ -1,0 +1,48 @@
+name: Codex handover checks
+on:
+  push:
+    branches: [codex/blackcat-ui-handoff]
+    paths:
+      - CODEX_START_HERE.md
+      - docs/codex/**
+      - AGENTS.md
+      - .github/workflows/codex-handover.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: codex-handover-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify handover changes no app or original verification path
+        run: |
+          git diff --exit-code 9448fa94a66c1a88c14e296058c6a2c543bc268f HEAD -- app build.gradle settings.gradle tools planner_lab .github/workflows/android-ci.yml .github/workflows/codeql.yml .github/workflows/guided-planner-lab.yml
+          python3 tools/check_policy.py
+          python3 tools/test_policy.py -v
+      - name: Install isolated test dependencies
+        run: python3 -m pip install -r planner_lab/requirements.txt
+      - name: Credential-free plan, photo and approval tests
+        run: python3 -m unittest planner_lab.test_contract -v
+      - name: Archive exact handover source, not a new APK
+        run: |
+          mkdir -p handover-output
+          git archive --format=zip --output=handover-output/BlackCat-handover-source.zip HEAD
+          git rev-parse HEAD > handover-output/SOURCE.txt
+          printf '%s\n' 'Handover-only checks. No paid API request, Android build, new APK, hardware test, merge or Codex environment creation was performed.' 'Approved PHP/artwork attachment must still be imported as described in CODEX_START_HERE.md.' > handover-output/STATUS.txt
+          (cd handover-output && sha256sum BlackCat-handover-source.zip SOURCE.txt STATUS.txt > SHA256SUMS)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BlackCat-codex-source
+          path: handover-output/
+          if-no-files-found: error
