@@ -1,0 +1,55 @@
+name: Archive V2 and API02 baselines
+on:
+  push:
+    branches: [archive/v2-api02-20260929]
+    paths: [.github/workflows/archive-working-baselines.yml]
+permissions:
+  contents: read
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Preserve exact existing artifacts, not rebuilt substitutes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p original-v2 original-api02 preservation
+          gh api "repos/$GH_REPO/actions/artifacts/10838174245/zip" > original-v2.zip
+          gh api "repos/$GH_REPO/actions/artifacts/10932461684/zip" > original-api02.zip
+          echo 'aea2d14c58f9b928a24d6bdc2459b76a31be9dc8720b18600e50298a03419b41  original-v2.zip' | sha256sum -c -
+          echo '3f60a2bbd3d9116d462a708fd974613d7c346a18114410a055dbe64ee8e8d978  original-api02.zip' | sha256sum -c -
+          unzip -q original-v2.zip -d original-v2
+          unzip -q original-api02.zip -d original-api02
+          cp original-v2/BlackCat-v2.apk preservation/
+          cp original-api02/CatAI-02.apk preservation/
+          cp original-api02/ai-signature.txt preservation/CatAI-02-signature.txt
+          test "$(cat original-api02/SOURCE.txt)" = '7712ea981230a2782a83b0920d3da5f09bc47c1d'
+          echo '111e4d4fd35b3ddffddbecee18bf2972f79f95856f9bd395b0ccf75d469d4136  preservation/BlackCat-v2.apk' | sha256sum -c -
+          echo '7fc937cfcc6a023c2d2f85896ebbec7dd4b9400f7b1b96bc11e35468beaf00ee  preservation/CatAI-02.apk' | sha256sum -c -
+          git archive --format=zip --output=preservation/BlackCat-v2-source.zip 9771772bbe25dd8eba8d7303f7e4680aa84175df
+          git archive --format=zip --output=preservation/CatAI-02-source.zip 7712ea981230a2782a83b0920d3da5f09bc47c1d
+          printf '%s\n' 'BlackCat-v2: 9771772bbe25dd8eba8d7303f7e4680aa84175df' 'CatAI-02: 7712ea981230a2782a83b0920d3da5f09bc47c1d' > preservation/SOURCES.txt
+          printf '%s\n' '# Black Cat preserved baselines' '' 'Original Bluetooth V2 and existing API-connected CatAI-02 preserved at user request before the new UI is integrated.' 'These are the exact previously published APK bytes, verified against the recorded SHA-256 values. Neither was rebuilt.' 'This snapshot does not add new physical-testing evidence or declare either app free of all defects.' 'Source refs: baseline/bluetooth-v2-9771772b and baseline/api02-7712ea98. Do not develop on these references.' 'This publishing workflow never overwrites the release. Administrative protection against edits/deletion still requires GitHub repository settings.' > preservation/README.txt
+          (cd preservation && sha256sum *.apk *.zip *signature.txt SOURCES.txt README.txt > SHA256SUMS)
+          (cd preservation && zip -q ../BlackCat-preserved-baselines.zip *)
+          TAG=preserved-v2-api02-20260929
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo 'Preservation release already exists; will not alter it.'
+          else
+            gh release create "$TAG" preservation/* BlackCat-preserved-baselines.zip --target "$GITHUB_SHA" --title 'Preserved Bluetooth V2 + API02 baselines' --notes-file preservation/README.txt --prerelease
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: preserved-v2-api02
+          path: BlackCat-preserved-baselines.zip
+          if-no-files-found: error
