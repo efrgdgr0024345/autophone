@@ -3,21 +3,50 @@ package com.blackcat.remote
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
+import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
 import android.text.Editable
 import android.text.InputFilter
 import android.text.InputType
 import android.text.TextWatcher
+import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
-import android.widget.*
-import kotlinx.coroutines.*
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.EditText
+import android.widget.FrameLayout
+import android.widget.HorizontalScrollView
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.Spinner
+import android.widget.TextView
+import android.widget.Toast
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 
 object AiEntry {
     /** Only adds a button in an existing row; does not access HID or credentials at app startup. */
     fun attach(activity: Activity, row: LinearLayout, manager: () -> HidManager) {
-        val button = Button(activity).apply { text = "AI"; contentDescription = "Open AI command assistant" }
+        val button = Button(activity).apply {
+            text = "AI"
+            contentDescription = "Open AI command assistant"
+        }
         row.addView(button, LinearLayout.LayoutParams(0, (46 * activity.resources.displayMetrics.density).toInt(), 1f))
         button.setOnClickListener {
             button.isEnabled = false
@@ -31,251 +60,676 @@ object AiEntry {
     }
 }
 
-/** No AI response handler can call CommandTarget: only the explicit approval callback below. */
-private class AiPanel(private val activity: Activity, manager: HidManager, private val onClosed: () -> Unit) {
+/**
+ * UI-only redesign over the CatAI-02 API and transport boundary.
+ *
+ * Important: this class may observe the already-registered HID manager through AiTransportScope,
+ * but it never initialises, registers, pairs, connects, disconnects or closes Bluetooth HID.
+ */
+private class AiPanel(
+    private val activity: Activity,
+    manager: HidManager,
+    private val onClosed: () -> Unit
+) {
+    private enum class Tab { PLAN, STEP, FEEDBACK, PREVIEW }
+
     private val target = AiTransportScope(activity, manager) { dismiss() }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val planner = OpenAiPlanner()
     private val vault = ApiKeyVault(activity.applicationContext)
-    private val dialog = Dialog(activity)
+    private val dialog = Dialog(activity, android.R.style.Theme_Material_Light_NoActionBar)
+
     private var confirmation: AlertDialog? = null
+    private var settingsDialog: AlertDialog? = null
     private var job: Job? = null
     private var busy = false
+    private var activeTab = Tab.PLAN
     private var selected = -1
+    private var selectedModel = PlanCodec.DEFAULT_MODEL
     private var commands = emptyList<SuggestedCommand>()
-    private lateinit var keyField: EditText
+    private var currentPlan: CommandPlan? = null
+    private var planRevision = 0L
+    private var oneShotKey = ""
+    private val recentGoals = ArrayDeque<String>()
+
     private lateinit var goal: EditText
     private lateinit var targetField: EditText
-    private lateinit var model: Spinner
-    private lateinit var consent: CheckBox
-    private lateinit var message: TextView
-    private lateinit var result: TextView
-    private lateinit var choices: RadioGroup
-    private lateinit var generate: Button
-    private lateinit var send: Button
-    private lateinit var saveKey: Button
-    private lateinit var forgetKey: Button
-
-    private fun text(value: String, size: Float = 15f) = TextView(activity).apply {
-        text = value; textSize = size; setPadding(dp(4), dp(6), dp(4), dp(6))
-    }
-    private fun input(hintText: String, limit: Int, password: Boolean = false) = EditText(activity).apply {
-        hint = hintText
-        filters = arrayOf(InputFilter.LengthFilter(limit))
-        inputType = if (password) InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-            else InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
-        isSaveEnabled = false
-        importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
-        imeOptions = EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING
-        if (password) setSingleLine(true)
-    }
-    private fun button(label: String, action: () -> Unit) = Button(activity).apply {
-        text = label; setOnClickListener { action() }
-    }
+    private lateinit var buildButton: Button
+    private lateinit var statusPill: TextView
+    private lateinit var statusText: TextView
+    private lateinit var contentHost: FrameLayout
+    private lateinit var planView: View
+    private lateinit var stepView: View
+    private lateinit var feedbackView: View
+    private lateinit var previewView: View
+    private lateinit var planResult: LinearLayout
+    private lateinit var recentSection: LinearLayout
+    private lateinit var recentRow: LinearLayout
+    private lateinit var nextTitle: TextView
+    private lateinit var nextCopy: TextView
+    private lateinit var stepBody: LinearLayout
+    private lateinit var feedbackBody: LinearLayout
+    private lateinit var previewBody: LinearLayout
+    private val tabButtons = linkedMapOf<Tab, LinearLayout>()
 
     fun show() {
-        val body = LinearLayout(activity).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(12), dp(16), dp(16))
-            isSaveEnabled = false
-        }
-        body.addView(text("AI command assistant — CatAI-02", 22f))
-        body.addView(text("Suggestions only. Nothing is sent to your computer until you select a command and confirm Send. Enter is never appended."))
-        body.addView(text("Use your own OpenAI project API key. API requests may cost money. Never use a shared developer key. Saving on a phone is not protection against a compromised device."))
-        keyField = input(if (vault.exists()) "Saved key available; leave blank to use it" else "OpenAI API key", 512, true)
-        body.addView(keyField)
-        saveKey = button("Save key encrypted on this phone") { saveCredential() }
-        forgetKey = button("Forget saved key") { forgetCredential() }
-        body.addView(saveKey); body.addView(forgetKey)
-        body.addView(text("Saving is optional. Otherwise the key is used for this request only. The saved key is encrypted using Android Keystore and excluded from backups."))
-        model = Spinner(activity).apply {
-            adapter = ArrayAdapter(activity, android.R.layout.simple_spinner_dropdown_item, PlanCodec.MODELS)
-        }
-        body.addView(model)
-        targetField = input("Target OS and shell (for example Ubuntu Linux, Bash)", 500)
-        goal = input("Your goal (for example: create a standard user called alice)", 2000)
-        body.addView(targetField); body.addView(goal)
-        consent = CheckBox(activity).apply {
-            text = "Send this goal and target description to OpenAI. Do not include passwords or private terminal output."
-        }
-        body.addView(consent)
-        body.addView(text("No screen capture, terminal feedback or Bluetooth diagnostics are uploaded. store=false is requested; OpenAI's API retention policies still apply."))
-        generate = button("GENERATE PROPOSAL") { generateProposal() }
-        body.addView(generate)
-        message = text("Pair the phone normally first, or generate a proposal before connecting.")
-        body.addView(message)
-        result = text("")
-        body.addView(result)
-        choices = RadioGroup(activity).apply {
-            orientation = RadioGroup.VERTICAL
-            setOnCheckedChangeListener { _, id -> selected = id - 100; refreshSend() }
-        }
-        body.addView(choices)
-        send = button("SEND SELECTED — TYPE ONLY") { confirmSelected() }
-        body.addView(send)
-        body.addView(text("Before sending: focus an EMPTY terminal prompt on the selected computer and use a US keyboard layout with Caps Lock off. The app cannot see or verify the active window or the resulting text."))
-        body.addView(button("CANCEL REQUEST / STOP TYPING") { stopWork() })
-        body.addView(button("CLOSE ASSISTANT") { dismiss() })
-        body.addView(text("Bluetooth baseline: BlackCat v2; HID lineage credited to GhostBoard / ToxicOrca. Earlier reference: Linkpad / Devdas Kumar. Licences remain bundled with the app."))
-        dialog.setContentView(ScrollView(activity).apply { addView(body) })
+        dialog.setContentView(buildShell())
         dialog.setCanceledOnTouchOutside(false)
         dialog.setOnDismissListener {
             confirmation?.dismiss()
+            settingsDialog?.dismiss()
             target.close()
             onClosed()
-            planner.cancel(); job?.cancel(); scope.cancel()
-            keyField.text.clear(); goal.text.clear(); targetField.text.clear()
-            commands = emptyList(); choices.removeAllViews(); result.text = ""
+            planner.cancel()
+            job?.cancel()
+            scope.cancel()
+            oneShotKey = ""
+            commands = emptyList()
+            currentPlan = null
         }
-        // Do not save the key or goal into screenshots, recent-app thumbnails or view-state bundles.
         dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        target.start()
-        try { dialog.show() } catch (e: Exception) { target.close(); throw e }
+        dialog.window?.setBackgroundDrawable(ColorDrawable(BG))
+        dialog.window?.statusBarColor = BG
+        dialog.window?.navigationBarColor = PAPER
+
+        try {
+            dialog.show()
+        } catch (e: Exception) {
+            target.close()
+            throw e
+        }
         dialog.window?.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
         dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-        val changed = object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { clearPlan() }
-            override fun afterTextChanged(s: Editable?) {}
+
+        // Observes only the already-existing V2 connection. No HID lifecycle call occurs here.
+        target.start()
+        scope.launch {
+            while (isActive) {
+                refreshConnectionState()
+                delay(350)
+            }
         }
-        goal.addTextChangedListener(changed); targetField.addTextChangedListener(changed)
-        model.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) { clearPlan() }
-            override fun onNothingSelected(parent: AdapterView<*>?) { clearPlan() }
-        }
-        scope.launch { while (isActive) { refreshSend(); delay(300) } }
-        refreshSend()
+        renderAll()
     }
 
-    fun dismiss() { if (dialog.isShowing) dialog.dismiss() }
-    private fun clearPlan() {
-        selected = -1; commands = emptyList()
-        if (::choices.isInitialized) choices.removeAllViews()
-        if (::result.isInitialized) result.text = ""
-        refreshSend()
+    fun dismiss() {
+        if (dialog.isShowing) dialog.dismiss()
     }
-    private fun refreshSend() {
-        if (::send.isInitialized) send.isEnabled = !busy && selected in commands.indices && target.current() != null
+
+    private fun buildShell(): View {
+        val root = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundColor(BG)
+        }
+        root.addView(buildTopBar(), matchWrap())
+        root.addView(buildStatusBar(), matchWrap())
+
+        contentHost = FrameLayout(activity).apply { setBackgroundColor(BG) }
+        planView = buildPlanView()
+        stepView = scrollPage { stepBody = this }
+        feedbackView = scrollPage { feedbackBody = this }
+        previewView = scrollPage { previewBody = this }
+        contentHost.addView(planView, matchMatch())
+        contentHost.addView(stepView, matchMatch())
+        contentHost.addView(feedbackView, matchMatch())
+        contentHost.addView(previewView, matchMatch())
+        root.addView(contentHost, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
+        root.addView(buildBottomNav(), matchWrap())
+
+        applyActiveTab()
+        return root
     }
-    private fun working(value: Boolean) {
-        busy = value
-        listOf<View>(generate, keyField, goal, targetField, model, consent, saveKey, forgetKey, choices).forEach { it.isEnabled = !value }
-        refreshSend()
+
+    private fun buildTopBar(): View {
+        val row = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(14), dp(8), dp(10), dp(6))
+            setBackgroundColor(PAPER)
+        }
+        val logo = ImageView(activity).apply {
+            setImageResource(R.drawable.black_cat_emblem)
+            scaleType = ImageView.ScaleType.CENTER_CROP
+            contentDescription = "Black Cat"
+            background = round(PAPER, 30, LINE, 1)
+            clipToOutline = true
+        }
+        row.addView(logo, LinearLayout.LayoutParams(dp(46), dp(46)))
+
+        val titles = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(9), 0, 0, 0)
+        }
+        titles.addView(label("BLACK CAT", 15f, INK, Typeface.BOLD).apply { letterSpacing = .12f })
+        titles.addView(label("Linux assistant · Android", 11f, MUTED))
+        row.addView(titles, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+
+        val settings = actionButton("Settings", primary = false) { openSettings() }.apply {
+            minWidth = 0
+            minHeight = dp(44)
+            setPadding(dp(13), 0, dp(13), 0)
+            textSize = 13f
+            contentDescription = "Open AI settings"
+        }
+        row.addView(settings, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(44)))
+        return row
     }
-    private fun stopWork() {
-        planner.cancel(); job?.cancel(); confirmation?.dismiss()
-        message.text = "Stopped. A partially typed command may remain on the laptop; inspect or clear it manually. API work already received by OpenAI may still be charged."
+
+    private fun buildStatusBar(): View {
+        val row = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(14), dp(7), dp(14), dp(7))
+            background = round(BG, 0, LINE, 0)
+        }
+        statusPill = label("●  WAITING", 11f, AMBER, Typeface.BOLD).apply {
+            gravity = Gravity.CENTER
+            background = round(AMBER_TINT, 24)
+            setPadding(dp(10), dp(6), dp(10), dp(6))
+        }
+        row.addView(statusPill)
+        statusText = label("Open Settings for API key", 11f, MUTED).apply {
+            setPadding(dp(10), 0, 0, 0)
+            maxLines = 2
+        }
+        row.addView(statusText, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        return row
     }
-    private fun saveCredential() {
-        if (busy) return
-        val key = keyField.text.toString().trim()
-        if (!OpenAiPlanner.validKey(key)) { message.text = "Enter your own API key first."; return }
-        working(true)
-        job = scope.launch {
-            try {
-                withContext(Dispatchers.IO) { vault.save(key) }
-                keyField.text.clear(); keyField.hint = "Saved key available; leave blank to use it"
-                message.text = "Key saved encrypted on this phone. No API request was made."
-            } catch (e: CancellationException) { throw e }
-              catch (_: Exception) { message.text = "Key could not be saved securely. There is no plaintext fallback." }
-            finally { working(false) }
+
+    private fun buildPlanView(): View {
+        val scroll = ScrollView(activity).apply {
+            isFillViewport = true
+            overScrollMode = View.OVER_SCROLL_IF_CONTENT_SCROLLS
+        }
+        val body = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(12), dp(7), dp(12), dp(14))
+        }
+        scroll.addView(body, matchWrap())
+
+        val stage = FrameLayout(activity).apply { clipChildren = false; clipToPadding = false }
+        val card = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(15), dp(16), dp(16))
+            background = round(PAPER, 20, LINE, 1)
+        }
+        val cardLp = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+            topMargin = dp(45)
+        }
+        stage.addView(card, cardLp)
+
+        val mascot = ImageView(activity).apply {
+            setImageResource(R.drawable.black_cat_peek)
+            scaleType = ImageView.ScaleType.FIT_CENTER
+            contentDescription = null
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+        }
+        val mascotLp = FrameLayout.LayoutParams(dp(156), dp(108), Gravity.TOP or Gravity.END).apply {
+            rightMargin = dp(3)
+        }
+        stage.addView(mascot, mascotLp)
+
+        card.addView(label("Goal", 17f, INK, Typeface.BOLD).apply { setPadding(0, 0, dp(142), dp(8)) })
+        goal = input("What do you want to achieve?", 2000, multiline = true).apply {
+            minHeight = dp(96)
+            textSize = 17f
+        }
+        card.addView(goal, matchWrap())
+
+        card.addView(label("Target system & shell", 13f, INK, Typeface.BOLD).apply { setPadding(0, dp(13), 0, dp(7)) })
+        val targetRow = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            background = round(FIELD, 11, FIELD_LINE, 1)
+            setPadding(dp(10), 0, dp(5), 0)
+        }
+        targetRow.addView(label(">_", 15f, GREEN, Typeface.BOLD).apply {
+            gravity = Gravity.CENTER
+            typeface = Typeface.MONOSPACE
+            background = round(TINT, 8)
+            setPadding(dp(7), dp(7), dp(7), dp(7))
+        })
+        targetField = input("Ubuntu Linux / Bash", 500, multiline = false).apply {
+            background = null
+            setPadding(dp(10), dp(10), dp(8), dp(10))
+            minHeight = dp(50)
+            textSize = 15f
+        }
+        targetRow.addView(targetField, LinearLayout.LayoutParams(0, dp(50), 1f))
+        card.addView(targetRow, matchWrap())
+
+        val next = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(12), dp(10), dp(12), dp(10))
+            background = round(TINT, 13)
+        }
+        nextTitle = label("Next step", 14f, INK, Typeface.BOLD)
+        nextCopy = label("Ask OpenAI for a reviewable command plan.", 12f, MUTED)
+        val nextText = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(4), 0, 0, 0)
+            addView(nextTitle)
+            addView(nextCopy)
+        }
+        next.addView(label("▤", 19f, GREEN, Typeface.BOLD).apply { gravity = Gravity.CENTER }, LinearLayout.LayoutParams(dp(34), dp(34)))
+        next.addView(nextText, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        card.addView(next, matchWrap(top = 13))
+
+        buildButton = actionButton("Build plan  →", primary = true) { generateProposal() }.apply {
+            textSize = 17f
+            minHeight = dp(54)
+        }
+        card.addView(buildButton, matchWrap(top = 12))
+        stage.minimumHeight = dp(360)
+        body.addView(stage, matchWrap())
+
+        recentSection = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            visibility = View.GONE
+        }
+        val recentHead = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            addView(label("Recent goals", 13f, INK, Typeface.BOLD), LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            addView(textButton("Clear") {
+                recentGoals.clear()
+                renderRecentGoals()
+            })
+        }
+        recentSection.addView(recentHead)
+        val recentScroll = HorizontalScrollView(activity).apply { isHorizontalScrollBarEnabled = false }
+        recentRow = LinearLayout(activity).apply { orientation = LinearLayout.HORIZONTAL }
+        recentScroll.addView(recentRow, matchWrap())
+        recentSection.addView(recentScroll, matchWrap())
+        body.addView(recentSection, matchWrap(top = 10))
+
+        planResult = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            visibility = View.GONE
+        }
+        body.addView(planResult, matchWrap(top = 10))
+
+        val changed = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { invalidatePlanForInputChange() }
+            override fun afterTextChanged(s: Editable?) {}
+        }
+        goal.addTextChangedListener(changed)
+        targetField.addTextChangedListener(changed)
+        return scroll
+    }
+
+    private fun buildBottomNav(): View {
+        val bar = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            setPadding(dp(6), dp(5), dp(6), dp(6))
+            background = round(PAPER, 0, LINE, 1)
+        }
+        fun add(tab: Tab, icon: String, title: String) {
+            val item = LinearLayout(activity).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = Gravity.CENTER
+                setPadding(dp(4), dp(5), dp(4), dp(5))
+                isClickable = true
+                isFocusable = true
+                contentDescription = title
+                addView(label(icon, 17f, MUTED, Typeface.BOLD).apply { gravity = Gravity.CENTER })
+                addView(label(title, 11f, MUTED, Typeface.BOLD).apply { gravity = Gravity.CENTER })
+                setOnClickListener { switchTab(tab) }
+            }
+            tabButtons[tab] = item
+            bar.addView(item, LinearLayout.LayoutParams(0, dp(58), 1f))
+        }
+        add(Tab.PLAN, "▤", "Plan")
+        add(Tab.STEP, "→", "Step")
+        add(Tab.FEEDBACK, "◇", "Feedback")
+        add(Tab.PREVIEW, ">_", "Preview")
+        return bar
+    }
+
+    private fun scrollPage(assign: LinearLayout.() -> Unit): View {
+        val scroll = ScrollView(activity).apply {
+            isFillViewport = true
+            overScrollMode = View.OVER_SCROLL_IF_CONTENT_SCROLLS
+        }
+        val body = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(12), dp(12), dp(12), dp(18))
+            assign()
+        }
+        scroll.addView(body, matchWrap())
+        return scroll
+    }
+
+    private fun switchTab(tab: Tab) {
+        activeTab = tab
+        applyActiveTab()
+        renderAll()
+    }
+
+    private fun applyActiveTab() {
+        if (!::contentHost.isInitialized) return
+        planView.visibility = if (activeTab == Tab.PLAN) View.VISIBLE else View.GONE
+        stepView.visibility = if (activeTab == Tab.STEP) View.VISIBLE else View.GONE
+        feedbackView.visibility = if (activeTab == Tab.FEEDBACK) View.VISIBLE else View.GONE
+        previewView.visibility = if (activeTab == Tab.PREVIEW) View.VISIBLE else View.GONE
+        tabButtons.forEach { (tab, view) ->
+            val active = tab == activeTab
+            view.background = if (active) round(TINT, 14) else ColorDrawable(Color.TRANSPARENT)
+            for (i in 0 until view.childCount) {
+                (view.getChildAt(i) as? TextView)?.setTextColor(if (active) GREEN else MUTED)
+            }
         }
     }
-    private fun forgetCredential() {
-        if (busy) return
-        working(true)
-        job = scope.launch {
-            try {
-                withContext(Dispatchers.IO) { vault.forget() }
-                keyField.text.clear(); keyField.hint = "OpenAI API key"
-                message.text = "Saved key deleted. This does not revoke the key at OpenAI."
-            } catch (e: CancellationException) { throw e }
-              catch (_: Exception) { message.text = "Could not finish deleting the saved key. Revoke it in your OpenAI account if necessary." }
-            finally { working(false) }
-        }
-    }
-    private fun generateProposal() {
-        if (busy) return
-        if (!consent.isChecked || goal.text.isBlank() || targetField.text.isBlank()) {
-            message.text = "Enter the goal, target OS/shell, and confirm sending those fields to OpenAI."
+
+    private fun invalidatePlanForInputChange() {
+        if (commands.isEmpty() && currentPlan == null) {
+            renderAll()
             return
         }
-        val requestedGoal = goal.text.toString()
-        val requestedTarget = targetField.text.toString()
-        val requestedModel = PlanCodec.MODELS[model.selectedItemPosition.coerceIn(PlanCodec.MODELS.indices)]
-        val enteredKey = keyField.text.toString().trim()
-        keyField.text.clear(); clearPlan(); working(true)
-        message.text = "Requesting a proposal. No keyboard or mouse input is being sent."
-        job = scope.launch {
-            try {
-                val key = withContext(Dispatchers.IO) { if (enteredKey.isNotEmpty()) enteredKey else vault.read().orEmpty() }
-                if (!OpenAiPlanner.validKey(key)) throw PlanException("Enter a valid personal API key or save one first.")
-                val plan = withTimeout(65000) { planner.propose(requestedGoal, requestedTarget, requestedModel, key) }
-                result.text = buildString {
-                    append(plan.explanation)
-                    if (plan.assumptions.isNotEmpty()) append("\n\nAssumptions:\n" + plan.assumptions.joinToString("\n"))
-                    if (plan.questions.isNotEmpty()) append("\n\nPlease clarify in your goal before generating again:\n" + plan.questions.joinToString("\n"))
-                    append("\n\nAI risk labels are not a guarantee. Review every command.")
+        planRevision++
+        selected = -1
+        commands = emptyList()
+        currentPlan = null
+        confirmation?.dismiss()
+        renderAll()
+    }
+
+    private fun renderAll() {
+        if (!::goal.isInitialized) return
+        buildButton.isEnabled = !busy && goal.text.isNotBlank() && targetField.text.isNotBlank()
+        val count = commands.size
+        nextTitle.text = when {
+            busy -> "Working"
+            count > 0 -> "$count reviewable ${if (count == 1) "command" else "commands"}"
+            currentPlan?.questions?.isNotEmpty() == true -> "Clarification needed"
+            else -> "Next step"
+        }
+        nextCopy.text = when {
+            busy -> "Waiting for OpenAI. Nothing is being typed."
+            count > 0 -> "Choose one step. Selection alone sends nothing."
+            currentPlan?.questions?.isNotEmpty() == true -> "Update the goal with the missing detail and build again."
+            else -> "Ask OpenAI for a reviewable command plan."
+        }
+        renderPlanResult()
+        renderRecentGoals()
+        renderStep()
+        renderFeedback()
+        renderPreview()
+        refreshConnectionState()
+    }
+
+    private fun renderPlanResult() {
+        planResult.removeAllViews()
+        val plan = currentPlan ?: run {
+            planResult.visibility = View.GONE
+            return
+        }
+        planResult.visibility = View.VISIBLE
+        val card = card()
+        card.addView(label("Plan", 18f, INK, Typeface.BOLD))
+        if (plan.explanation.isNotBlank()) card.addView(label(plan.explanation, 13f, MUTED).apply { setPadding(0, dp(6), 0, dp(8)) })
+        if (plan.questions.isNotEmpty()) {
+            val box = LinearLayout(activity).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(dp(11), dp(9), dp(11), dp(9))
+                background = round(AMBER_TINT, 11)
+            }
+            box.addView(label("OpenAI needs one more detail", 13f, AMBER, Typeface.BOLD))
+            plan.questions.forEach { box.addView(label("• $it", 13f, INK).apply { setPadding(0, dp(4), 0, 0) }) }
+            card.addView(box, matchWrap(top = 4, bottom = 8))
+        }
+        plan.assumptions.take(4).forEach { card.addView(label("• $it", 12f, MUTED).apply { setPadding(0, dp(2), 0, 0) }) }
+
+        if (commands.isNotEmpty()) {
+            card.addView(label("Steps", 13f, MUTED, Typeface.BOLD).apply { setPadding(0, dp(10), 0, dp(4)) })
+            commands.forEachIndexed { index, command ->
+                val row = LinearLayout(activity).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    gravity = Gravity.CENTER_VERTICAL
+                    setPadding(dp(9), dp(9), dp(9), dp(9))
+                    background = round(if (index == selected) TINT else FIELD, 12, LINE, 1)
+                    isClickable = true
+                    isFocusable = true
+                    setOnClickListener {
+                        selected = index
+                        activeTab = Tab.STEP
+                        applyActiveTab()
+                        renderAll()
+                    }
                 }
-                commands = plan.commands
-                commands.forEachIndexed { index, command ->
-                    choices.addView(RadioButton(activity).apply {
-                        id = 100 + index
-                        typeface = Typeface.MONOSPACE
-                        text = "${index + 1}. ${command.title} [${command.risk}; admin=${command.requiresAdmin}]\n${command.command}\n${command.explanation}\nExpected: ${command.expectedResult}\n${command.warnings.joinToString("\n") }"
-                        setPadding(dp(4), dp(10), dp(4), dp(10))
-                    })
+                val number = label((index + 1).toString(), 12f, if (index == selected) Color.WHITE else GREEN, Typeface.BOLD).apply {
+                    gravity = Gravity.CENTER
+                    background = round(if (index == selected) GREEN else TINT, 24, if (index == selected) GREEN else LINE, 1)
                 }
-                message.text = if (commands.isEmpty()) "No commands proposed. Resolve the questions first."
-                    else "Proposal ready. Select ONE command; nothing has been typed."
-            } catch (_: TimeoutCancellationException) { planner.cancel(); message.text = "Request timed out. Nothing was typed. Generate again only when ready." }
-              catch (e: CancellationException) { throw e }
-              catch (e: PlanException) { message.text = e.message }
-              catch (_: Exception) { message.text = "Request or key retrieval failed. Check connectivity/key storage. Nothing was typed; no automatic retry." }
-            finally { working(false) }
+                row.addView(number, LinearLayout.LayoutParams(dp(30), dp(30)))
+                val texts = LinearLayout(activity).apply {
+                    orientation = LinearLayout.VERTICAL
+                    setPadding(dp(10), 0, 0, 0)
+                    addView(label(command.title, 14f, INK, Typeface.BOLD))
+                    addView(label("${command.risk.uppercase()} · ${if (command.requiresAdmin) "admin may be required" else "no admin flag"}", 11f, MUTED))
+                }
+                row.addView(texts, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                row.addView(label("›", 19f, MUTED, Typeface.BOLD))
+                card.addView(row, matchWrap(top = 5))
+            }
+        }
+        planResult.addView(card, matchWrap())
+    }
+
+    private fun renderRecentGoals() {
+        if (!::recentSection.isInitialized) return
+        recentRow.removeAllViews()
+        if (recentGoals.isEmpty()) {
+            recentSection.visibility = View.GONE
+            return
+        }
+        recentSection.visibility = View.VISIBLE
+        recentGoals.forEach { value ->
+            val chip = textButton("◷  ${value.take(34)}") {
+                goal.setText(value)
+                goal.setSelection(goal.text.length)
+                activeTab = Tab.PLAN
+                applyActiveTab()
+            }.apply {
+                background = round(FIELD, 30, LINE, 1)
+                setPadding(dp(11), dp(8), dp(11), dp(8))
+                maxLines = 1
+            }
+            recentRow.addView(chip, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(42)).apply { rightMargin = dp(7) })
         }
     }
+
+    private fun renderStep() {
+        if (!::stepBody.isInitialized) return
+        stepBody.removeAllViews()
+        pageHeading(stepBody, "Step", "Inspect one command before it can be typed.")
+        val command = commands.getOrNull(selected)
+        if (command == null) {
+            stepBody.addView(emptyState("No step selected", if (commands.isEmpty()) "Build a plan first." else "Choose a step from Plan."), matchWrap())
+            stepBody.addView(actionButton(if (commands.isEmpty()) "Go to Plan" else "Choose from Plan", true) {
+                switchTab(Tab.PLAN)
+            }, matchWrap(top = 10))
+            return
+        }
+        val detail = card()
+        detail.addView(label(command.title, 19f, INK, Typeface.BOLD))
+        detail.addView(label(command.explanation, 14f, MUTED).apply { setPadding(0, dp(8), 0, dp(4)) })
+        detail.addView(commandBox(command.command), matchWrap(top = 8, bottom = 8))
+        infoLine(detail, "Expected result", command.expectedResult)
+        infoLine(detail, "Risk", "${command.risk.uppercase()}${if (command.requiresAdmin) " · administrative access may be required" else ""}")
+        if (command.warnings.isNotEmpty()) infoLine(detail, "Warnings", command.warnings.joinToString("\n• ", prefix = "• "))
+        stepBody.addView(detail, matchWrap())
+        stepBody.addView(actionButton("Preview destination  →", true) { switchTab(Tab.PREVIEW) }, matchWrap(top = 10))
+        stepBody.addView(textButton("Choose another step") { switchTab(Tab.PLAN) }, matchWrap(top = 3))
+    }
+
+    private fun renderFeedback() {
+        if (!::feedbackBody.isInitialized) return
+        feedbackBody.removeAllViews()
+        pageHeading(feedbackBody, "Feedback", "Only supported feedback is shown here.")
+        val questions = currentPlan?.questions.orEmpty()
+        if (questions.isNotEmpty()) {
+            val q = card()
+            q.addView(label("Clarification needed", 18f, INK, Typeface.BOLD))
+            questions.forEach { q.addView(label("• $it", 14f, INK).apply { setPadding(0, dp(7), 0, 0) }) }
+            q.addView(label("Add the missing detail to your goal, then build the plan again.", 13f, MUTED).apply { setPadding(0, dp(10), 0, 0) })
+            feedbackBody.addView(q, matchWrap())
+            feedbackBody.addView(actionButton("Edit goal", true) { switchTab(Tab.PLAN); goal.requestFocus() }, matchWrap(top = 10))
+            return
+        }
+        val compact = card()
+        compact.addView(label("Screen feedback", 17f, INK, Typeface.BOLD))
+        compact.addView(label("Photo and terminal-result feedback are deliberately not connected in this UI-only build. They are the next separately tested milestone.", 13f, MUTED).apply { setPadding(0, dp(7), 0, 0) })
+        feedbackBody.addView(compact, matchWrap())
+        if (commands.isNotEmpty()) feedbackBody.addView(actionButton("Return to current step", true) { switchTab(Tab.STEP) }, matchWrap(top = 10))
+    }
+
+    private fun renderPreview() {
+        if (!::previewBody.isInitialized) return
+        previewBody.removeAllViews()
+        pageHeading(previewBody, "Preview", "Exact text and destination before one-use approval.")
+        val command = commands.getOrNull(selected)
+        if (command == null) {
+            previewBody.addView(emptyState("Nothing selected", "Choose one step before previewing keyboard text."), matchWrap())
+            previewBody.addView(actionButton("Choose a step", true) { switchTab(if (commands.isEmpty()) Tab.PLAN else Tab.STEP) }, matchWrap(top = 10))
+            return
+        }
+        val host = target.current()
+        val c = card()
+        c.addView(label("Destination", 12f, MUTED, Typeface.BOLD))
+        c.addView(label(host?.label ?: "No ready Bluetooth HID connection", 15f, if (host == null) AMBER else INK, Typeface.BOLD).apply { setPadding(0, dp(5), 0, dp(8)) })
+        c.addView(label("Text to type", 12f, MUTED, Typeface.BOLD))
+        c.addView(commandBox(command.command), matchWrap(top = 6, bottom = 8))
+        c.addView(label("TYPE ONLY · Enter is never appended", 11f, GREEN, Typeface.BOLD))
+        previewBody.addView(c, matchWrap())
+        val send = actionButton(if (host == null) "Connect Bluetooth first" else "Review & type", true) { confirmSelected() }
+        send.isEnabled = !busy && host != null
+        previewBody.addView(send, matchWrap(top = 10))
+        previewBody.addView(textButton("Back to step") { switchTab(Tab.STEP) }, matchWrap(top = 3))
+    }
+
+    private fun generateProposal() {
+        if (busy) return
+        if (goal.text.isBlank() || targetField.text.isBlank()) {
+            setStatus("Enter the goal and target system first.", error = true)
+            return
+        }
+        val requestedGoal = goal.text.toString().trim()
+        val requestedTarget = targetField.text.toString().trim()
+        val requestedModel = selectedModel
+        val enteredKey = oneShotKey
+        oneShotKey = ""
+        confirmation?.dismiss()
+        busy = true
+        planRevision++
+        selected = -1
+        commands = emptyList()
+        currentPlan = null
+        setStatus("Waiting for OpenAI · nothing is being typed")
+        renderAll()
+
+        job = scope.launch {
+            try {
+                val key = withContext(Dispatchers.IO) {
+                    if (enteredKey.isNotEmpty()) enteredKey else vault.read().orEmpty()
+                }
+                if (!OpenAiPlanner.validKey(key)) {
+                    setStatus("Open Settings and add a valid OpenAI API key.", error = true)
+                    openSettings()
+                    return@launch
+                }
+                val plan = withTimeout(65000) { planner.propose(requestedGoal, requestedTarget, requestedModel, key) }
+                currentPlan = plan
+                commands = plan.commands
+                selected = if (commands.isNotEmpty()) 0 else -1
+                planRevision++
+                rememberGoal(requestedGoal)
+                activeTab = Tab.PLAN
+                applyActiveTab()
+                setStatus(if (commands.isEmpty()) "OpenAI needs clarification." else "Plan ready · choose one step")
+            } catch (_: TimeoutCancellationException) {
+                planner.cancel()
+                setStatus("OpenAI request timed out. Nothing was typed.", error = true)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: PlanException) {
+                setStatus(e.message ?: "OpenAI request failed.", error = true)
+            } catch (_: Exception) {
+                setStatus("Request or key retrieval failed. Nothing was typed.", error = true)
+            } finally {
+                busy = false
+                renderAll()
+            }
+        }
+    }
+
     private fun confirmSelected() {
         if (busy || confirmation?.isShowing == true) return
-        val selectedCommand = commands.getOrNull(selected) ?: return
-        val host = target.current() ?: run { message.text = "No ready Bluetooth HID connection."; return }
+        val index = selected
+        val selectedCommand = commands.getOrNull(index) ?: return
+        val host = target.current() ?: run {
+            setStatus("No ready Bluetooth HID connection.", error = true)
+            renderAll()
+            return
+        }
         val problem = CommandPolicy.problem(selectedCommand.command)
-        if (problem != null) { message.text = problem; return }
-        val command = selectedCommand.command // Immutable snapshot; cannot change underneath the confirmation.
-        val content = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(8), dp(16), dp(8)) }
-        content.addView(text("Destination: ${host.label}\nRisk: ${selectedCommand.risk}; admin: ${selectedCommand.requiresAdmin}\n${selectedCommand.explanation}"))
-        content.addView(text(command, 16f).apply { typeface = Typeface.MONOSPACE })
-        val focus = CheckBox(activity).apply { text = "The correct computer has an empty terminal prompt, US layout, and Caps Lock off." }
-        val review = CheckBox(activity).apply { text = "I reviewed this exact command and accept its effects. Type text only, without Enter." }
-        content.addView(focus); content.addView(review)
-        val confirm = AlertDialog.Builder(activity).setTitle("Review before typing")
+        if (problem != null) {
+            setStatus(problem, error = true)
+            return
+        }
+        val snapshotRevision = planRevision
+        val command = selectedCommand.command
+        val content = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(18), dp(8), dp(18), dp(8))
+            addView(label("Destination", 11f, MUTED, Typeface.BOLD))
+            addView(label(host.label, 15f, INK, Typeface.BOLD).apply { setPadding(0, dp(4), 0, dp(10)) })
+            addView(label("Risk: ${selectedCommand.risk.uppercase()}${if (selectedCommand.requiresAdmin) " · admin may be required" else ""}", 12f, MUTED))
+            addView(label(selectedCommand.explanation, 13f, MUTED).apply { setPadding(0, dp(7), 0, dp(3)) })
+            addView(commandBox(command), matchWrap(top = 7, bottom = 6))
+            addView(label("Pressing TYPE ONLY is your one-use approval for this exact command and destination. Enter will not be sent.", 12f, GREEN, Typeface.BOLD))
+        }
+        val confirm = AlertDialog.Builder(activity)
+            .setTitle("Review before typing")
             .setView(ScrollView(activity).apply { addView(content) })
-            .setNegativeButton("CANCEL", null).setPositiveButton("TYPE ONLY", null).create()
+            .setNegativeButton("CANCEL", null)
+            .setPositiveButton("TYPE ONLY", null)
+            .create()
         confirmation = confirm
         confirm.setOnShowListener {
-            val positive = confirm.getButton(AlertDialog.BUTTON_POSITIVE)
-            positive.isEnabled = false
-            fun enable() { positive.isEnabled = focus.isChecked && review.isChecked && target.current() == host }
-            focus.setOnCheckedChangeListener { _, _ -> enable() }
-            review.setOnCheckedChangeListener { _, _ -> enable() }
-            positive.setOnClickListener {
-                if (!focus.isChecked || !review.isChecked || busy || target.current() != host) {
-                    message.text = "Connection changed. Re-select and review the destination."; confirm.dismiss()
-                } else {
+            confirm.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val unchanged = planRevision == snapshotRevision && selected == index &&
+                    commands.getOrNull(index)?.command == command && target.current() == host
+                if (!unchanged || busy) {
+                    setStatus("Plan or connection changed. Review again.", error = true)
                     confirm.dismiss()
-                    working(true)
-                    choices.clearCheck()
-                    message.text = "Typing selected command only. You can stop; Enter will not be sent."
-                    val approval = CommandApproval(command, host)
-                    job = scope.launch {
-                        try {
-                            val outcome = ApprovedCommandSender.send(approval, target)
-                            message.text = if (outcome == SendOutcome.REPORTS_ACCEPTED)
-                                "All keyboard reports were accepted by Android. Verify the text on the laptop; this is not proof of execution. To run it, press Enter on the laptop or close this panel and use Full Keyboard → Enter."
-                            else "Transmission stopped ($outcome). Inspect/clear any partial text manually; do not resume automatically."
-                        } catch (e: CancellationException) { throw e }
-                          catch (_: Exception) { message.text = "Typing stopped. Inspect or clear any partial text manually." }
-                          finally { working(false) }
+                    renderAll()
+                    return@setOnClickListener
+                }
+                confirm.dismiss()
+                busy = true
+                setStatus("Typing selected text only · Enter excluded")
+                renderAll()
+                val approval = CommandApproval(command, host)
+                job = scope.launch {
+                    try {
+                        val outcome = ApprovedCommandSender.send(approval, target)
+                        setStatus(
+                            if (outcome == SendOutcome.REPORTS_ACCEPTED)
+                                "Android accepted the keyboard reports. Check the laptop before pressing Enter."
+                            else "Typing stopped ($outcome). Inspect any partial text manually.",
+                            error = outcome != SendOutcome.REPORTS_ACCEPTED
+                        )
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (_: Exception) {
+                        setStatus("Typing stopped. Inspect any partial text manually.", error = true)
+                    } finally {
+                        busy = false
+                        renderAll()
                     }
                 }
             }
@@ -283,5 +737,257 @@ private class AiPanel(private val activity: Activity, manager: HidManager, priva
         confirm.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         confirm.show()
     }
+
+    private fun openSettings() {
+        if (settingsDialog?.isShowing == true) return
+        val body = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(18), dp(8), dp(18), dp(4))
+        }
+        body.addView(label("OpenAI", 18f, INK, Typeface.BOLD))
+        body.addView(label("Build plan sends the visible goal and target to OpenAI using your key. No request is made just by opening Settings.", 12f, MUTED).apply { setPadding(0, dp(5), 0, dp(9)) })
+        val key = input(if (vault.exists()) "Saved key available · enter only to replace/use once" else "OpenAI API key", 512, multiline = false, password = true)
+        body.addView(key, matchWrap())
+        body.addView(label("Model", 12f, MUTED, Typeface.BOLD).apply { setPadding(0, dp(10), 0, dp(5)) })
+        val model = Spinner(activity).apply {
+            adapter = ArrayAdapter(activity, android.R.layout.simple_spinner_dropdown_item, PlanCodec.MODELS)
+            setSelection(PlanCodec.MODELS.indexOf(selectedModel).coerceAtLeast(0))
+        }
+        body.addView(model, matchWrap())
+        val message = label(if (vault.exists()) "Saved key is available on this phone." else "No saved key on this phone.", 12f, MUTED).apply { setPadding(0, dp(8), 0, dp(4)) }
+        body.addView(message)
+        val actions = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
+        val useOnce = actionButton("Use key for next request", true) {
+            val value = key.text.toString().trim()
+            if (!OpenAiPlanner.validKey(value)) {
+                message.text = "Enter a valid API key first."
+            } else {
+                oneShotKey = value
+                key.text.clear()
+                selectedModel = PlanCodec.MODELS[model.selectedItemPosition.coerceIn(PlanCodec.MODELS.indices)]
+                settingsDialog?.dismiss()
+                setStatus("API key ready for the next request.")
+            }
+        }
+        val save = actionButton("Save key encrypted on this phone", false) {
+            val value = key.text.toString().trim()
+            if (!OpenAiPlanner.validKey(value)) {
+                message.text = "Enter a valid API key first."
+                return@actionButton
+            }
+            useOnce.isEnabled = false
+            job = scope.launch {
+                try {
+                    withContext(Dispatchers.IO) { vault.save(value) }
+                    oneShotKey = ""
+                    key.text.clear()
+                    message.text = "Key saved encrypted on this phone."
+                    selectedModel = PlanCodec.MODELS[model.selectedItemPosition.coerceIn(PlanCodec.MODELS.indices)]
+                    setStatus("Saved API key available.")
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Exception) {
+                    message.text = "Key could not be saved securely. No plaintext fallback was used."
+                } finally {
+                    useOnce.isEnabled = true
+                }
+            }
+        }
+        val forget = textButton("Forget saved key") {
+            job = scope.launch {
+                try {
+                    withContext(Dispatchers.IO) { vault.forget() }
+                    oneShotKey = ""
+                    message.text = "Saved key deleted. This does not revoke it at OpenAI."
+                    setStatus("No saved API key.")
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Exception) {
+                    message.text = "Could not finish deleting the saved key."
+                }
+            }
+        }
+        actions.addView(useOnce, matchWrap(top = 8))
+        actions.addView(save, matchWrap(top = 6))
+        actions.addView(forget, matchWrap(top = 2))
+        body.addView(actions)
+        body.addView(label("API requests may cost money. store=false is requested; provider retention rules still apply. Saving on a phone does not protect a key from a compromised device.", 11f, MUTED).apply { setPadding(0, dp(9), 0, 0) })
+
+        val d = AlertDialog.Builder(activity)
+            .setTitle("Settings")
+            .setView(ScrollView(activity).apply { addView(body) })
+            .setNegativeButton("CLOSE") { _, _ ->
+                selectedModel = PlanCodec.MODELS[model.selectedItemPosition.coerceIn(PlanCodec.MODELS.indices)]
+            }
+            .create()
+        settingsDialog = d
+        d.setCanceledOnTouchOutside(false)
+        d.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        d.setOnDismissListener {
+            key.text.clear()
+            settingsDialog = null
+            renderAll()
+        }
+        d.show()
+    }
+
+    private fun rememberGoal(value: String) {
+        val clean = value.trim().replace(Regex("\\s+"), " ")
+        if (clean.isBlank()) return
+        recentGoals.remove(clean)
+        recentGoals.addFirst(clean)
+        while (recentGoals.size > 3) recentGoals.removeLast()
+    }
+
+    private fun refreshConnectionState() {
+        if (!::statusPill.isInitialized) return
+        val host = target.current()
+        if (host != null) {
+            statusPill.text = "●  READY"
+            statusPill.setTextColor(GREEN)
+            statusPill.background = round(TINT, 24)
+            if (!busy && statusText.text.toString().startsWith("Bluetooth")) statusText.text = "Connected · ${host.label}"
+        } else {
+            statusPill.text = "●  PAIR"
+            statusPill.setTextColor(AMBER)
+            statusPill.background = round(AMBER_TINT, 24)
+            if (!busy && statusText.text.toString().startsWith("Connected")) statusText.text = "Bluetooth host not ready"
+        }
+    }
+
+    private fun setStatus(value: String, error: Boolean = false) {
+        if (!::statusText.isInitialized) return
+        statusText.text = value
+        statusText.setTextColor(if (error) RED else MUTED)
+    }
+
+    private fun pageHeading(parent: LinearLayout, title: String, subtitle: String) {
+        parent.addView(label(title, 22f, INK, Typeface.BOLD))
+        parent.addView(label(subtitle, 12f, MUTED).apply { setPadding(0, dp(3), 0, dp(10)) })
+    }
+
+    private fun emptyState(title: String, copy: String): View = card().apply {
+        addView(label(title, 18f, INK, Typeface.BOLD))
+        addView(label(copy, 13f, MUTED).apply { setPadding(0, dp(6), 0, 0) })
+    }
+
+    private fun infoLine(parent: LinearLayout, heading: String, value: String) {
+        parent.addView(View(activity).apply { setBackgroundColor(LINE) }, matchFixed(dp(1), top = 8, bottom = 8))
+        parent.addView(label(heading, 11f, MUTED, Typeface.BOLD))
+        parent.addView(label(value, 13f, INK).apply { setPadding(0, dp(4), 0, 0) })
+    }
+
+    private fun commandBox(command: String): View = LinearLayout(activity).apply {
+        orientation = LinearLayout.VERTICAL
+        setPadding(dp(13), dp(12), dp(13), dp(12))
+        background = round(COMMAND_BG, 13)
+        addView(label(command, 14f, COMMAND_TEXT, Typeface.NORMAL).apply {
+            typeface = Typeface.MONOSPACE
+            setTextIsSelectable(true)
+        })
+    }
+
+    private fun card(): LinearLayout = LinearLayout(activity).apply {
+        orientation = LinearLayout.VERTICAL
+        setPadding(dp(16), dp(15), dp(16), dp(15))
+        background = round(PAPER, 18, LINE, 1)
+    }
+
+    private fun input(
+        hintText: String,
+        limit: Int,
+        multiline: Boolean,
+        password: Boolean = false
+    ) = EditText(activity).apply {
+        hint = hintText
+        filters = arrayOf(InputFilter.LengthFilter(limit))
+        inputType = when {
+            password -> InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            multiline -> InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+            else -> InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+        }
+        isSingleLine = !multiline
+        isSaveEnabled = false
+        importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+        imeOptions = EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING
+        setTextColor(INK)
+        setHintTextColor(0xff71857c.toInt())
+        background = round(FIELD, 11, FIELD_LINE, 1)
+        setPadding(dp(12), dp(10), dp(12), dp(10))
+    }
+
+    private fun label(value: String, size: Float, color: Int, style: Int = Typeface.NORMAL) = TextView(activity).apply {
+        text = value
+        textSize = size
+        setTextColor(color)
+        typeface = Typeface.create(Typeface.DEFAULT, style)
+        includeFontPadding = false
+    }
+
+    private fun actionButton(textValue: String, primary: Boolean, action: () -> Unit) = Button(activity).apply {
+        text = textValue
+        isAllCaps = false
+        textSize = 14f
+        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        setTextColor(if (primary) Color.WHITE else INK)
+        background = round(if (primary) GREEN else FIELD, 13, if (primary) GREEN else LINE, 1)
+        minHeight = dp(48)
+        setOnClickListener { action() }
+    }
+
+    private fun textButton(textValue: String, action: () -> Unit) = Button(activity).apply {
+        text = textValue
+        isAllCaps = false
+        textSize = 12f
+        setTextColor(GREEN)
+        background = ColorDrawable(Color.TRANSPARENT)
+        minHeight = dp(40)
+        minWidth = 0
+        setPadding(dp(7), dp(5), dp(7), dp(5))
+        setOnClickListener { action() }
+    }
+
+    private fun round(fill: Int, radiusDp: Int, strokeColor: Int? = null, strokeDp: Int = 0) = GradientDrawable().apply {
+        shape = GradientDrawable.RECTANGLE
+        setColor(fill)
+        cornerRadius = dp(radiusDp).toFloat()
+        if (strokeColor != null && strokeDp > 0) setStroke(dp(strokeDp), strokeColor)
+    }
+
+    private fun matchWrap(top: Int = 0, bottom: Int = 0) = LinearLayout.LayoutParams(
+        ViewGroup.LayoutParams.MATCH_PARENT,
+        ViewGroup.LayoutParams.WRAP_CONTENT
+    ).apply {
+        topMargin = dp(top)
+        bottomMargin = dp(bottom)
+    }
+
+    private fun matchFixed(height: Int, top: Int = 0, bottom: Int = 0) = LinearLayout.LayoutParams(
+        ViewGroup.LayoutParams.MATCH_PARENT,
+        height
+    ).apply {
+        topMargin = dp(top)
+        bottomMargin = dp(bottom)
+    }
+
+    private fun matchMatch() = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+
     private fun dp(value: Int) = (value * activity.resources.displayMetrics.density).toInt()
+
+    companion object {
+        private val BG = Color.rgb(245, 248, 245)
+        private val PAPER = Color.WHITE
+        private val INK = Color.rgb(18, 38, 34)
+        private val MUTED = Color.rgb(86, 110, 103)
+        private val LINE = Color.rgb(212, 225, 217)
+        private val GREEN = Color.rgb(22, 97, 70)
+        private val TINT = Color.rgb(234, 244, 231)
+        private val FIELD = Color.rgb(250, 252, 249)
+        private val FIELD_LINE = Color.rgb(190, 209, 198)
+        private val AMBER = Color.rgb(130, 83, 27)
+        private val AMBER_TINT = Color.rgb(255, 241, 219)
+        private val RED = Color.rgb(162, 45, 57)
+        private val COMMAND_BG = Color.rgb(18, 44, 36)
+        private val COMMAND_TEXT = Color.rgb(224, 240, 199)
+    }
 }
