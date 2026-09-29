@@ -1,0 +1,135 @@
+name: Mobile UI candidate CI
+
+on:
+  push:
+    branches: [feature/mobile-ui-v1]
+  pull_request:
+    branches: [codex/blackcat-ui-handoff]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-ui-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Preserve, test, build, inspect
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Prove the physical Bluetooth path is still frozen
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=7712ea981230a2782a83b0920d3da5f09bc47c1d
+          for p in             app/src/main/java/com/blackcat/remote/MainActivity.kt             app/src/main/java/com/blackcat/remote/HidManager.kt             app/src/main/java/com/blackcat/remote/HidDescriptor.kt             app/src/main/java/com/blackcat/remote/HidReports.kt             app/src/main/java/com/blackcat/remote/Diagnostics.kt
+          do
+            git diff --exit-code "$BASE" HEAD -- "$p"
+          done
+          python3 tools/check_policy.py
+          python3 tools/test_policy.py -v
+
+      - name: Guided-plan/photo contract regression suite
+        run: |
+          python3 -m pip install -r planner_lab/requirements.txt
+          python3 -m unittest planner_lab.test_contract -v
+
+      - name: Android unit tests, lint and both APK variants
+        run: |
+          gradle testOfflineDebugUnitTest testAiDebugUnitTest             lintOfflineDebug lintAiDebug             assembleOfflineDebug assembleAiDebug             --continue --console=plain --stacktrace
+
+      - name: Inspect candidate identity, permissions and signatures
+        shell: bash
+        run: |
+          set -euo pipefail
+          AAPT=$(find "$ANDROID_HOME/build-tools" -name aapt -type f | sort -V | tail -n 1)
+          SIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)
+          mkdir -p candidate
+          short="${GITHUB_SHA:0:12}"
+          ai="app/build/outputs/apk/ai/debug/app-ai-debug.apk"
+          offline="app/build/outputs/apk/offline/debug/app-offline-debug.apk"
+          python3 tools/check_apk.py "$ai" ai "$AAPT" | tee candidate/ai-manifest.txt
+          python3 tools/check_apk.py "$offline" offline "$AAPT" | tee candidate/offline-manifest.txt
+          "$SIGNER" verify --verbose --print-certs "$ai" > candidate/ai-signature.txt
+          "$SIGNER" verify --verbose --print-certs "$offline" > candidate/offline-signature.txt
+          cp "$ai" "candidate/BlackCat-UI-${short}.apk"
+          cp "$offline" "candidate/BlackCat-BT-${short}.apk"
+          git rev-parse HEAD > candidate/SOURCE.txt
+          git diff --stat 7712ea981230a2782a83b0920d3da5f09bc47c1d HEAD > candidate/DIFFSTAT.txt
+          (cd candidate && sha256sum *.apk > SHA256SUMS)
+
+      - name: Attest exact AI candidate provenance
+        if: github.event_name != 'pull_request'
+        uses: actions/attest@v4
+        with:
+          subject-path: 'candidate/BlackCat-UI-*.apk'
+
+      - name: Upload exact checked candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-ui-candidate-${{ github.sha }}
+          path: candidate/
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Upload reports even when later review finds a problem
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-ui-reports-${{ github.sha }}
+          path: |
+            app/build/reports/
+            app/build/test-results/
+          if-no-files-found: warn
+          retention-days: 90
+
+  codeql:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: java-kotlin
+          build-mode: manual
+          queries: security-and-quality
+      - run: gradle clean assembleOfflineDebug assembleAiDebug --console=plain --stacktrace
+      - uses: github/codeql-action/analyze@v4
