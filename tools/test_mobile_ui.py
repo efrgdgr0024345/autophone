@@ -49,6 +49,22 @@ class MobileUiBoundaryTests(unittest.TestCase):
             with self.assertRaises(AssertionError): verify(dst)
         finally: temp.cleanup()
 
+    def test_target_dropdown_contract_rejected(self):
+        temp, dst = self.clone()
+        try:
+            p = dst / 'app/src/ai/java/com/blackcat/remote/AiEntry.kt'
+            p.write_text(p.read_text(encoding='utf-8').replace('Edit / custom…', 'Other'), encoding='utf-8')
+            with self.assertRaises(AssertionError): verify(dst)
+        finally: temp.cleanup()
+
+    def test_shared_main_style_rejected_if_removed(self):
+        temp, dst = self.clone()
+        try:
+            p = dst / 'app/src/main/java/com/blackcat/remote/BlackCatStyle.kt'
+            p.write_text(p.read_text(encoding='utf-8').replace('22, 97, 70', '0, 0, 0'), encoding='utf-8')
+            with self.assertRaises(AssertionError): verify(dst)
+        finally: temp.cleanup()
+
     def test_camera_scope_creep_rejected(self):
         temp, dst = self.clone()
         try:
