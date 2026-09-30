@@ -60,8 +60,10 @@ def verify_activity(text: str) -> None:
     assert 'BlackCatStyle' in text and 'R.drawable.black_cat_emblem' in text, 'Approved full-app Black Cat style missing'
     assert 'BlackCatStyle.applySystemBarInsets(root)' in text, 'Main display must sit inside Android system-bar insets'
     assert 'diagnosticsBody=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;visibility=View.GONE' in text, 'Diagnostics must be collapsed by default'
-    assert text.index(HOOK) < text.index('val typeCard='), 'Assistant choice belongs before remote-detail controls'
-    assert text.index('val diagnosticsCard=') > text.index('val keyboardCard='), 'Diagnostics must stay at the end of the user flow'
+    assert 'R.drawable.black_cat_full' in text, 'Approved full cat hero must be present'
+    assert text.index(HOOK) < text.index('body.addView(sendPanel'), 'Assistant tile belongs before expanded remote panels'
+    assert text.index('val diagnosticsCard=') > text.index('body.addView(keyboardPanel'), 'Diagnostics must stay at the end of the user flow'
+    assert 'hideRemotePanels()' in text, 'Remote tiles must expose one focused control area at a time'
 
 def verify() -> None:
     src = ROOT / 'app/src/main/java/com/blackcat/remote'
