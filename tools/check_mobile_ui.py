@@ -32,17 +32,24 @@ def verify(root: Path = ROOT) -> None:
     assert 'CheckBox' not in entry, 'Redundant approval checkboxes were reintroduced'
     assert 'targetField' not in entry, 'Free-text target field returned; use saved dropdown/custom edit flow'
     for text in (
-        'Plan', 'Step', 'Feedback', 'Preview', 'TYPE ONLY',
+        'Plan', 'Step', 'Preview', 'Result', 'TYPE ONLY',
         'R.drawable.black_cat_emblem', 'R.drawable.black_cat_peek',
         'Edit / custom…', 'getSharedPreferences(TARGET_PREFS',
         'putString(TARGET_KEY', 'Ubuntu Linux / Bash', 'Debian Linux / Bash',
         'Fedora Linux / Bash', 'Arch Linux / Bash', 'Kali Linux / Bash',
-        'BlackCatStyle.styleButton(activity, this, primary = true, compact = true)'
+        'BlackCatStyle.styleButton(activity, this, primary = true, compact = true)',
+        'Open Linux Assistant', 'BlackCatStyle.applySystemBarInsets(root)',
+        'lastTypedCommand = command', 'activeTab = Tab.FEEDBACK'
     ):
         assert text in entry, f'Missing approved UI/target element: {text}'
     for forbidden in ('android.permission.CAMERA', 'input_image', 'getUserMedia', 'manager.sendKeyboard', 'manager.init(', 'manager.close(', 'registerApp(', 'unregisterApp('):
         assert forbidden not in entry, f'UI-only milestone crossed a frozen boundary: {forbidden}'
     assert entry.count('planner.propose(') == 1, 'OpenAI requests must remain explicit and singular in the UI path'
+    nav = entry.split('private fun buildBottomNav()', 1)[1].split('private fun scrollPage', 1)[0]
+    order = [nav.index(token) for token in (
+        'add(Tab.PLAN', 'add(Tab.STEP', 'add(Tab.PREVIEW', 'add(Tab.FEEDBACK'
+    )]
+    assert order == sorted(order), 'Bottom flow must be Plan → Step → Preview → Result'
     show = entry.split('fun show() {', 1)[1].split('private fun buildShell()', 1)[0]
     for forbidden in ('planner.propose(', 'ApprovedCommandSender.send(', 'sendKeyboard(', 'openSettings()'):
         assert forbidden not in show, f'Opening the panel must not trigger work: {forbidden}'
@@ -60,10 +67,12 @@ def verify(root: Path = ROOT) -> None:
     style = (root / 'app/src/main/java/com/blackcat/remote/BlackCatStyle.kt').read_text(encoding='utf-8')
     for value in ('245, 248, 245', '22, 97, 70', '18, 44, 36'):
         assert value in style, f'Shared Black Cat style palette changed unexpectedly: {value}'
+    for text in ('applySystemBarInsets', 'WindowInsets.Type.systemBars()', 'systemWindowInsetBottom'):
+        assert text in style, f'Missing Android system-bar inset handling: {text}'
 
     manifest = (root / 'app/src/ai/AndroidManifest.xml').read_text(encoding='utf-8')
     assert 'CAMERA' not in manifest, 'Camera permission belongs to the later photo milestone'
-    print('PASS: full-app style uses approved art, saved target dropdown/custom edit, click-is-approval, frozen API/transport, and no camera/HID lifecycle changes')
+    print('PASS: user flow is Connect → Assistant/Remote → Plan → Step → Preview → Result; system bars respected; saved target dropdown and frozen API/HID boundaries retained')
 
 
 if __name__ == '__main__':
