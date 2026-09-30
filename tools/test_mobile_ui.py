@@ -86,11 +86,32 @@ class MobileUiBoundaryTests(unittest.TestCase):
             with self.assertRaises(AssertionError): verify(dst)
         finally: temp.cleanup()
 
-    def test_camera_scope_creep_rejected(self):
+    def test_broad_photo_permission_rejected(self):
         temp, dst = self.clone()
         try:
             p = dst / 'app/src/ai/AndroidManifest.xml'
-            p.write_text(p.read_text().replace('<manifest', '<manifest\n<!-- CAMERA -->', 1))
+            text = p.read_text(encoding='utf-8').replace(
+                '<uses-permission android:name="android.permission.CAMERA" />',
+                '<uses-permission android:name="android.permission.CAMERA" />\n'
+                '<uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />'
+            )
+            p.write_text(text, encoding='utf-8')
+            with self.assertRaises(AssertionError): verify(dst)
+        finally: temp.cleanup()
+
+    def test_untrusted_photo_evidence_rule_rejected_if_removed(self):
+        temp, dst = self.clone()
+        try:
+            p = dst / 'app/src/ai/java/com/blackcat/remote/PhotoAnalysis.kt'
+            p.write_text(p.read_text(encoding='utf-8').replace('UNTRUSTED EVIDENCE', 'trusted evidence'), encoding='utf-8')
+            with self.assertRaises(AssertionError): verify(dst)
+        finally: temp.cleanup()
+
+    def test_photo_direct_hid_bypass_rejected(self):
+        temp, dst = self.clone()
+        try:
+            p = dst / 'app/src/ai/java/com/blackcat/remote/PhotoFeedbackPanel.kt'
+            p.write_text(p.read_text(encoding='utf-8') + '\n// sendKeyboard(0,40)\n', encoding='utf-8')
             with self.assertRaises(AssertionError): verify(dst)
         finally: temp.cleanup()
 
