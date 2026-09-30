@@ -1,5 +1,5 @@
 import unittest
-from check_policy import ROOT, HOOK, verify_activity
+from check_policy import ROOT, AI_ENTRY, verify_activity
 
 class BaselineBoundaryTests(unittest.TestCase):
     def setUp(self):
@@ -16,9 +16,9 @@ class BaselineBoundaryTests(unittest.TestCase):
         with self.assertRaises(AssertionError):
             verify_activity(self.activity + '\noverride fun onPause() {}\n')
 
-    def test_duplicate_hook_rejected(self):
+    def test_duplicate_ai_entry_rejected(self):
         with self.assertRaises(AssertionError):
-            verify_activity(self.activity + HOOK)
+            verify_activity(self.activity + '\n' + AI_ENTRY + '\n')
 
     def test_pairing_rewrite_rejected(self):
         with self.assertRaises(AssertionError):
