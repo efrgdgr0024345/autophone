@@ -47,7 +47,7 @@ def verify_activity(text: str) -> None:
         'greenButton("Make Discoverable"){pair()}',
         'diagnostics.snapshot()',
         'setOnClickListener{diagnostics.clear()}',
-        'setOnClickListener{sendText(input.text.toString());input.text.clear()}',
+        'greenButton("Send Text"){sendText(input.text.toString());input.text.clear()}',
         'hid.sendMouse(0,(e.x-x).toInt(),(e.y-y).toInt())',
         'hid.sendMouse(mask,0,0); hid.sendMouse(0,0,0)',
         'setOnClickListener{hid.sendKeyboard(mod,key)}',
