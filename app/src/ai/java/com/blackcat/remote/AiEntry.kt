@@ -209,7 +209,7 @@ private class AiSettingsPanel(
             background = round(Color.rgb(28,39,35),11,Color.rgb(60,82,73),1)
             setOnClickListener {
                 scope.launch {
-                    try { withContext(Dispatchers.IO) { vault.clear() }; message.text = "Saved API key removed." }
+                    try { withContext(Dispatchers.IO) { vault.forget() }; message.text = "Saved API key removed." }
                     catch (_: Exception) { message.text = "Could not remove saved key." }
                 }
             }
