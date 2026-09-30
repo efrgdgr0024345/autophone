@@ -71,7 +71,7 @@ object AiEntry {
         assistant.setOnClickListener {
             assistant.isEnabled = false
             try {
-                AiPanel(activity, manager()) { assistant.isEnabled = true }.show()
+                openAssistant(activity, manager) { assistant.isEnabled = true }
             } catch (_: Exception) {
                 assistant.isEnabled = true
                 Toast.makeText(activity, "Could not open AI panel. Bluetooth controls are unchanged.", Toast.LENGTH_LONG).show()
@@ -81,13 +81,191 @@ object AiEntry {
         photo.setOnClickListener {
             photo.isEnabled = false
             try {
-                PhotoFeedbackPanel(activity, manager()) { photo.isEnabled = true }.show()
+                openPhoto(activity, manager) { photo.isEnabled = true }
             } catch (_: Exception) {
                 photo.isEnabled = true
                 Toast.makeText(activity, "Could not open Photo Feedback. Bluetooth controls are unchanged.", Toast.LENGTH_LONG).show()
             }
         }
     }
+
+    fun openAssistant(activity: Activity, manager: () -> HidManager, onClosed: () -> Unit = {}) {
+        AiPanel(activity, manager(), onClosed).show()
+    }
+
+    fun openPhoto(activity: Activity, manager: () -> HidManager, onClosed: () -> Unit = {}) {
+        PhotoFeedbackPanel(activity, manager(), onClosed).show()
+    }
+
+    fun openSettings(activity: Activity, onClosed: () -> Unit = {}) {
+        AiSettingsPanel(activity, onClosed).show()
+    }
+}
+
+private class AiSettingsPanel(
+    private val activity: Activity,
+    private val onClosed: () -> Unit
+) {
+    private val dialog = Dialog(activity, android.R.style.Theme_Material_Light_NoActionBar)
+    private val vault = ApiKeyVault(activity.applicationContext)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private val prefs = activity.getSharedPreferences("blackcat_ai_ui", Activity.MODE_PRIVATE)
+
+    fun show() {
+        val root = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundColor(Color.WHITE)
+        }
+        BlackCatStyle.applySystemBarInsets(root)
+
+        val hero = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_HORIZONTAL
+            setPadding(dp(10), dp(4), dp(10), dp(5))
+            setBackgroundColor(Color.WHITE)
+            addView(ImageView(activity).apply {
+                setImageResource(R.drawable.black_cat_full)
+                scaleType = ImageView.ScaleType.CENTER_CROP
+                contentDescription = "Black Cat"
+            }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(128)))
+            addView(label("Settings", 20f, Color.BLACK, Typeface.BOLD).apply { gravity = Gravity.CENTER })
+        }
+        root.addView(hero)
+
+        val scroll = ScrollView(activity).apply { isFillViewport = true }
+        val body = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(12), dp(7), dp(12), dp(16))
+        }
+        scroll.addView(body, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+
+        val panel = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(14), dp(14), dp(14), dp(14))
+            background = round(Color.rgb(13,21,19),18,Color.rgb(48,66,59),1)
+        }
+        panel.addView(label("OpenAI API", 14f, Color.rgb(112,255,104), Typeface.BOLD))
+        panel.addView(label("API Key", 12f, Color.WHITE, Typeface.BOLD).apply { setPadding(0, dp(9), 0, dp(5)) })
+        val key = EditText(activity).apply {
+            hint = if (vault.exists()) "Saved key available · enter to replace" else "OpenAI API key"
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            setSingleLine(true)
+            setTextColor(Color.WHITE)
+            setHintTextColor(Color.rgb(150,170,160))
+            background = round(Color.rgb(28,39,35),11,Color.rgb(60,82,73),1)
+            setPadding(dp(12), dp(9), dp(12), dp(9))
+        }
+        panel.addView(key, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(50)))
+
+        panel.addView(label("Model", 12f, Color.WHITE, Typeface.BOLD).apply { setPadding(0, dp(11), 0, dp(5)) })
+        val model = Spinner(activity).apply {
+            adapter = ArrayAdapter(activity, android.R.layout.simple_spinner_dropdown_item, PlanCodec.MODELS)
+            val saved = prefs.getString("ai_model", PlanCodec.DEFAULT_MODEL) ?: PlanCodec.DEFAULT_MODEL
+            setSelection(PlanCodec.MODELS.indexOf(saved).coerceAtLeast(0))
+            background = round(Color.rgb(28,39,35),11,Color.rgb(60,82,73),1)
+        }
+        panel.addView(model, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(50)))
+
+        val message = label(if (vault.exists()) "Saved key is available on this phone." else "No saved API key on this phone.", 11f, Color.rgb(190,205,198)).apply {
+            setPadding(0, dp(8), 0, dp(8))
+        }
+        panel.addView(message)
+
+        val save = Button(activity).apply {
+            text = "Save Settings"
+            isAllCaps = false
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(Color.BLACK)
+            background = round(Color.rgb(100,246,91),12)
+            setOnClickListener {
+                prefs.edit().putString("ai_model", PlanCodec.MODELS[model.selectedItemPosition.coerceIn(PlanCodec.MODELS.indices)]).apply()
+                val value = key.text.toString().trim()
+                if (value.isBlank()) {
+                    message.text = "Model saved. Existing API key unchanged."
+                } else if (!OpenAiPlanner.validKey(value)) {
+                    message.text = "Enter a valid API key."
+                } else {
+                    isEnabled = false
+                    scope.launch {
+                        try {
+                            withContext(Dispatchers.IO) { vault.save(value) }
+                            key.text.clear()
+                            message.text = "API key saved encrypted on this phone."
+                        } catch (_: Exception) {
+                            message.text = "Key could not be saved securely."
+                        } finally {
+                            isEnabled = true
+                        }
+                    }
+                }
+            }
+        }
+        panel.addView(save, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(50)).apply { topMargin = dp(5) })
+
+        val forget = Button(activity).apply {
+            text = "Forget saved API key"
+            isAllCaps = false
+            setTextColor(Color.WHITE)
+            background = round(Color.rgb(28,39,35),11,Color.rgb(60,82,73),1)
+            setOnClickListener {
+                scope.launch {
+                    try { withContext(Dispatchers.IO) { vault.clear() }; message.text = "Saved API key removed." }
+                    catch (_: Exception) { message.text = "Could not remove saved key." }
+                }
+            }
+        }
+        panel.addView(forget, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(46)).apply { topMargin = dp(7) })
+
+        panel.addView(label("App Preferences", 14f, Color.rgb(112,255,104), Typeface.BOLD).apply { setPadding(0, dp(14), 0, dp(6)) })
+        panel.addView(label("Target system is saved when you explicitly choose it.", 12f, Color.WHITE))
+        panel.addView(label("Bluetooth HID remains computer-initiated. No hidden command execution.", 12f, Color.rgb(190,205,198)).apply { setPadding(0, dp(5), 0, 0) })
+        panel.addView(label("About", 14f, Color.rgb(112,255,104), Typeface.BOLD).apply { setPadding(0, dp(14), 0, dp(5)) })
+        panel.addView(label("Black Cat AI · UI08 reference-screen candidate", 12f, Color.WHITE))
+        body.addView(panel)
+        root.addView(scroll, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
+        root.addView(appNav(), LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(62)))
+
+        dialog.setContentView(root)
+        dialog.setCanceledOnTouchOutside(false)
+        dialog.setOnDismissListener { scope.cancel(); onClosed() }
+        dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.WHITE))
+        dialog.window?.navigationBarColor = Color.rgb(11,20,17)
+        dialog.show()
+        dialog.window?.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
+    }
+
+    private fun appNav(): View {
+        val bar = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            background = round(Color.rgb(11,20,17),0,Color.rgb(48,66,59),1)
+            setPadding(dp(4),dp(3),dp(4),dp(3))
+        }
+        fun add(icon:String,title:String,active:Boolean=false,action:()->Unit) {
+            val item = LinearLayout(activity).apply {
+                orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER; isClickable = true
+                if(active) background = round(Color.rgb(25,52,39),12)
+                addView(label(icon,17f,if(active)Color.rgb(115,255,105) else Color.rgb(215,227,222),Typeface.BOLD).apply{gravity=Gravity.CENTER})
+                addView(label(title,10f,if(active)Color.rgb(115,255,105) else Color.rgb(215,227,222),Typeface.BOLD).apply{gravity=Gravity.CENTER})
+                setOnClickListener { action() }
+            }
+            bar.addView(item, LinearLayout.LayoutParams(0, dp(56), 1f))
+        }
+        add("⌂","Home"){ dialog.dismiss(); (activity as? MainActivity)?.openHomeFromChild() }
+        add("✣","AI"){ dialog.dismiss(); (activity as? MainActivity)?.let{ AiEntry.openAssistant(it,{ it.hidForUi() }) } }
+        add("▣","Target"){ dialog.dismiss(); (activity as? MainActivity)?.openTargetFromChild() }
+        add("⚙","Settings",true){}
+        return bar
+    }
+
+    private fun label(value:String,size:Float,color:Int,style:Int=Typeface.NORMAL)=TextView(activity).apply {
+        text=value;textSize=size;setTextColor(color);typeface=Typeface.create(Typeface.DEFAULT,style);includeFontPadding=false
+    }
+    private fun round(fill:Int,radius:Int,stroke:Int?=null,strokeDp:Int=0)=GradientDrawable().apply {
+        shape=GradientDrawable.RECTANGLE;setColor(fill);cornerRadius=dp(radius).toFloat();if(stroke!=null&&strokeDp>0)setStroke(dp(strokeDp),stroke)
+    }
+    private fun dp(v:Int)=(v*activity.resources.displayMetrics.density).toInt()
 }
 
 /**
@@ -115,7 +293,7 @@ private class AiPanel(
     private var busy = false
     private var activeTab = Tab.PLAN
     private var selected = -1
-    private var selectedModel = PlanCodec.DEFAULT_MODEL
+    private var selectedModel = activity.getSharedPreferences("blackcat_ai_ui", Activity.MODE_PRIVATE).getString("ai_model", PlanCodec.DEFAULT_MODEL) ?: PlanCodec.DEFAULT_MODEL
     private var commands = emptyList<SuggestedCommand>()
     private var currentPlan: CommandPlan? = null
     private var planRevision = 0L
@@ -199,6 +377,7 @@ private class AiPanel(
         }
         BlackCatStyle.applySystemBarInsets(root)
         root.addView(buildTopBar(), matchWrap())
+        root.addView(buildWorkflowTabs(), matchWrap())
         root.addView(buildStatusBar(), matchWrap())
 
         contentHost = FrameLayout(activity).apply { setBackgroundColor(BG) }
@@ -211,7 +390,7 @@ private class AiPanel(
         contentHost.addView(feedbackView, matchMatch())
         contentHost.addView(previewView, matchMatch())
         root.addView(contentHost, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
-        root.addView(buildBottomNav(), matchWrap())
+        root.addView(buildAppNav(), matchWrap())
 
         applyActiveTab()
         return root
@@ -237,7 +416,7 @@ private class AiPanel(
         }
         val titles = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
         titles.addView(label("Linux Assistant", 19f, Color.BLACK, Typeface.BOLD))
-        titles.addView(label("Plan → Step → Preview → Result", 11f, Color.DKGRAY))
+        titles.addView(label("Plan · Step · Feedback · Preview", 11f, Color.DKGRAY))
         titleRow.addView(titles, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         val settings = actionButton("Settings", primary = false) { openSettings() }.apply {
             minWidth = 0
@@ -472,32 +651,57 @@ private class AiPanel(
         d.show()
     }
 
-    private fun buildBottomNav(): View {
+    private fun buildWorkflowTabs(): View {
         val bar = LinearLayout(activity).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER
-            setPadding(dp(6), dp(5), dp(6), dp(6))
-            background = round(COMMAND_BG, 0, Color.rgb(48, 66, 59), 1)
+            setPadding(dp(8), dp(6), dp(8), dp(6))
+            setBackgroundColor(Color.WHITE)
         }
-        fun add(tab: Tab, icon: String, title: String) {
+        fun add(tab: Tab, title: String) {
             val item = LinearLayout(activity).apply {
                 orientation = LinearLayout.VERTICAL
                 gravity = Gravity.CENTER
-                setPadding(dp(4), dp(5), dp(4), dp(5))
                 isClickable = true
                 isFocusable = true
                 contentDescription = title
-                addView(label(icon, 17f, Color.rgb(188, 204, 198), Typeface.BOLD).apply { gravity = Gravity.CENTER })
-                addView(label(title, 11f, Color.rgb(188, 204, 198), Typeface.BOLD).apply { gravity = Gravity.CENTER })
+                background = round(COMMAND_BG, 9, LINE, 1)
+                addView(label(title, 11f, Color.rgb(205, 218, 212), Typeface.BOLD).apply { gravity = Gravity.CENTER })
                 setOnClickListener { switchTab(tab) }
             }
             tabButtons[tab] = item
-            bar.addView(item, LinearLayout.LayoutParams(0, dp(58), 1f))
+            bar.addView(item, LinearLayout.LayoutParams(0, dp(38), 1f).apply {
+                leftMargin = dp(2); rightMargin = dp(2)
+            })
         }
-        add(Tab.PLAN, "▤", "Plan")
-        add(Tab.STEP, "→", "Step")
-        add(Tab.PREVIEW, ">_", "Preview")
-        add(Tab.FEEDBACK, "◇", "Result")
+        add(Tab.PLAN, "Plan")
+        add(Tab.STEP, "Step")
+        add(Tab.FEEDBACK, "Feedback")
+        add(Tab.PREVIEW, "Preview")
+        return bar
+    }
+
+    private fun buildAppNav(): View {
+        val bar = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            setPadding(dp(4), dp(3), dp(4), dp(3))
+            background = round(COMMAND_BG, 0, Color.rgb(48,66,59), 1)
+        }
+        fun add(icon:String,title:String,active:Boolean=false,action:()->Unit) {
+            val item=LinearLayout(activity).apply {
+                orientation=LinearLayout.VERTICAL;gravity=Gravity.CENTER;isClickable=true;isFocusable=true
+                if(active)background=round(Color.rgb(25,52,39),12)
+                addView(label(icon,17f,if(active)GREEN else Color.rgb(215,227,222),Typeface.BOLD).apply{gravity=Gravity.CENTER})
+                addView(label(title,10f,if(active)GREEN else Color.rgb(215,227,222),Typeface.BOLD).apply{gravity=Gravity.CENTER})
+                setOnClickListener{action()}
+            }
+            bar.addView(item,LinearLayout.LayoutParams(0,dp(56),1f))
+        }
+        add("⌂","Home"){ dismiss(); (activity as? MainActivity)?.openHomeFromChild() }
+        add("✣","AI",true){}
+        add("▣","Target"){ dismiss(); (activity as? MainActivity)?.openTargetFromChild() }
+        add("⚙","Settings"){ dismiss(); (activity as? MainActivity)?.openSettingsFromChild() }
         return bar
     }
 
@@ -911,7 +1115,7 @@ private class AiPanel(
             } else {
                 oneShotKey = value
                 key.text.clear()
-                selectedModel = PlanCodec.MODELS[model.selectedItemPosition.coerceIn(PlanCodec.MODELS.indices)]
+                selectedModel = PlanCodec.MODELS[model.selectedItemPosition.coerceIn(PlanCodec.MODELS.indices)]; targetPrefs.edit().putString("ai_model", selectedModel).apply()
                 settingsDialog?.dismiss()
                 setStatus("API key ready for the next request.")
             }
@@ -929,7 +1133,7 @@ private class AiPanel(
                     oneShotKey = ""
                     key.text.clear()
                     message.text = "Key saved encrypted on this phone."
-                    selectedModel = PlanCodec.MODELS[model.selectedItemPosition.coerceIn(PlanCodec.MODELS.indices)]
+                    selectedModel = PlanCodec.MODELS[model.selectedItemPosition.coerceIn(PlanCodec.MODELS.indices)]; targetPrefs.edit().putString("ai_model", selectedModel).apply()
                     setStatus("Saved API key available.")
                 } catch (e: CancellationException) {
                     throw e
@@ -964,7 +1168,7 @@ private class AiPanel(
             .setTitle("Settings")
             .setView(ScrollView(activity).apply { addView(body) })
             .setNegativeButton("CLOSE") { _, _ ->
-                selectedModel = PlanCodec.MODELS[model.selectedItemPosition.coerceIn(PlanCodec.MODELS.indices)]
+                selectedModel = PlanCodec.MODELS[model.selectedItemPosition.coerceIn(PlanCodec.MODELS.indices)]; targetPrefs.edit().putString("ai_model", selectedModel).apply()
             }
             .create()
         settingsDialog = d
