@@ -99,7 +99,7 @@ object AiEntry {
  */
 private class AiPanel(
     private val activity: Activity,
-    manager: HidManager,
+    private val manager: HidManager,
     private val onClosed: () -> Unit
 ) {
     private enum class Tab { PLAN, STEP, PREVIEW, FEEDBACK }
@@ -150,6 +150,8 @@ private class AiPanel(
     private val tabButtons = linkedMapOf<Tab, LinearLayout>()
 
     fun show() {
+        selectedModel = targetPrefs.getString(AiSettingsPanel.MODEL_KEY, PlanCodec.DEFAULT_MODEL)
+            ?.takeIf { it in PlanCodec.MODELS } ?: PlanCodec.DEFAULT_MODEL
         dialog.setContentView(buildShell())
         dialog.setCanceledOnTouchOutside(false)
         dialog.setOnDismissListener {
@@ -200,6 +202,7 @@ private class AiPanel(
         }
         BlackCatStyle.applySystemBarInsets(root)
         root.addView(buildTopBar(), matchWrap())
+        root.addView(buildBottomNav(), matchWrap())
         root.addView(buildStatusBar(), matchWrap())
 
         contentHost = FrameLayout(activity).apply { setBackgroundColor(BG) }
@@ -212,7 +215,7 @@ private class AiPanel(
         contentHost.addView(feedbackView, matchMatch())
         contentHost.addView(previewView, matchMatch())
         root.addView(contentHost, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
-        root.addView(buildBottomNav(), matchWrap())
+        root.addView(buildAppNav(), matchWrap())
 
         applyActiveTab()
         return root
@@ -371,11 +374,24 @@ private class AiPanel(
         next.addView(nextText, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         card.addView(next, matchWrap(top = 13))
 
-        buildButton = actionButton("Build plan  →", primary = true) { generateProposal() }.apply {
+        val actionRow = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        val photoButton = actionButton("▣", primary = false) {
+            AiEntry.openPhotoFeedback(activity) { manager }
+        }.apply {
+            contentDescription = "Photo Feedback"
+            textSize = 18f
+            minWidth = 0
+        }
+        buildButton = actionButton("Get Plan", primary = true) { generateProposal() }.apply {
             textSize = 17f
             minHeight = dp(54)
         }
-        card.addView(buildButton, matchWrap(top = 12))
+        actionRow.addView(photoButton, LinearLayout.LayoutParams(dp(58), dp(54)).apply { rightMargin = dp(8) })
+        actionRow.addView(buildButton, LinearLayout.LayoutParams(0, dp(54), 1f))
+        card.addView(actionRow, matchWrap(top = 12))
         stage.minimumHeight = dp(360)
         body.addView(stage, matchWrap())
 
@@ -477,28 +493,54 @@ private class AiPanel(
         val bar = LinearLayout(activity).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER
-            setPadding(dp(6), dp(5), dp(6), dp(6))
+            setPadding(dp(8), dp(5), dp(8), dp(5))
             background = round(COMMAND_BG, 0, Color.rgb(48, 66, 59), 1)
         }
-        fun add(tab: Tab, icon: String, title: String) {
+        fun add(tab: Tab, title: String) {
             val item = LinearLayout(activity).apply {
                 orientation = LinearLayout.VERTICAL
                 gravity = Gravity.CENTER
-                setPadding(dp(4), dp(5), dp(4), dp(5))
+                setPadding(dp(4), dp(4), dp(4), dp(4))
                 isClickable = true
                 isFocusable = true
                 contentDescription = title
-                addView(label(icon, 17f, Color.rgb(188, 204, 198), Typeface.BOLD).apply { gravity = Gravity.CENTER })
                 addView(label(title, 11f, Color.rgb(188, 204, 198), Typeface.BOLD).apply { gravity = Gravity.CENTER })
                 setOnClickListener { switchTab(tab) }
             }
             tabButtons[tab] = item
-            bar.addView(item, LinearLayout.LayoutParams(0, dp(58), 1f))
+            bar.addView(item, LinearLayout.LayoutParams(0, dp(42), 1f).apply { leftMargin = dp(2); rightMargin = dp(2) })
         }
-        add(Tab.PLAN, "▤", "Plan")
-        add(Tab.STEP, "→", "Step")
-        add(Tab.PREVIEW, ">_", "Preview")
-        add(Tab.FEEDBACK, "◇", "Result")
+        add(Tab.PLAN, "Plan")
+        add(Tab.STEP, "Step")
+        add(Tab.FEEDBACK, "Feedback")
+        add(Tab.PREVIEW, "Preview")
+        return bar
+    }
+
+    private fun buildAppNav(): View {
+        val bar = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            setPadding(dp(4), dp(4), dp(4), dp(4))
+            background = round(COMMAND_BG, 0, Color.rgb(48, 66, 59), 1)
+        }
+        fun add(icon: String, title: String, active: Boolean = false, action: () -> Unit) {
+            val item = LinearLayout(activity).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = Gravity.CENTER
+                isClickable = true
+                isFocusable = true
+                contentDescription = title
+                setOnClickListener { action() }
+                addView(label(icon, 16f, if (active) GREEN else Color.rgb(220, 228, 224), Typeface.BOLD).apply { gravity = Gravity.CENTER })
+                addView(label(title, 10f, if (active) GREEN else Color.rgb(220, 228, 224), Typeface.BOLD).apply { gravity = Gravity.CENTER })
+            }
+            bar.addView(item, LinearLayout.LayoutParams(0, dp(56), 1f))
+        }
+        add("⌂", "Home") { dismiss() }
+        add("✣", "AI", true) { }
+        add("▣", "Target") { TargetSystemPanel(activity).show() }
+        add("⚙", "Settings") { AiSettingsPanel(activity).show() }
         return bar
     }
 
@@ -1077,8 +1119,8 @@ private class AiPanel(
         isAllCaps = false
         textSize = 14f
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        setTextColor(if (primary) Color.WHITE else INK)
-        background = round(if (primary) GREEN else FIELD, 13, if (primary) GREEN else LINE, 1)
+        setTextColor(if (primary) Color.BLACK else INK)
+        background = round(if (primary) Color.rgb(116, 244, 91) else FIELD, 13, if (primary) Color.rgb(116, 244, 91) else LINE, 1)
         minHeight = dp(48)
         setOnClickListener { action() }
     }
