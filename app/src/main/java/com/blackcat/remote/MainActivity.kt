@@ -35,7 +35,7 @@ class MainActivity:Activity(){
 
   val scroll=ScrollView(this).apply{isFillViewport=true;overScrollMode=View.OVER_SCROLL_IF_CONTENT_SCROLLS}
   val body=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;setPadding(dp(10),0,dp(10),dp(12))}
-  scroll.addView(body,ScrollView.LayoutParams(-1,-2))
+  scroll.addView(body,ViewGroup.LayoutParams(-1,-2))
   root.addView(scroll,LinearLayout.LayoutParams(-1,0,1f))
 
   val connect=BlackCatStyle.card(this)
