@@ -1,0 +1,51 @@
+name: Publish exact UI06 approved-design APK
+
+on:
+  push:
+    branches: [publish/ui06-approved-candidate]
+    paths:
+      - .github/workflows/publish-ui06-approved-apk.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Download exact already-tested artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$GH_REPO/actions/artifacts/11077609952/zip" > ui06-approved.zip
+          echo "a191a936630282eccfce990c495b80ee94c3fc34e940158523363cdc84e1a184  ui06-approved.zip" | sha256sum -c -
+          mkdir out
+          unzip -q ui06-approved.zip -d out
+          test -f out/CatAI-06.apk
+          echo "e022f0729e7d4b9d032e6324178843753c154e2d7bfd1b8222670a3c43c9eb6f  out/CatAI-06.apk" | sha256sum -c -
+
+      - name: Publish exact APK only as prerelease asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="ui06-approved-cb6d6878"
+          TARGET="cb6d687875445f566225bbbe54c270c6960e9786"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release already exists; refusing to overwrite."
+            exit 0
+          fi
+          printf '%s\n'             'Physical-test prerelease. Not yet promoted.'             'Exact APK from successful Actions run 36670958436.'             'Source: cb6d687875445f566225bbbe54c270c6960e9786'             'SHA-256: e022f0729e7d4b9d032e6324178843753c154e2d7bfd1b8222670a3c43c9eb6f'             'Approved UI: full black cat on white, dark controls, Plan → Step → Preview → Result, saved target dropdown.'             > NOTES.txt
+          gh release create "$TAG" out/CatAI-06.apk             --target "$TARGET"             --prerelease             --title "Black Cat UI06 approved-design physical-test APK"             --notes-file NOTES.txt
