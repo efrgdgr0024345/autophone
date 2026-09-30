@@ -255,8 +255,10 @@ internal class PhotoFeedbackPanel(
             try {
                 val key = withContext(Dispatchers.IO) { vault.read().orEmpty() }
                 if (!OpenAiPlanner.validKey(key)) throw PlanException("No saved OpenAI key. Open Linux Assistant → Settings and save your key first.")
+                val selectedModel = prefs.getString(AiSettingsPanel.MODEL_KEY, PlanCodec.DEFAULT_MODEL)
+                    ?.takeIf { it in PlanCodec.MODELS } ?: PlanCodec.DEFAULT_MODEL
                 analysis = withTimeout(75000) {
-                    analyzer.analyze(requestedGoal, targetSystem, PlanCodec.DEFAULT_MODEL, key, bytes)
+                    analyzer.analyze(requestedGoal, targetSystem, selectedModel, key, bytes)
                 }
                 selectedCommand = 0
                 state = State.RESULT
@@ -280,8 +282,8 @@ internal class PhotoFeedbackPanel(
     private fun renderAnalyzing() {
         val panel = panel()
         panel.gravity = Gravity.CENTER
-        panel.addView(label("Analyzing photo…", 20f, Color.WHITE, Typeface.BOLD).apply { gravity = Gravity.CENTER })
-        panel.addView(label("The image and your task context are being sent to OpenAI. No keyboard input is happening.", 13f, PANEL_MUTED).apply {
+        panel.addView(label("Sending to AI", 20f, Color.WHITE, Typeface.BOLD).apply { gravity = Gravity.CENTER })
+        panel.addView(label("Uploading the reviewed photo to your configured AI model. No keyboard input is happening.", 13f, PANEL_MUTED).apply {
             gravity = Gravity.CENTER
             setPadding(dp(12), dp(10), dp(12), dp(10))
         })
