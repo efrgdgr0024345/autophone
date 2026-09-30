@@ -57,7 +57,7 @@ def verify_activity(text: str) -> None:
         assert snippet in text, f'Main UI no longer maps to proven HID action: {snippet}'
     for snippet in KEYMAP_SNIPPETS:
         assert snippet in text, f'Full keyboard mapping changed: {snippet}'
-    assert 'BlackCatStyle' in text and 'R.drawable.black_cat_emblem' in text, 'Approved full-app Black Cat style missing'
+    assert 'BlackCatStyle' in text and 'R.drawable.black_cat_portrait' in text, 'Approved full-app Black Cat portrait/style missing'
     assert 'BlackCatStyle.applySystemBarInsets(root)' in text, 'Main display must sit inside Android system-bar insets'
     assert 'diagnosticsBody=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;visibility=View.GONE' in text, 'Diagnostics must be collapsed by default'
     assert text.index(HOOK) < text.index('val typeCard='), 'Assistant choice belongs before remote-detail controls'
@@ -75,7 +75,7 @@ def verify() -> None:
 
     expected = {'android.permission.' + x for x in ('BLUETOOTH','BLUETOOTH_ADMIN','BLUETOOTH_CONNECT','BLUETOOTH_ADVERTISE')}
     assert permissions('app/src/main/AndroidManifest.xml') == expected
-    assert permissions('app/src/ai/AndroidManifest.xml') == {'android.permission.INTERNET'}
+    assert permissions('app/src/ai/AndroidManifest.xml') == {'android.permission.INTERNET', 'android.permission.CAMERA'}
     app = ET.parse(ROOT / 'app/src/main/AndroidManifest.xml').getroot().find('application')
     assert app.attrib[android + 'allowBackup'] == 'false'
     assert app.attrib[android + 'usesCleartextTraffic'] == 'false'
