@@ -9,8 +9,8 @@ android {
         applicationId 'com.blackcat.remote'
         minSdk 28
         targetSdk 35
-        versionCode 7
-        versionName '5.0-flow-preview'
+        versionCode 8
+        versionName '6.0-approved-ui-preview'
     }
     flavorDimensions 'capability'
     productFlavors {
