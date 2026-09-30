@@ -1,0 +1,51 @@
+name: Publish exact UI04 test APK
+
+on:
+  push:
+    branches: [publish/ui04-candidate]
+    paths:
+      - .github/workflows/publish-ui04-test-apk.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Download exact already-tested artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$GH_REPO/actions/artifacts/11074810642/zip" > ui04.zip
+          echo "91dabfc95c7afe9abd2e324e9d00665592ffb52722c51b8b4f7e3b811679ea9d  ui04.zip" | sha256sum -c -
+          mkdir out
+          unzip -q ui04.zip -d out
+          test -f out/CatAI-04.apk
+          echo "7ea318fba91b33da9e0508e4e17c849c28a83fd9e00c136b21ec0a45c635f704  out/CatAI-04.apk" | sha256sum -c -
+
+      - name: Publish exact APK only as prerelease asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="ui04-ab34f45d"
+          TARGET="ab34f45d7ef09f06e4d41873079b168e20df01f6"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release already exists; refusing to overwrite."
+            exit 0
+          fi
+          printf '%s\n'             'Physical-test prerelease. Not yet promoted.'             'Exact APK from successful Actions run 36661260468.'             'Source: ab34f45d7ef09f06e4d41873079b168e20df01f6'             'SHA-256: 7ea318fba91b33da9e0508e4e17c849c28a83fd9e00c136b21ec0a45c635f704'             > NOTES.txt
+          gh release create "$TAG" out/CatAI-04.apk             --target "$TARGET"             --prerelease             --title "Black Cat UI04 physical-test APK"             --notes-file NOTES.txt
