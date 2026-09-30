@@ -99,23 +99,24 @@ internal class PhotoFeedbackPanel(
     }
 
     private fun buildHeader(): View {
-        val frame = FrameLayout(activity).apply {
+        val hero = FrameLayout(activity).apply {
             setBackgroundColor(Color.WHITE)
-            setPadding(dp(10), dp(8), dp(10), dp(4))
+            setPadding(dp(10), dp(4), dp(10), dp(4))
         }
         val portrait = ImageView(activity).apply {
-            setImageResource(R.drawable.black_cat_portrait)
+            setImageResource(R.drawable.black_cat_full)
             scaleType = ImageView.ScaleType.CENTER_CROP
             contentDescription = "Black Cat"
         }
-        frame.addView(portrait, FrameLayout.LayoutParams(dp(92), dp(92), Gravity.START or Gravity.CENTER_VERTICAL))
+        hero.addView(portrait, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(126), Gravity.TOP))
+
         val title = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(102), dp(15), dp(46), dp(10))
-            addView(label("Photo Feedback", 22f, Color.BLACK, Typeface.BOLD))
-            addView(label("Show Black Cat what the computer is displaying.", 12f, Color.DKGRAY))
+            setPadding(dp(8), dp(92), dp(48), dp(8))
+            addView(label("Photo Feedback", 21f, Color.BLACK, Typeface.BOLD))
+            addView(label("Take a photo → review it → send it to OpenAI.", 12f, Color.DKGRAY))
         }
-        frame.addView(title, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        hero.addView(title, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(142)))
         val close = Button(activity).apply {
             text = "×"
             textSize = 22f
@@ -124,8 +125,8 @@ internal class PhotoFeedbackPanel(
             setTextColor(Color.BLACK)
             setOnClickListener { dismiss() }
         }
-        frame.addView(close, FrameLayout.LayoutParams(dp(44), dp(44), Gravity.END or Gravity.TOP))
-        return frame
+        hero.addView(close, FrameLayout.LayoutParams(dp(44), dp(44), Gravity.END or Gravity.TOP))
+        return hero
     }
 
     private fun render() {
