@@ -156,14 +156,13 @@ internal class PhotoFeedbackPanel(
         }
         panel.addView(texture, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(300)).apply { bottomMargin = dp(10) })
 
-        val cameraPermission = activity.checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
         val action = Button(activity).apply {
-            text = if (cameraPermission) "Start camera" else "Enable camera"
+            text = if (activity.checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) "Start camera" else "Enable camera"
             BlackCatStyle.styleButton(activity, this, primary = true)
             setOnClickListener {
-                if (!cameraPermission) {
+                if (activity.checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                     activity.requestPermissions(arrayOf(Manifest.permission.CAMERA), CAMERA_REQUEST)
-                    setStatus("Grant camera access, then tap Start camera.")
+                    setStatus("Grant camera access, then tap this button again.")
                 } else {
                     startCamera()
                     text = "Take photo"
