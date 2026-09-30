@@ -109,6 +109,7 @@ class MainActivity:Activity(){
  fun openHomeFromChild(){showHome()}
  fun openTargetFromChild(){showTarget()}
  fun openSettingsFromChild(){AiEntry.openSettings(this)}
+ fun hidForUi():HidManager=hid
 
  private fun showBluetooth(){
   currentMainScreen="bluetooth";bottomNav.visibility=View.VISIBLE;setNavActive("home")
