@@ -38,8 +38,8 @@ def verify(root: Path = ROOT) -> None:
         'Edit / custom…', 'getSharedPreferences(TARGET_PREFS',
         'putString(TARGET_KEY', 'Ubuntu Linux / Bash', 'Debian Linux / Bash',
         'Fedora Linux / Bash', 'Arch Linux / Bash', 'Kali Linux / Bash',
-        'BlackCatStyle.styleButton(activity, this, primary = true, compact = true)',
-        'Linux Assistant', 'Photo Feedback', 'R.drawable.black_cat_portrait',
+        'Linux Assistant', 'Photo Feedback', 'R.drawable.black_cat_full',
+        'Plan, review & type', 'Take photo, get help',
         'BlackCatStyle.applySystemBarInsets(root)',
         'lastTypedCommand = command', 'activeTab = Tab.FEEDBACK'
     ):
@@ -66,7 +66,9 @@ def verify(root: Path = ROOT) -> None:
             actual = hashlib.sha256(data).hexdigest()
             assert actual == expected, f'Approved Black Cat artwork changed in {source_set}: {name}'
     portrait = root / 'app/src/main/res/drawable-nodpi/black_cat_portrait.webp'
-    assert hashlib.sha256(portrait.read_bytes()).hexdigest() == PORTRAIT_SHA256, 'Large approved Black Cat portrait changed'
+    assert hashlib.sha256(portrait.read_bytes()).hexdigest() == PORTRAIT_SHA256, 'Existing photo-enabled Black Cat portrait changed'
+    full_cat = root / 'app/src/main/res/drawable-nodpi/black_cat_full.webp'
+    assert full_cat.exists() and full_cat.stat().st_size > 10000, 'Approved full Black Cat hero missing or empty'
 
     style = (root / 'app/src/main/java/com/blackcat/remote/BlackCatStyle.kt').read_text(encoding='utf-8')
     for value in ('245, 248, 245', '22, 97, 70', '18, 44, 36'):
@@ -92,6 +94,7 @@ def verify(root: Path = ROOT) -> None:
     assert 'OpenAiPlanner.ENDPOINT' in analyzer
 
     photo_panel = (ai / 'PhotoFeedbackPanel.kt').read_text(encoding='utf-8')
+    assert 'R.drawable.black_cat_full' in photo_panel, 'Photo Feedback must use the approved full-cat white-background header'
     for required in ('Review photo', 'Send photo to OpenAI', 'Photo analysis ready', 'Review & TYPE ONLY', 'ApprovedCommandSender.send'):
         assert required in photo_panel, f'Missing reviewed photo flow element: {required}'
     for forbidden in ('sendKeyboard(', 'KeyEvent.KEYCODE_ENTER', 'Runtime.getRuntime', 'ProcessBuilder('):
