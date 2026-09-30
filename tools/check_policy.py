@@ -11,7 +11,7 @@ FROZEN = {
     'HidReports.kt': '5b4369900a92948a58b5d25fcab1022ca8d7fdcf',
     'Diagnostics.kt': '50f57a2bcdbb3b37b245023441178314f47940ab',
 }
-HOOK = '  // BEGIN AI-ONLY ENTRY\n  AiEntry.attach(this,assistantRow){hid}\n  // END AI-ONLY ENTRY\n'
+HOOK = '  // BEGIN AI-ONLY ENTRY\n  AiEntry.attach(this,assistantTileRow){hid}\n  // END AI-ONLY ENTRY\n'
 
 BEHAVIOR_SNIPPETS = (
     'override fun onCreate(s:Bundle?){super.onCreate(s);buildUi();diagnostics=Diagnostics{runOnUiThread{log.text=it}};hid=HidManager(this){event(it)};permissionsOrInit()}',
