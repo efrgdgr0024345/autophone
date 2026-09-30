@@ -1,6 +1,6 @@
 package com.blackcat.remote
 
-import android.util.Base64
+import java.util.Base64
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -58,7 +58,7 @@ object PhotoAnalysisCodec {
         require(target.isNotBlank() && target.length <= 500)
         require(model in PlanCodec.MODELS)
         require(jpeg.size in 1..4_500_000)
-        val dataUrl = "data:image/jpeg;base64," + Base64.encodeToString(jpeg, Base64.NO_WRAP)
+        val dataUrl = "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(jpeg)
         val content = JSONArray()
             .put(JSONObject().put("type", "input_text").put("text",
                 JSONObject().put("goal", goal).put("target_os_and_shell", target).toString()))
