@@ -41,21 +41,40 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 
 object AiEntry {
-    /** Only adds a button in an existing row; does not access HID or credentials at app startup. */
+    /** Adds optional AI surfaces only; no API, camera or HID work occurs at app startup. */
     fun attach(activity: Activity, row: LinearLayout, manager: () -> HidManager) {
-        val button = Button(activity).apply {
-            text = "Open Linux Assistant"
+        val assistant = Button(activity).apply {
+            text = "Linux Assistant"
             contentDescription = "Open Linux command assistant"
             BlackCatStyle.styleButton(activity, this, primary = true, compact = true)
         }
-        row.addView(button, LinearLayout.LayoutParams(0, (46 * activity.resources.displayMetrics.density).toInt(), 1f))
-        button.setOnClickListener {
-            button.isEnabled = false
+        val photo = Button(activity).apply {
+            text = "Photo Feedback"
+            contentDescription = "Take a computer-screen photo for OpenAI analysis"
+            BlackCatStyle.styleButton(activity, this, primary = false, compact = true)
+        }
+        row.addView(assistant, LinearLayout.LayoutParams(0, (46 * activity.resources.displayMetrics.density).toInt(), 1f).apply {
+            rightMargin = (6 * activity.resources.displayMetrics.density).toInt()
+        })
+        row.addView(photo, LinearLayout.LayoutParams(0, (46 * activity.resources.displayMetrics.density).toInt(), 1f))
+
+        assistant.setOnClickListener {
+            assistant.isEnabled = false
             try {
-                AiPanel(activity, manager()) { button.isEnabled = true }.show()
+                AiPanel(activity, manager()) { assistant.isEnabled = true }.show()
             } catch (_: Exception) {
-                button.isEnabled = true
+                assistant.isEnabled = true
                 Toast.makeText(activity, "Could not open AI panel. Bluetooth controls are unchanged.", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        photo.setOnClickListener {
+            photo.isEnabled = false
+            try {
+                PhotoFeedbackPanel(activity, manager()) { photo.isEnabled = true }.show()
+            } catch (_: Exception) {
+                photo.isEnabled = true
+                Toast.makeText(activity, "Could not open Photo Feedback. Bluetooth controls are unchanged.", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -189,38 +208,34 @@ private class AiPanel(
     }
 
     private fun buildTopBar(): View {
-        val row = LinearLayout(activity).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(14), dp(8), dp(10), dp(6))
-            setBackgroundColor(PAPER)
+        val frame = FrameLayout(activity).apply {
+            setBackgroundColor(Color.WHITE)
+            setPadding(dp(10), dp(6), dp(10), dp(4))
         }
-        val logo = ImageView(activity).apply {
-            setImageResource(R.drawable.black_cat_emblem)
+        val portrait = ImageView(activity).apply {
+            setImageResource(R.drawable.black_cat_portrait)
             scaleType = ImageView.ScaleType.CENTER_CROP
             contentDescription = "Black Cat"
-            background = round(PAPER, 30, LINE, 1)
-            clipToOutline = true
         }
-        row.addView(logo, LinearLayout.LayoutParams(dp(46), dp(46)))
+        frame.addView(portrait, FrameLayout.LayoutParams(dp(88), dp(88), Gravity.START or Gravity.CENTER_VERTICAL))
 
         val titles = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(9), 0, 0, 0)
+            setPadding(dp(98), dp(12), dp(86), dp(10))
         }
-        titles.addView(label("BLACK CAT", 15f, INK, Typeface.BOLD).apply { letterSpacing = .12f })
-        titles.addView(label("Linux assistant · Android", 11f, MUTED))
-        row.addView(titles, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        titles.addView(label("Linux Assistant", 20f, Color.BLACK, Typeface.BOLD))
+        titles.addView(label("Plan → Step → Preview → Result", 11f, Color.DKGRAY))
+        frame.addView(titles, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
 
         val settings = actionButton("Settings", primary = false) { openSettings() }.apply {
             minWidth = 0
-            minHeight = dp(44)
-            setPadding(dp(13), 0, dp(13), 0)
-            textSize = 13f
+            minHeight = dp(42)
+            setPadding(dp(10), 0, dp(10), 0)
+            textSize = 12f
             contentDescription = "Open AI settings"
         }
-        row.addView(settings, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(44)))
-        return row
+        frame.addView(settings, FrameLayout.LayoutParams(dp(80), dp(42), Gravity.END or Gravity.TOP))
+        return frame
     }
 
     private fun buildStatusBar(): View {
