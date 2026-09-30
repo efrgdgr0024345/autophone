@@ -1,0 +1,114 @@
+name: Black Cat UI04 full-style preview
+
+on:
+  push:
+    branches: [feature/full-blackcat-style-v1]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ui04-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify, build, attest UI04
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Verify Bluetooth behavior, API boundary and UI04 contract
+        run: |
+          python3 tools/check_policy.py
+          python3 tools/test_policy.py -v
+          python3 tools/check_mobile_ui.py
+          python3 tools/test_mobile_ui.py -v
+
+      - name: Build, test and lint both variants
+        run: gradle testOfflineDebugUnitTest testAiDebugUnitTest lintOfflineDebug lintAiDebug assembleOfflineDebug assembleAiDebug --continue --console=plain --stacktrace
+
+      - name: Upload reports even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui04-reports-${{ github.run_id }}
+          path: |
+            app/build/reports/
+            app/build/test-results/
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Inspect and package exact tested preview
+        run: |
+          set -euo pipefail
+          AAPT=$(find "$ANDROID_HOME/build-tools" -name aapt -type f | sort -V | tail -n 1)
+          SIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)
+          mkdir -p preview
+          for flavor in ai offline; do
+            apk="app/build/outputs/apk/$flavor/debug/app-$flavor-debug.apk"
+            python3 tools/check_apk.py "$apk" "$flavor" "$AAPT" | tee "preview/$flavor-manifest.txt"
+            "$SIGNER" verify --verbose --print-certs "$apk" > "preview/$flavor-signature.txt"
+          done
+          cp app/build/outputs/apk/ai/debug/app-ai-debug.apk preview/CatAI-04.apk
+          cp app/build/outputs/apk/offline/debug/app-offline-debug.apk preview/CatBT-04.apk
+          git rev-parse HEAD > preview/SOURCE.txt
+          git diff --stat 44917e02a5cdf2d35a729224e3f26140adb08a43 HEAD > preview/DIFFSTAT.txt
+          printf '%s\n'             'UI04 is a physical-test prerelease candidate.'             'It applies the approved Black Cat style to the main Bluetooth remote and AI panel.'             'It adds a saved target-system dropdown with an Edit/custom option.'             'Bluetooth HID helper files, pairing logic, lifecycle logic, input mappings and API transport remain protected by tests.'             > preview/README.txt
+          (cd preview && sha256sum *.apk > SHA256SUMS)
+
+      - name: Attest exact AI APK provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: preview/CatAI-04.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: blackcat-ui04-${{ github.run_id }}
+          path: preview/
+          if-no-files-found: error
+          retention-days: 90
+
+  analyze:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: java-kotlin
+          build-mode: manual
+          queries: security-and-quality
+      - run: gradle clean assembleOfflineDebug assembleAiDebug --console=plain --stacktrace
+      - uses: github/codeql-action/analyze@v4

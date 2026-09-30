@@ -46,6 +46,7 @@ object AiEntry {
         val button = Button(activity).apply {
             text = "AI"
             contentDescription = "Open AI command assistant"
+            BlackCatStyle.styleButton(activity, this, primary = true, compact = true)
         }
         row.addView(button, LinearLayout.LayoutParams(0, (46 * activity.resources.displayMetrics.density).toInt(), 1f))
         button.setOnClickListener {
@@ -91,9 +92,14 @@ private class AiPanel(
     private var planRevision = 0L
     private var oneShotKey = ""
     private val recentGoals = ArrayDeque<String>()
+    private val targetPrefs by lazy { activity.getSharedPreferences(TARGET_PREFS, Activity.MODE_PRIVATE) }
+    private var selectedTarget = DEFAULT_TARGET
+    private var customTarget = ""
+    private var targetOptions = emptyList<String>()
+    private var suppressTargetSelection = false
 
     private lateinit var goal: EditText
-    private lateinit var targetField: EditText
+    private lateinit var targetSpinner: Spinner
     private lateinit var buildButton: Button
     private lateinit var statusPill: TextView
     private lateinit var statusText: TextView
@@ -277,6 +283,7 @@ private class AiPanel(
         card.addView(goal, matchWrap())
 
         card.addView(label("Target system & shell", 13f, INK, Typeface.BOLD).apply { setPadding(0, dp(13), 0, dp(7)) })
+        loadTargetState()
         val targetRow = LinearLayout(activity).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -289,14 +296,31 @@ private class AiPanel(
             background = round(TINT, 8)
             setPadding(dp(7), dp(7), dp(7), dp(7))
         })
-        targetField = input("Ubuntu Linux / Bash", 500, multiline = false).apply {
-            background = null
-            setPadding(dp(10), dp(10), dp(8), dp(10))
-            minHeight = dp(50)
-            textSize = 15f
+        targetSpinner = Spinner(activity).apply {
+            minimumHeight = dp(50)
+            contentDescription = "Target Linux system and shell"
         }
-        targetRow.addView(targetField, LinearLayout.LayoutParams(0, dp(50), 1f))
+        targetRow.addView(targetSpinner, LinearLayout.LayoutParams(0, dp(50), 1f))
         card.addView(targetRow, matchWrap())
+        refreshTargetSpinner()
+        targetSpinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
+                if (suppressTargetSelection) return
+                val chosen = targetOptions.getOrNull(position) ?: return
+                if (chosen == EDIT_TARGET) {
+                    showCustomTargetEditor()
+                    return
+                }
+                val value = if (chosen.startsWith(CUSTOM_PREFIX)) customTarget else chosen
+                if (value.isNotBlank() && value != selectedTarget) {
+                    selectedTarget = value
+                    targetPrefs.edit().putString(TARGET_KEY, selectedTarget).apply()
+                    invalidatePlanForInputChange()
+                    renderAll()
+                }
+            }
+        }
 
         val next = LinearLayout(activity).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -356,8 +380,66 @@ private class AiPanel(
             override fun afterTextChanged(s: Editable?) {}
         }
         goal.addTextChangedListener(changed)
-        targetField.addTextChangedListener(changed)
         return scroll
+    }
+
+    private fun loadTargetState() {
+        selectedTarget = targetPrefs.getString(TARGET_KEY, DEFAULT_TARGET)?.trim().orEmpty().ifBlank { DEFAULT_TARGET }
+        customTarget = targetPrefs.getString(CUSTOM_TARGET_KEY, "")?.trim().orEmpty()
+        if (selectedTarget !in COMMON_TARGETS && selectedTarget.isNotBlank()) customTarget = selectedTarget
+    }
+
+    private fun refreshTargetSpinner() {
+        if (!::targetSpinner.isInitialized) return
+        val options = mutableListOf<String>()
+        options.addAll(COMMON_TARGETS)
+        if (customTarget.isNotBlank()) options.add(CUSTOM_PREFIX + customTarget)
+        options.add(EDIT_TARGET)
+        targetOptions = options
+        suppressTargetSelection = true
+        targetSpinner.adapter = ArrayAdapter(activity, android.R.layout.simple_spinner_dropdown_item, targetOptions)
+        val selectedLabel = when {
+            selectedTarget in COMMON_TARGETS -> selectedTarget
+            customTarget.isNotBlank() && selectedTarget == customTarget -> CUSTOM_PREFIX + customTarget
+            else -> DEFAULT_TARGET
+        }
+        targetSpinner.setSelection(targetOptions.indexOf(selectedLabel).coerceAtLeast(0), false)
+        suppressTargetSelection = false
+    }
+
+    private fun showCustomTargetEditor() {
+        val editor = input("Distribution / OS and shell", 500, multiline = false).apply {
+            val initial = if (customTarget.isNotBlank()) customTarget else if (selectedTarget !in COMMON_TARGETS) selectedTarget else ""
+            setText(initial)
+            setSelection(text.length)
+        }
+        val d = AlertDialog.Builder(activity)
+            .setTitle("Edit target system")
+            .setMessage("Example: Proxmox VE / Bash, Ubuntu Server / Zsh, or a remote SSH target.")
+            .setView(editor)
+            .setNegativeButton("CANCEL") { _, _ -> refreshTargetSpinner() }
+            .setPositiveButton("SAVE") { _, _ ->
+                val value = editor.text.toString().trim()
+                if (value.isNotBlank()) {
+                    customTarget = value
+                    selectedTarget = value
+                    targetPrefs.edit()
+                        .putString(TARGET_KEY, selectedTarget)
+                        .putString(CUSTOM_TARGET_KEY, customTarget)
+                        .apply()
+                    refreshTargetSpinner()
+                    invalidatePlanForInputChange()
+                    renderAll()
+                } else {
+                    refreshTargetSpinner()
+                }
+            }
+            .create()
+        d.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        d.setOnDismissListener {
+            if (::targetSpinner.isInitialized && targetSpinner.selectedItem?.toString() == EDIT_TARGET) refreshTargetSpinner()
+        }
+        d.show()
     }
 
     private fun buildBottomNav(): View {
@@ -439,7 +521,7 @@ private class AiPanel(
 
     private fun renderAll() {
         if (!::goal.isInitialized) return
-        buildButton.isEnabled = !busy && goal.text.isNotBlank() && targetField.text.isNotBlank()
+        buildButton.isEnabled = !busy && goal.text.isNotBlank() && selectedTarget.isNotBlank()
         val count = commands.size
         nextTitle.text = when {
             busy -> "Working"
@@ -613,12 +695,12 @@ private class AiPanel(
 
     private fun generateProposal() {
         if (busy) return
-        if (goal.text.isBlank() || targetField.text.isBlank()) {
+        if (goal.text.isBlank() || selectedTarget.isBlank()) {
             setStatus("Enter the goal and target system first.", error = true)
             return
         }
         val requestedGoal = goal.text.toString().trim()
-        val requestedTarget = targetField.text.toString().trim()
+        val requestedTarget = selectedTarget
         val requestedModel = selectedModel
         val enteredKey = oneShotKey
         oneShotKey = ""
@@ -975,6 +1057,26 @@ private class AiPanel(
     private fun dp(value: Int) = (value * activity.resources.displayMetrics.density).toInt()
 
     companion object {
+        private const val TARGET_PREFS = "blackcat_ai_ui"
+        private const val TARGET_KEY = "target_system"
+        private const val CUSTOM_TARGET_KEY = "target_custom"
+        private const val DEFAULT_TARGET = "Ubuntu Linux / Bash"
+        private const val CUSTOM_PREFIX = "Custom · "
+        private const val EDIT_TARGET = "Edit / custom…"
+        private val COMMON_TARGETS = listOf(
+            "Ubuntu Linux / Bash",
+            "Debian Linux / Bash",
+            "Linux Mint / Bash",
+            "Fedora Linux / Bash",
+            "Arch Linux / Bash",
+            "Kali Linux / Bash",
+            "Red Hat Enterprise Linux / Bash",
+            "Rocky Linux / Bash",
+            "AlmaLinux / Bash",
+            "openSUSE Linux / Bash",
+            "Alpine Linux / ash"
+        )
+
         private val BG = Color.rgb(245, 248, 245)
         private val PAPER = Color.WHITE
         private val INK = Color.rgb(18, 38, 34)
