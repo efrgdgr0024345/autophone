@@ -34,7 +34,7 @@ def verify(root: Path = ROOT) -> None:
     assert 'targetField' not in entry, 'Free-text target field returned; use saved dropdown/custom edit flow'
     for text in (
         'Plan', 'Step', 'Preview', 'Result', 'TYPE ONLY',
-        'R.drawable.black_cat_emblem', 'R.drawable.black_cat_peek',
+        'R.drawable.black_cat_full', 'R.drawable.black_cat_peek',
         'Edit / custom…', 'getSharedPreferences(TARGET_PREFS',
         'putString(TARGET_KEY', 'Ubuntu Linux / Bash', 'Debian Linux / Bash',
         'Fedora Linux / Bash', 'Arch Linux / Bash', 'Kali Linux / Bash',
