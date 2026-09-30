@@ -79,8 +79,8 @@ class MobileUiBoundaryTests(unittest.TestCase):
             p = dst / 'app/src/ai/java/com/blackcat/remote/AiEntry.kt'
             text = p.read_text(encoding='utf-8')
             text = text.replace(
-                'add(Tab.PREVIEW, ">_", "Preview")\n        add(Tab.FEEDBACK, "◇", "Result")',
-                'add(Tab.FEEDBACK, "◇", "Result")\n        add(Tab.PREVIEW, ">_", "Preview")'
+                'add(Tab.FEEDBACK, "Feedback")\n        add(Tab.PREVIEW, "Preview")',
+                'add(Tab.PREVIEW, "Preview")\n        add(Tab.FEEDBACK, "Feedback")'
             )
             p.write_text(text, encoding='utf-8')
             with self.assertRaises(AssertionError): verify(dst)

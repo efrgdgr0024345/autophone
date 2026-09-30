@@ -1,0 +1,186 @@
+name: Black Cat UI08 reference-screen flow
+
+on:
+  push:
+    branches: [feature/ui08-reference-screen-flow]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ui08-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify and build UI08
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify golden HID behavior and UI08 contract
+        run: |
+          python3 tools/check_policy.py
+          python3 tools/test_policy.py -v
+          python3 tools/check_mobile_ui.py
+          python3 tools/test_mobile_ui.py -v
+
+      - name: Guided planner and photo regression tests
+        run: |
+          python3 -m pip install -r planner_lab/requirements.txt
+          python3 -m unittest planner_lab.test_contract -v
+
+      - name: Build, unit test and lint both variants
+        run: gradle testOfflineDebugUnitTest testAiDebugUnitTest lintOfflineDebug lintAiDebug assembleOfflineDebug assembleAiDebug --continue --console=plain --stacktrace
+
+      - name: Upload reports even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui08-reports-${{ github.run_id }}
+          path: |
+            app/build/reports/
+            app/build/test-results/
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Inspect and package exact tested preview
+        run: |
+          set -euo pipefail
+          AAPT=$(find "$ANDROID_HOME/build-tools" -name aapt -type f | sort -V | tail -n 1)
+          SIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)
+          mkdir -p preview
+          for flavor in ai offline; do
+            apk="app/build/outputs/apk/$flavor/debug/app-$flavor-debug.apk"
+            python3 tools/check_apk.py "$apk" "$flavor" "$AAPT" | tee "preview/$flavor-manifest.txt"
+            "$SIGNER" verify --verbose --print-certs "$apk" > "preview/$flavor-signature.txt"
+          done
+          cp app/build/outputs/apk/ai/debug/app-ai-debug.apk preview/CatAI-08.apk
+          cp app/build/outputs/apk/offline/debug/app-offline-debug.apk preview/CatBT-08.apk
+          git rev-parse HEAD > preview/SOURCE.txt
+          git diff --stat c9cb8c3572c5bf25a7efd241870552c0d37460a7 HEAD > preview/DIFFSTAT.txt
+          printf '%s\n' \
+            'UI08 applies the approved 12-screen reference layout above the tested UI07 core.' \
+            'Home: splash, full cat on white, dark menu cards, bottom Home/AI/Target/Settings navigation.' \
+            'Bluetooth: computer-initiated pairing remains authoritative; Make Discoverable replaces phone-side scanning.' \
+            'Assistant tabs: Plan → Step → Feedback → Preview with Photo Feedback beside Get Plan.' \
+            'Target and Settings are standalone reference-style screens using the existing saved-target and encrypted-key stores.' \
+            'No automatic Enter, run-all, hidden replay or AI-managed Bluetooth lifecycle.' \
+            > preview/README.txt
+          (cd preview && sha256sum *.apk > SHA256SUMS)
+
+      - name: Attest exact AI APK provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: preview/CatAI-08.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: blackcat-ui08-${{ github.run_id }}
+          path: preview/
+          if-no-files-found: error
+          retention-days: 90
+
+  analyze:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: java-kotlin
+          build-mode: manual
+          queries: security-and-quality
+      - run: gradle clean assembleOfflineDebug assembleAiDebug --console=plain --stacktrace
+      - uses: github/codeql-action/analyze@v4
+
+
+  release:
+    name: Publish exact UI08 prerelease
+    if: github.event_name == 'push'
+    needs: [verify, analyze]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: blackcat-ui08-${{ github.run_id }}
+          path: preview
+
+      - name: Verify packaged candidate before publishing
+        run: |
+          set -euo pipefail
+          test -f preview/CatAI-08.apk
+          test -f preview/CatBT-08.apk
+          test -f preview/SHA256SUMS
+          (cd preview && sha256sum -c SHA256SUMS)
+          test "$(cat preview/SOURCE.txt)" = "$GITHUB_SHA"
+
+      - name: Publish immutable physical-test prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="ui08-${GITHUB_SHA:0:8}"
+          TITLE="Black Cat UI08 physical-test candidate"
+          NOTES=$(cat <<'EOF'
+          UI08 applies the approved “Black Cat AI Remote – All Screens (v1)” reference flow above the preserved UI07 Bluetooth/AI/photo core.
+
+          This is a physical-test prerelease, not a promoted baseline.
+
+          Automated gates passed before publication:
+          - frozen Bluetooth HID behavior and mappings
+          - UI08 reference-screen contract
+          - planner/photo regression tests
+          - Android unit tests and lint
+          - AI + offline APK builds
+          - packaged identity/permission/signature inspection
+          - CodeQL
+          - exact APK provenance attestation
+
+          Golden rule remains: the computer initiates normal Bluetooth HID pairing. The Bluetooth screen uses Make Discoverable rather than replacing the proven architecture with phone-side discovery.
+
+          TYPE ONLY remains explicit; Enter is never appended automatically.
+          EOF
+          )
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" preview/CatAI-08.apk preview/CatBT-08.apk preview/SHA256SUMS preview/SOURCE.txt preview/README.txt --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" preview/CatAI-08.apk preview/CatBT-08.apk preview/SHA256SUMS preview/SOURCE.txt preview/README.txt               --repo "$GITHUB_REPOSITORY"               --target "$GITHUB_SHA"               --title "$TITLE"               --notes "$NOTES"               --prerelease
+          fi
