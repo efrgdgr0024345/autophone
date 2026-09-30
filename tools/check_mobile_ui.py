@@ -30,34 +30,58 @@ def verify(root: Path = ROOT) -> None:
         assert actual == expected, f'UI milestone changed frozen API/transport source: {name}'
 
     entry = (ai / 'AiEntry.kt').read_text(encoding='utf-8')
+    main = (root / 'app/src/main/java/com/blackcat/remote/MainActivity.kt').read_text(encoding='utf-8')
+
     assert 'CheckBox' not in entry, 'Redundant approval checkboxes were reintroduced'
-    assert 'targetField' not in entry, 'Free-text target field returned; use saved dropdown/custom edit flow'
     for text in (
-        'Plan', 'Step', 'Preview', 'Result', 'TYPE ONLY',
-        'R.drawable.black_cat_peek',
+        'fun openAssistant', 'fun openPhoto', 'fun openSettings',
+        'private fun buildWorkflowTabs()', 'private fun buildAppNav()',
+        'add(Tab.PLAN, "Plan")', 'add(Tab.STEP, "Step")',
+        'add(Tab.FEEDBACK, "Feedback")', 'add(Tab.PREVIEW, "Preview")',
+        'R.drawable.black_cat_full', 'R.drawable.black_cat_peek',
         'Edit / custom…', 'getSharedPreferences(TARGET_PREFS',
         'putString(TARGET_KEY', 'Ubuntu Linux / Bash', 'Debian Linux / Bash',
         'Fedora Linux / Bash', 'Arch Linux / Bash', 'Kali Linux / Bash',
-        'Linux Assistant', 'Photo Feedback', 'R.drawable.black_cat_full',
-        'Plan, review & type', 'Take photo, get help',
+        'TYPE ONLY', 'lastTypedCommand = command', 'activeTab = Tab.FEEDBACK',
         'BlackCatStyle.applySystemBarInsets(root)',
-        'lastTypedCommand = command', 'activeTab = Tab.FEEDBACK'
+        'Black Cat AI · UI08 reference-screen candidate'
     ):
-        assert text in entry, f'Missing approved UI/target element: {text}'
+        assert text in entry, f'Missing approved UI08 assistant/settings element: {text}'
+
+    for text in (
+        'private fun showSplash()', 'private fun showHome()', 'private fun showBluetooth()',
+        'private fun showTarget()', 'private fun showCustomTarget()',
+        'Remote · Automate · Control', 'Connect and manage devices',
+        'Plan, create and automate', 'Select your Linux system',
+        'API key, model and preferences', 'Make Discoverable / Pair New Device',
+        'Computer-initiated HID pairing', 'Send Text', 'Touchpad', 'Keyboard',
+        'fun openHomeFromChild()', 'fun openTargetFromChild()', 'fun openSettingsFromChild()'
+    ):
+        assert text in main, f'Missing approved all-screens main UI element: {text}'
+
+    for forbidden in ('startDiscovery(', 'createBond('):
+        assert forbidden not in main, f'Host-initiated Bluetooth model regressed: {forbidden}'
+
     for forbidden in ('manager.sendKeyboard', 'manager.init(', 'manager.close(', 'registerApp(', 'unregisterApp('):
         assert forbidden not in entry, f'AI entry crossed a frozen HID boundary: {forbidden}'
-    assert entry.count('planner.propose(') == 1, 'OpenAI requests must remain explicit and singular in the UI path'
-    nav = entry.split('private fun buildBottomNav()', 1)[1].split('private fun scrollPage', 1)[0]
-    order = [nav.index(token) for token in (
-        'add(Tab.PLAN', 'add(Tab.STEP', 'add(Tab.PREVIEW', 'add(Tab.FEEDBACK'
-    )]
-    assert order == sorted(order), 'Bottom flow must be Plan → Step → Preview → Result'
-    show = entry.split('fun show() {', 1)[1].split('private fun buildShell()', 1)[0]
+    assert entry.count('planner.propose(') == 1, 'OpenAI requests must remain explicit and singular in the assistant UI path'
+
+    ai_panel = entry.split('private class AiPanel(', 1)[1]
+    show = ai_panel.split('fun show() {', 1)[1].split('fun dismiss()', 1)[0]
     for forbidden in ('planner.propose(', 'ApprovedCommandSender.send(', 'sendKeyboard(', 'openSettings()'):
-        assert forbidden not in show, f'Opening the panel must not trigger work: {forbidden}'
-    dismiss = entry.split('fun dismiss() {', 1)[1].split('private fun buildShell()', 1)[0]
+        assert forbidden not in show, f'Opening the assistant panel must not trigger work: {forbidden}'
+    dismiss = ai_panel.split('fun dismiss() {', 1)[1].split('private fun buildShell()', 1)[0]
     for forbidden in ('planner.propose(', 'ApprovedCommandSender.send(', 'manager.'):
-        assert forbidden not in dismiss, f'Closing the panel must not trigger API/HID work: {forbidden}'
+        assert forbidden not in dismiss, f'Closing the assistant panel must not trigger API/HID work: {forbidden}'
+
+    tabs = entry.split('private fun buildWorkflowTabs()', 1)[1].split('private fun buildAppNav()', 1)[0]
+    order = [tabs.index(token) for token in (
+        'add(Tab.PLAN, "Plan")',
+        'add(Tab.STEP, "Step")',
+        'add(Tab.FEEDBACK, "Feedback")',
+        'add(Tab.PREVIEW, "Preview")'
+    )]
+    assert order == sorted(order), 'Workflow tabs must follow Plan → Step → Feedback → Preview'
 
     for source_set in ('ai', 'main'):
         assets = root / f'app/src/{source_set}/res/drawable-nodpi'
@@ -100,7 +124,7 @@ def verify(root: Path = ROOT) -> None:
     for forbidden in ('sendKeyboard(', 'KeyEvent.KEYCODE_ENTER', 'Runtime.getRuntime', 'ProcessBuilder('):
         assert forbidden not in photo_panel, f'Photo UI bypassed review/sender boundary: {forbidden}'
 
-    print('PASS: approved white-cat/black-panel UI, saved target flow, in-panel reviewed photo analysis, system-bar clearance, and frozen V2/API boundaries')
+    print('PASS: UI08 all-screens reference flow, frozen HID/API boundaries, saved targets, reviewed photo analysis and system-bar clearance')
 
 
 if __name__ == '__main__':
