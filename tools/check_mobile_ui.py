@@ -16,7 +16,7 @@ ASSETS = {
     'black_cat_emblem.webp': '8966a939fd5349610be8322e74ec9b94448030480f53a6f2b60864bee919fb19',
     'black_cat_peek.webp': 'ccd27b1f3c6a2880a9c1030746c5a9cd4a71bd27964ab853b7c2adfb28cf7263',
 }
-PORTRAIT_SHA256 = 'a3039cc69cb4fdc3370c51c8dbf0d66c19ac23000ddb0bf75952d7106eb18d9f'
+PORTRAIT_SHA256 = 'c6a98d9b2063c4ae4edc8f877db6db36bfce7fd20d11560e992b65027112d2d0'
 
 
 def git_blob(data: bytes) -> str:
