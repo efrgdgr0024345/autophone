@@ -128,3 +128,59 @@ jobs:
           queries: security-and-quality
       - run: gradle clean assembleOfflineDebug assembleAiDebug --console=plain --stacktrace
       - uses: github/codeql-action/analyze@v4
+
+
+  release:
+    name: Publish exact UI08 prerelease
+    if: github.event_name == 'push'
+    needs: [verify, analyze]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: blackcat-ui08-${{ github.run_id }}
+          path: preview
+
+      - name: Verify packaged candidate before publishing
+        run: |
+          set -euo pipefail
+          test -f preview/CatAI-08.apk
+          test -f preview/CatBT-08.apk
+          test -f preview/SHA256SUMS
+          (cd preview && sha256sum -c SHA256SUMS)
+          test "$(cat preview/SOURCE.txt)" = "$GITHUB_SHA"
+
+      - name: Publish immutable physical-test prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="ui08-${GITHUB_SHA:0:8}"
+          TITLE="Black Cat UI08 physical-test candidate"
+          NOTES=$(cat <<'EOF'
+          UI08 applies the approved “Black Cat AI Remote – All Screens (v1)” reference flow above the preserved UI07 Bluetooth/AI/photo core.
+
+          This is a physical-test prerelease, not a promoted baseline.
+
+          Automated gates passed before publication:
+          - frozen Bluetooth HID behavior and mappings
+          - UI08 reference-screen contract
+          - planner/photo regression tests
+          - Android unit tests and lint
+          - AI + offline APK builds
+          - packaged identity/permission/signature inspection
+          - CodeQL
+          - exact APK provenance attestation
+
+          Golden rule remains: the computer initiates normal Bluetooth HID pairing. The Bluetooth screen uses Make Discoverable rather than replacing the proven architecture with phone-side discovery.
+
+          TYPE ONLY remains explicit; Enter is never appended automatically.
+          EOF
+          )
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" preview/CatAI-08.apk preview/CatBT-08.apk preview/SHA256SUMS preview/SOURCE.txt preview/README.txt --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" preview/CatAI-08.apk preview/CatBT-08.apk preview/SHA256SUMS preview/SOURCE.txt preview/README.txt               --repo "$GITHUB_REPOSITORY"               --target "$GITHUB_SHA"               --title "$TITLE"               --notes "$NOTES"               --prerelease
+          fi
