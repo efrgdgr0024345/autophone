@@ -1,0 +1,51 @@
+name: Publish exact UI07 test APK
+
+on:
+  push:
+    branches: [publish/ui07-candidate]
+    paths:
+      - .github/workflows/publish-ui07-test-apk.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Download exact already-tested artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$GH_REPO/actions/artifacts/11078725898/zip" > ui07.zip
+          echo "4872820b6834b98bba3e64598bcab4d43abfc3adb77aa744d693e59df94f65c2  ui07.zip" | sha256sum -c -
+          mkdir out
+          unzip -q ui07.zip -d out
+          test -f out/CatAI-07.apk
+          echo "79d43bb4451cd71fb9345034df0b8fdc3e876e03727ff4a5579f56444b8fb9a6  out/CatAI-07.apk" | sha256sum -c -
+
+      - name: Publish exact APK only as prerelease asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="ui07-c9cb8c35"
+          TARGET="c9cb8c3572c5bf25a7efd241870552c0d37460a7"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release already exists; refusing to overwrite."
+            exit 0
+          fi
+          printf '%s\n'             'Physical-test prerelease. Not yet promoted.'             'Exact APK from successful Actions run 36671838368.'             'Independent Android CI run 36671855784 also passed on the same source commit.'             'Source: c9cb8c3572c5bf25a7efd241870552c0d37460a7'             'SHA-256: 79d43bb4451cd71fb9345034df0b8fdc3e876e03727ff4a5579f56444b8fb9a6'             'Approved UI: full Black Cat on white; dark control panels; saved target flow; reviewed Photo Feedback retained.'             > NOTES.txt
+          gh release create "$TAG" out/CatAI-07.apk             --target "$TARGET"             --prerelease             --title "Black Cat UI07 physical-test APK"             --notes-file NOTES.txt
