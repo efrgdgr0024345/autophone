@@ -16,6 +16,7 @@ ASSETS = {
     'black_cat_emblem.webp': '8966a939fd5349610be8322e74ec9b94448030480f53a6f2b60864bee919fb19',
     'black_cat_peek.webp': 'ccd27b1f3c6a2880a9c1030746c5a9cd4a71bd27964ab853b7c2adfb28cf7263',
 }
+FULL_CAT_SHA256 = '080b328670716e8211e283c951d2fdf0e3c9359191083c89e5b84bad76fd9786'
 
 
 def git_blob(data: bytes) -> str:
@@ -37,8 +38,8 @@ def verify(root: Path = ROOT) -> None:
         'Edit / custom…', 'getSharedPreferences(TARGET_PREFS',
         'putString(TARGET_KEY', 'Ubuntu Linux / Bash', 'Debian Linux / Bash',
         'Fedora Linux / Bash', 'Arch Linux / Bash', 'Kali Linux / Bash',
-        'BlackCatStyle.styleButton(activity, this, primary = true, compact = true)',
-        'Open Linux Assistant', 'BlackCatStyle.applySystemBarInsets(root)',
+        'Linux Assistant\\nPlan, review & type',
+        'R.drawable.black_cat_full', 'BlackCatStyle.applySystemBarInsets(root)',
         'lastTypedCommand = command', 'activeTab = Tab.FEEDBACK'
     ):
         assert text in entry, f'Missing approved UI/target element: {text}'
@@ -64,6 +65,9 @@ def verify(root: Path = ROOT) -> None:
             actual = hashlib.sha256(data).hexdigest()
             assert actual == expected, f'Approved Black Cat artwork changed in {source_set}: {name}'
 
+    full_cat = root / 'app/src/main/res/drawable-nodpi/black_cat_full.webp'
+    assert hashlib.sha256(full_cat.read_bytes()).hexdigest() == FULL_CAT_SHA256, 'Approved full cat portrait changed'
+
     style = (root / 'app/src/main/java/com/blackcat/remote/BlackCatStyle.kt').read_text(encoding='utf-8')
     for value in ('245, 248, 245', '22, 97, 70', '18, 44, 36'):
         assert value in style, f'Shared Black Cat style palette changed unexpectedly: {value}'
@@ -72,7 +76,7 @@ def verify(root: Path = ROOT) -> None:
 
     manifest = (root / 'app/src/ai/AndroidManifest.xml').read_text(encoding='utf-8')
     assert 'CAMERA' not in manifest, 'Camera permission belongs to the later photo milestone'
-    print('PASS: user flow is Connect → Assistant/Remote → Plan → Step → Preview → Result; system bars respected; saved target dropdown and frozen API/HID boundaries retained')
+    print('PASS: approved UI06 uses full cat-on-white hero, dark control chrome, focused remote tiles, saved target flow, system-bar clearance, and frozen API/HID boundaries')
 
 
 if __name__ == '__main__':
