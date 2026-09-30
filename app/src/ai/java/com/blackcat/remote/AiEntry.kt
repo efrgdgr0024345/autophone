@@ -43,20 +43,30 @@ import kotlinx.coroutines.withTimeout
 object AiEntry {
     /** Adds optional AI surfaces only; no API, camera or HID work occurs at app startup. */
     fun attach(activity: Activity, row: LinearLayout, manager: () -> HidManager) {
-        val assistant = Button(activity).apply {
-            text = "Linux Assistant"
-            contentDescription = "Open Linux command assistant"
-            BlackCatStyle.styleButton(activity, this, primary = true, compact = true)
+        fun toolTile(title: String, subtitle: String, description: String) = Button(activity).apply {
+            text = "$title\n$subtitle"
+            contentDescription = description
+            isAllCaps = false
+            textSize = 14f
+            gravity = Gravity.CENTER
+            setTextColor(BlackCatStyle.COMMAND_TEXT)
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            background = BlackCatStyle.round(activity, BlackCatStyle.COMMAND_BG, 16, Color.rgb(48, 66, 59), 1)
+            setPadding(
+                BlackCatStyle.dp(activity, 8),
+                BlackCatStyle.dp(activity, 8),
+                BlackCatStyle.dp(activity, 8),
+                BlackCatStyle.dp(activity, 8)
+            )
         }
-        val photo = Button(activity).apply {
-            text = "Photo Feedback"
-            contentDescription = "Take a computer-screen photo for OpenAI analysis"
-            BlackCatStyle.styleButton(activity, this, primary = false, compact = true)
-        }
-        row.addView(assistant, LinearLayout.LayoutParams(0, (46 * activity.resources.displayMetrics.density).toInt(), 1f).apply {
-            rightMargin = (6 * activity.resources.displayMetrics.density).toInt()
+        val assistant = toolTile("Linux Assistant", "Plan, review & type", "Open Linux command assistant")
+        val photo = toolTile("Photo Feedback", "Take photo, get help", "Take a computer-screen photo for OpenAI analysis")
+        row.addView(assistant, LinearLayout.LayoutParams(0, BlackCatStyle.dp(activity, 96), 1f).apply {
+            rightMargin = BlackCatStyle.dp(activity, 4)
         })
-        row.addView(photo, LinearLayout.LayoutParams(0, (46 * activity.resources.displayMetrics.density).toInt(), 1f))
+        row.addView(photo, LinearLayout.LayoutParams(0, BlackCatStyle.dp(activity, 96), 1f).apply {
+            leftMargin = BlackCatStyle.dp(activity, 4)
+        })
 
         assistant.setOnClickListener {
             assistant.isEnabled = false
@@ -208,50 +218,53 @@ private class AiPanel(
     }
 
     private fun buildTopBar(): View {
-        val frame = FrameLayout(activity).apply {
+        val hero = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_HORIZONTAL
+            setPadding(dp(10), dp(4), dp(10), dp(5))
             setBackgroundColor(Color.WHITE)
-            setPadding(dp(10), dp(6), dp(10), dp(4))
         }
         val portrait = ImageView(activity).apply {
-            setImageResource(R.drawable.black_cat_portrait)
+            setImageResource(R.drawable.black_cat_full)
             scaleType = ImageView.ScaleType.CENTER_CROP
             contentDescription = "Black Cat"
         }
-        frame.addView(portrait, FrameLayout.LayoutParams(dp(88), dp(88), Gravity.START or Gravity.CENTER_VERTICAL))
+        hero.addView(portrait, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(128)))
 
-        val titles = LinearLayout(activity).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(98), dp(12), dp(86), dp(10))
+        val titleRow = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
         }
-        titles.addView(label("Linux Assistant", 20f, Color.BLACK, Typeface.BOLD))
+        val titles = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
+        titles.addView(label("Linux Assistant", 19f, Color.BLACK, Typeface.BOLD))
         titles.addView(label("Plan → Step → Preview → Result", 11f, Color.DKGRAY))
-        frame.addView(titles, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-
+        titleRow.addView(titles, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         val settings = actionButton("Settings", primary = false) { openSettings() }.apply {
             minWidth = 0
-            minHeight = dp(42)
+            minHeight = dp(40)
             setPadding(dp(10), 0, dp(10), 0)
             textSize = 12f
             contentDescription = "Open AI settings"
         }
-        frame.addView(settings, FrameLayout.LayoutParams(dp(80), dp(42), Gravity.END or Gravity.TOP))
-        return frame
+        titleRow.addView(settings, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(40)))
+        hero.addView(titleRow, matchWrap())
+        return hero
     }
 
     private fun buildStatusBar(): View {
         val row = LinearLayout(activity).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(14), dp(7), dp(14), dp(7))
-            background = round(BG, 0, LINE, 0)
+            setPadding(dp(12), dp(7), dp(12), dp(7))
+            background = round(COMMAND_BG, 0, Color.rgb(48, 66, 59), 1)
         }
-        statusPill = label("●  WAITING", 11f, AMBER, Typeface.BOLD).apply {
+        statusPill = label("●  WAITING", 11f, GREEN, Typeface.BOLD).apply {
             gravity = Gravity.CENTER
-            background = round(AMBER_TINT, 24)
+            background = round(Color.rgb(28, 58, 47), 24)
             setPadding(dp(10), dp(6), dp(10), dp(6))
         }
         row.addView(statusPill)
-        statusText = label("Open Settings for API key", 11f, Color.DKGRAY).apply {
+        statusText = label("Open Settings for API key", 11f, Color.rgb(205, 218, 212)).apply {
             setPadding(dp(10), 0, 0, 0)
             maxLines = 2
         }
@@ -464,7 +477,7 @@ private class AiPanel(
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER
             setPadding(dp(6), dp(5), dp(6), dp(6))
-            background = round(PAPER, 0, LINE, 1)
+            background = round(COMMAND_BG, 0, Color.rgb(48, 66, 59), 1)
         }
         fun add(tab: Tab, icon: String, title: String) {
             val item = LinearLayout(activity).apply {
@@ -474,8 +487,8 @@ private class AiPanel(
                 isClickable = true
                 isFocusable = true
                 contentDescription = title
-                addView(label(icon, 17f, MUTED, Typeface.BOLD).apply { gravity = Gravity.CENTER })
-                addView(label(title, 11f, MUTED, Typeface.BOLD).apply { gravity = Gravity.CENTER })
+                addView(label(icon, 17f, Color.rgb(188, 204, 198), Typeface.BOLD).apply { gravity = Gravity.CENTER })
+                addView(label(title, 11f, Color.rgb(188, 204, 198), Typeface.BOLD).apply { gravity = Gravity.CENTER })
                 setOnClickListener { switchTab(tab) }
             }
             tabButtons[tab] = item
@@ -517,9 +530,9 @@ private class AiPanel(
         previewView.visibility = if (activeTab == Tab.PREVIEW) View.VISIBLE else View.GONE
         tabButtons.forEach { (tab, view) ->
             val active = tab == activeTab
-            view.background = if (active) round(TINT, 14) else ColorDrawable(Color.TRANSPARENT)
+            view.background = if (active) round(Color.rgb(31, 70, 54), 14) else ColorDrawable(Color.TRANSPARENT)
             for (i in 0 until view.childCount) {
-                (view.getChildAt(i) as? TextView)?.setTextColor(if (active) GREEN else MUTED)
+                (view.getChildAt(i) as? TextView)?.setTextColor(if (active) Color.rgb(103, 240, 104) else Color.rgb(188, 204, 198))
             }
         }
     }
