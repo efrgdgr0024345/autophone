@@ -57,7 +57,7 @@ def verify_activity(text: str) -> None:
         assert snippet in text, f'Main UI no longer maps to proven HID action: {snippet}'
     for snippet in KEYMAP_SNIPPETS:
         assert snippet in text, f'Full keyboard mapping changed: {snippet}'
-    assert 'BlackCatStyle' in text and 'R.drawable.black_cat_emblem' in text, 'Approved full-app Black Cat style missing'
+    assert 'BlackCatStyle' in text and 'R.drawable.black_cat_full' in text, 'Approved full-app Black Cat style missing'
     assert 'BlackCatStyle.applySystemBarInsets(root)' in text, 'Main display must sit inside Android system-bar insets'
     assert 'diagnosticsBody=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;visibility=View.GONE' in text, 'Diagnostics must be collapsed by default'
     assert 'R.drawable.black_cat_full' in text, 'Approved full cat hero must be present'
