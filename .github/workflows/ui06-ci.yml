@@ -1,0 +1,123 @@
+name: Black Cat UI06 approved-design photo preview
+
+on:
+  push:
+    branches: [feature/ui06-approved-design-photo]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ui06-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify, build, attest UI06
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify golden HID behavior, UI flow and photo boundaries
+        run: |
+          python3 tools/check_policy.py
+          python3 tools/test_policy.py -v
+          python3 tools/check_mobile_ui.py
+          python3 tools/test_mobile_ui.py -v
+
+      - name: Guided planner/photo lab regression tests
+        run: |
+          python3 -m pip install -r planner_lab/requirements.txt
+          python3 -m unittest planner_lab.test_contract -v
+
+      - name: Build, unit test and lint both variants
+        run: gradle testOfflineDebugUnitTest testAiDebugUnitTest lintOfflineDebug lintAiDebug assembleOfflineDebug assembleAiDebug --continue --console=plain --stacktrace
+
+      - name: Upload reports even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui06-reports-${{ github.run_id }}
+          path: |
+            app/build/reports/
+            app/build/test-results/
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Inspect and package exact tested preview
+        run: |
+          set -euo pipefail
+          AAPT=$(find "$ANDROID_HOME/build-tools" -name aapt -type f | sort -V | tail -n 1)
+          SIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)
+          mkdir -p preview
+          for flavor in ai offline; do
+            apk="app/build/outputs/apk/$flavor/debug/app-$flavor-debug.apk"
+            python3 tools/check_apk.py "$apk" "$flavor" "$AAPT" | tee "preview/$flavor-manifest.txt"
+            "$SIGNER" verify --verbose --print-certs "$apk" > "preview/$flavor-signature.txt"
+          done
+          cp app/build/outputs/apk/ai/debug/app-ai-debug.apk preview/CatAI-06.apk
+          cp app/build/outputs/apk/offline/debug/app-offline-debug.apk preview/CatBT-06.apk
+          git rev-parse HEAD > preview/SOURCE.txt
+          git diff --stat ab34f45d7ef09f06e4d41873079b168e20df01f6 HEAD > preview/DIFFSTAT.txt
+          printf '%s\n'             'UI06 is a physical-test prerelease candidate built on the CatAI-04 lineage.'             'Golden rule: Bluetooth HID helpers, pairing, lifecycle, key mappings and text-send behavior remain protected.'             'UI: large Black Cat on white, dark text panels, saved target dropdown, Plan → Step → Preview → Result.'             'Photo: in-panel Camera2 capture → review → explicit OpenAI send → structured analysis → optional reviewed TYPE ONLY.'             'No photo is saved to gallery by the app. No broad media permission. No automatic Enter.'             > preview/README.txt
+          (cd preview && sha256sum *.apk > SHA256SUMS)
+
+      - name: Attest exact AI APK provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: preview/CatAI-06.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: blackcat-ui06-${{ github.run_id }}
+          path: preview/
+          if-no-files-found: error
+          retention-days: 90
+
+  analyze:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: java-kotlin
+          build-mode: manual
+          queries: security-and-quality
+      - run: gradle clean assembleOfflineDebug assembleAiDebug --console=plain --stacktrace
+      - uses: github/codeql-action/analyze@v4

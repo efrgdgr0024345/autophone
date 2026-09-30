@@ -17,7 +17,7 @@ BEHAVIOR_SNIPPETS = (
     'override fun onCreate(s:Bundle?){super.onCreate(s);buildUi();diagnostics=Diagnostics{runOnUiThread{log.text=it}};hid=HidManager(this){event(it)};permissionsOrInit()}',
     'private fun permissionsOrInit(){if(Build.VERSION.SDK_INT>=31){val n=mutableListOf<String>();if(checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT)!=PackageManager.PERMISSION_GRANTED)n+=Manifest.permission.BLUETOOTH_CONNECT;if(checkSelfPermission(Manifest.permission.BLUETOOTH_ADVERTISE)!=PackageManager.PERMISSION_GRANTED)n+=Manifest.permission.BLUETOOTH_ADVERTISE;if(n.isNotEmpty()){requestPermissions(n.toTypedArray(),10);return}};initHid()}',
     'private fun initHid(){status.text="HID REGISTERING";event("INFO APP_START");if(!hid.init())status.text="BLUETOOTH/HID ERROR"}',
-    'override fun onRequestPermissionsResult(r:Int,p:Array<out String>,g:IntArray){super.onRequestPermissionsResult(r,p,g);if(r==10&&g.isNotEmpty()&&g.all{it==PackageManager.PERMISSION_GRANTED}){event("PASS BLUETOOTH_PERMISSIONS");initHid()}else event("FAIL Bluetooth permission denied")}',
+    'override fun onRequestPermissionsResult(r:Int,p:Array<out String>,g:IntArray){super.onRequestPermissionsResult(r,p,g);if(r!=10)return;if(g.isNotEmpty()&&g.all{it==PackageManager.PERMISSION_GRANTED}){event("PASS BLUETOOTH_PERMISSIONS");initHid()}else event("FAIL Bluetooth permission denied")}',
     '@Suppress("DEPRECATION") private fun pair(){if(!hid.registered){event("WAIT HID not registered");return};event("PASS HID registered before discoverability");try{startActivityForResult(hid.discoverableIntent(300),20);event("INFO DISCOVERABILITY_REQUESTED")}catch(t:Throwable){event("FAIL discoverability: "+(t.message?:"unknown"))}}',
     '@Deprecated("Compatibility") override fun onActivityResult(r:Int,result:Int,data:Intent?){super.onActivityResult(r,result,data);if(r==20){if(result>0){status.text="DISCOVERABLE — ADD ON COMPUTER";event("PASS DISCOVERABLE seconds="+result)}else event("WARN discoverability declined")}}',
     'private fun sendText(v:String){scope.launch{var unsupported=0;for(c in v){val p=HidReports.char(c);if(p!=null){hid.sendKeyboard(p.second,p.first);delay(12)}else unsupported++};event("PASS text submitted chars="+v.length+" unsupported="+unsupported+" content-not-logged")}}',
@@ -57,7 +57,7 @@ def verify_activity(text: str) -> None:
         assert snippet in text, f'Main UI no longer maps to proven HID action: {snippet}'
     for snippet in KEYMAP_SNIPPETS:
         assert snippet in text, f'Full keyboard mapping changed: {snippet}'
-    assert 'BlackCatStyle' in text and 'R.drawable.black_cat_emblem' in text, 'Approved full-app Black Cat style missing'
+    assert 'BlackCatStyle' in text and 'R.drawable.black_cat_portrait' in text, 'Approved full-app Black Cat portrait/style missing'
     assert 'BlackCatStyle.applySystemBarInsets(root)' in text, 'Main display must sit inside Android system-bar insets'
     assert 'diagnosticsBody=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;visibility=View.GONE' in text, 'Diagnostics must be collapsed by default'
     assert text.index(HOOK) < text.index('val typeCard='), 'Assistant choice belongs before remote-detail controls'
@@ -75,7 +75,7 @@ def verify() -> None:
 
     expected = {'android.permission.' + x for x in ('BLUETOOTH','BLUETOOTH_ADMIN','BLUETOOTH_CONNECT','BLUETOOTH_ADVERTISE')}
     assert permissions('app/src/main/AndroidManifest.xml') == expected
-    assert permissions('app/src/ai/AndroidManifest.xml') == {'android.permission.INTERNET'}
+    assert permissions('app/src/ai/AndroidManifest.xml') == {'android.permission.INTERNET', 'android.permission.CAMERA'}
     app = ET.parse(ROOT / 'app/src/main/AndroidManifest.xml').getroot().find('application')
     assert app.attrib[android + 'allowBackup'] == 'false'
     assert app.attrib[android + 'usesCleartextTraffic'] == 'false'

@@ -41,21 +41,40 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 
 object AiEntry {
-    /** Only adds a button in an existing row; does not access HID or credentials at app startup. */
+    /** Adds optional AI surfaces only; no API, camera or HID work occurs at app startup. */
     fun attach(activity: Activity, row: LinearLayout, manager: () -> HidManager) {
-        val button = Button(activity).apply {
-            text = "Open Linux Assistant"
+        val assistant = Button(activity).apply {
+            text = "Linux Assistant"
             contentDescription = "Open Linux command assistant"
             BlackCatStyle.styleButton(activity, this, primary = true, compact = true)
         }
-        row.addView(button, LinearLayout.LayoutParams(0, (46 * activity.resources.displayMetrics.density).toInt(), 1f))
-        button.setOnClickListener {
-            button.isEnabled = false
+        val photo = Button(activity).apply {
+            text = "Photo Feedback"
+            contentDescription = "Take a computer-screen photo for OpenAI analysis"
+            BlackCatStyle.styleButton(activity, this, primary = false, compact = true)
+        }
+        row.addView(assistant, LinearLayout.LayoutParams(0, (46 * activity.resources.displayMetrics.density).toInt(), 1f).apply {
+            rightMargin = (6 * activity.resources.displayMetrics.density).toInt()
+        })
+        row.addView(photo, LinearLayout.LayoutParams(0, (46 * activity.resources.displayMetrics.density).toInt(), 1f))
+
+        assistant.setOnClickListener {
+            assistant.isEnabled = false
             try {
-                AiPanel(activity, manager()) { button.isEnabled = true }.show()
+                AiPanel(activity, manager()) { assistant.isEnabled = true }.show()
             } catch (_: Exception) {
-                button.isEnabled = true
+                assistant.isEnabled = true
                 Toast.makeText(activity, "Could not open AI panel. Bluetooth controls are unchanged.", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        photo.setOnClickListener {
+            photo.isEnabled = false
+            try {
+                PhotoFeedbackPanel(activity, manager()) { photo.isEnabled = true }.show()
+            } catch (_: Exception) {
+                photo.isEnabled = true
+                Toast.makeText(activity, "Could not open Photo Feedback. Bluetooth controls are unchanged.", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -189,38 +208,34 @@ private class AiPanel(
     }
 
     private fun buildTopBar(): View {
-        val row = LinearLayout(activity).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(14), dp(8), dp(10), dp(6))
-            setBackgroundColor(PAPER)
+        val frame = FrameLayout(activity).apply {
+            setBackgroundColor(Color.WHITE)
+            setPadding(dp(10), dp(6), dp(10), dp(4))
         }
-        val logo = ImageView(activity).apply {
-            setImageResource(R.drawable.black_cat_emblem)
+        val portrait = ImageView(activity).apply {
+            setImageResource(R.drawable.black_cat_portrait)
             scaleType = ImageView.ScaleType.CENTER_CROP
             contentDescription = "Black Cat"
-            background = round(PAPER, 30, LINE, 1)
-            clipToOutline = true
         }
-        row.addView(logo, LinearLayout.LayoutParams(dp(46), dp(46)))
+        frame.addView(portrait, FrameLayout.LayoutParams(dp(88), dp(88), Gravity.START or Gravity.CENTER_VERTICAL))
 
         val titles = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(9), 0, 0, 0)
+            setPadding(dp(98), dp(12), dp(86), dp(10))
         }
-        titles.addView(label("BLACK CAT", 15f, INK, Typeface.BOLD).apply { letterSpacing = .12f })
-        titles.addView(label("Linux assistant · Android", 11f, MUTED))
-        row.addView(titles, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        titles.addView(label("Linux Assistant", 20f, Color.BLACK, Typeface.BOLD))
+        titles.addView(label("Plan → Step → Preview → Result", 11f, Color.DKGRAY))
+        frame.addView(titles, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
 
         val settings = actionButton("Settings", primary = false) { openSettings() }.apply {
             minWidth = 0
-            minHeight = dp(44)
-            setPadding(dp(13), 0, dp(13), 0)
-            textSize = 13f
+            minHeight = dp(42)
+            setPadding(dp(10), 0, dp(10), 0)
+            textSize = 12f
             contentDescription = "Open AI settings"
         }
-        row.addView(settings, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(44)))
-        return row
+        frame.addView(settings, FrameLayout.LayoutParams(dp(80), dp(42), Gravity.END or Gravity.TOP))
+        return frame
     }
 
     private fun buildStatusBar(): View {
@@ -236,7 +251,7 @@ private class AiPanel(
             setPadding(dp(10), dp(6), dp(10), dp(6))
         }
         row.addView(statusPill)
-        statusText = label("Open Settings for API key", 11f, MUTED).apply {
+        statusText = label("Open Settings for API key", 11f, Color.DKGRAY).apply {
             setPadding(dp(10), 0, 0, 0)
             maxLines = 2
         }
@@ -481,6 +496,7 @@ private class AiPanel(
         val body = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(12), dp(12), dp(12), dp(18))
+            background = round(PAPER, 18, LINE, 1)
             assign()
         }
         scroll.addView(body, matchWrap())
@@ -796,7 +812,8 @@ private class AiPanel(
         val command = selectedCommand.command
         val content = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(18), dp(8), dp(18), dp(8))
+            setPadding(dp(18), dp(12), dp(18), dp(12))
+            background = round(PAPER, 16, LINE, 1)
             addView(label("Destination", 11f, MUTED, Typeface.BOLD))
             addView(label(host.label, 15f, INK, Typeface.BOLD).apply { setPadding(0, dp(4), 0, dp(10)) })
             addView(label("Risk: ${selectedCommand.risk.uppercase()}${if (selectedCommand.requiresAdmin) " · admin may be required" else ""}", 12f, MUTED))
@@ -975,7 +992,7 @@ private class AiPanel(
     private fun setStatus(value: String, error: Boolean = false) {
         if (!::statusText.isInitialized) return
         statusText.text = value
-        statusText.setTextColor(if (error) RED else MUTED)
+        statusText.setTextColor(if (error) RED else Color.DKGRAY)
     }
 
     private fun pageHeading(parent: LinearLayout, title: String, subtitle: String) {
@@ -1112,19 +1129,19 @@ private class AiPanel(
             "Alpine Linux / ash"
         )
 
-        private val BG = Color.rgb(245, 248, 245)
-        private val PAPER = Color.WHITE
-        private val INK = Color.rgb(18, 38, 34)
-        private val MUTED = Color.rgb(86, 110, 103)
-        private val LINE = Color.rgb(212, 225, 217)
-        private val GREEN = Color.rgb(22, 97, 70)
-        private val TINT = Color.rgb(234, 244, 231)
-        private val FIELD = Color.rgb(250, 252, 249)
-        private val FIELD_LINE = Color.rgb(190, 209, 198)
-        private val AMBER = Color.rgb(130, 83, 27)
-        private val AMBER_TINT = Color.rgb(255, 241, 219)
-        private val RED = Color.rgb(162, 45, 57)
-        private val COMMAND_BG = Color.rgb(18, 44, 36)
-        private val COMMAND_TEXT = Color.rgb(224, 240, 199)
+        private val BG = Color.WHITE
+        private val PAPER = Color.rgb(18, 26, 23)
+        private val INK = Color.rgb(244, 248, 246)
+        private val MUTED = Color.rgb(166, 184, 176)
+        private val LINE = Color.rgb(51, 70, 63)
+        private val GREEN = Color.rgb(86, 220, 91)
+        private val TINT = Color.rgb(29, 67, 46)
+        private val FIELD = Color.rgb(28, 39, 35)
+        private val FIELD_LINE = Color.rgb(60, 82, 73)
+        private val AMBER = Color.rgb(190, 128, 48)
+        private val AMBER_TINT = Color.rgb(59, 47, 26)
+        private val RED = Color.rgb(207, 72, 82)
+        private val COMMAND_BG = Color.rgb(11, 20, 17)
+        private val COMMAND_TEXT = Color.rgb(207, 242, 194)
     }
 }

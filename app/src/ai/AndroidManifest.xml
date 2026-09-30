@@ -1,5 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
-    <!-- Explicit exception for the OPTIONAL AI build only. Main/offline remain network-free. -->
+    <!-- Explicit exceptions for the OPTIONAL AI build only. Main/offline remain network/camera-free. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera.any" android:required="false" />
     <application android:label="Black Cat AI" tools:replace="android:label" />
 </manifest>
