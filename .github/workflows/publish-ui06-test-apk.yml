@@ -1,0 +1,51 @@
+name: Publish exact UI06 test APK
+
+on:
+  push:
+    branches: [publish/ui06-candidate]
+    paths:
+      - .github/workflows/publish-ui06-test-apk.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Download exact already-tested artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$GH_REPO/actions/artifacts/11077497882/zip" > ui06.zip
+          echo "9cf3dc526681d53aab78d9c06d825d4ea84f1f96fbb6b4e6b0931c591b4463c3  ui06.zip" | sha256sum -c -
+          mkdir out
+          unzip -q ui06.zip -d out
+          test -f out/CatAI-06.apk
+          echo "f2427d78e3e62693441845ba38fd4dae6e49c35c8e288bc6ca640d664203aade  out/CatAI-06.apk" | sha256sum -c -
+
+      - name: Publish exact APK only as prerelease asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="ui06-9c46792d"
+          TARGET="9c46792d8676d35bf83da14df3a93d4ff9e31f0d"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release already exists; refusing to overwrite."
+            exit 0
+          fi
+          printf '%s\n'             'Physical-test prerelease. Not yet promoted.'             'Exact APK from successful Actions run 36669053725.'             'Independent Android CI run 36669059265 also passed on the same source commit.'             'Source: 9c46792d8676d35bf83da14df3a93d4ff9e31f0d'             'SHA-256: f2427d78e3e62693441845ba38fd4dae6e49c35c8e288bc6ca640d664203aade'             > NOTES.txt
+          gh release create "$TAG" out/CatAI-06.apk             --target "$TARGET"             --prerelease             --title "Black Cat UI06 physical-test APK"             --notes-file NOTES.txt
