@@ -2,43 +2,49 @@
 
 Public Android test app that makes a compatible Android phone act as a Bluetooth HID keyboard and mouse, with an optional OpenAI-powered Linux assistant and reviewed screen-photo feedback.
 
-## Latest physical-test APK — UI06
+## Latest physical-test APK — UI07
 
 Direct APK:
 
-https://github.com/efrgdgr0024345/autophone/releases/download/ui06-9c46792d/CatAI-06.apk
+https://github.com/efrgdgr0024345/autophone/releases/download/ui07-c9cb8c35/CatAI-07.apk
 
 SHA-256:
 
-`f2427d78e3e62693441845ba38fd4dae6e49c35c8e288bc6ca640d664203aade`
+`79d43bb4451cd71fb9345034df0b8fdc3e876e03727ff4a5579f56444b8fb9a6`
 
 Source commit:
 
-`9c46792d8676d35bf83da14df3a93d4ff9e31f0d`
+`c9cb8c3572c5bf25a7efd241870552c0d37460a7`
 
-UI06 GitHub Actions verification:
+UI07 GitHub Actions verification:
 
-https://github.com/efrgdgr0024345/autophone/actions/runs/36669053725
+https://github.com/efrgdgr0024345/autophone/actions/runs/36671838368
 
 Independent Android CI verification:
 
-https://github.com/efrgdgr0024345/autophone/actions/runs/36669059265
+https://github.com/efrgdgr0024345/autophone/actions/runs/36671855784
 
 Draft PR:
 
-https://github.com/efrgdgr0024345/autophone/pull/17
+https://github.com/efrgdgr0024345/autophone/pull/20
 
 Status: **physical-test prerelease**. Automated golden-Bluetooth behavior guards, planner/photo tests, Android unit tests, Lint, both APK builds, packaged permission/identity/signature inspection, CodeQL and GitHub artifact provenance attestation passed. This is not yet physical handset/Bluetooth/camera/API acceptance.
 
-## UI06 design and flow
+## UI07 design and flow
 
-UI06 is built on the CatAI-04 working lineage and follows the golden rule: preserve the known working Bluetooth/HID core and build new UI/features around it.
+UI07 is built on the tested photo-enabled UI06 lineage and follows the golden rule: preserve the known working Bluetooth/HID/photo/API core and build the new interface around it.
 
-- large Black Cat image on a **white background**
+- large full Black Cat image on a **white background**
 - operational text and controls on **dark/black panels**
 - green action buttons and status accents
 - display respects Android system-bar/navigation insets
-- Home/Remote flow: **Connect → choose tool → direct controls**
+- Home/Remote quick tools:
+  - **Linux Assistant**
+  - **Photo Feedback**
+  - **Send Text**
+  - **Touchpad**
+  - **Keyboard**
+- only the selected direct-control panel expands
 - Linux Assistant flow: **Plan → Step → Preview → Result**
 - saved target-system dropdown with common Linux systems
 - final **Edit / custom…** target option
@@ -47,7 +53,7 @@ UI06 is built on the CatAI-04 working lineage and follows the golden rule: prese
 
 ## Photo Feedback
 
-The AI build now includes a bounded Photo Feedback workflow:
+The AI build keeps the reviewed Photo Feedback workflow:
 
 1. Take a photo of the terminal/error screen inside the app.
 2. Review the exact photo before sending.
@@ -60,33 +66,41 @@ The AI build now includes a bounded Photo Feedback workflow:
 
 The app requests CAMERA only in the AI flavor. It does not request broad gallery/storage access or microphone permission, and the in-app captured photo is not deliberately saved to the gallery.
 
+## Golden rule / preserved working core
+
+UI07 is layered above the existing working lineage. The following behavior remains protected by regression tests:
+
+- computer-initiated Bluetooth HID pairing/discoverability
+- HidManager / HidDescriptor / HidReports / Diagnostics
+- Bluetooth permissions and Activity lifecycle
+- direct text typing
+- mouse/touchpad reports
+- full HID keyboard mappings
+- encrypted phone-held API key flow
+- OpenAI text planner
+- Camera2 capture/review/photo-analysis path
+- reviewed **TYPE ONLY** sender
+- no automatic Enter, run-all or replay
+
 ## Preserved references
 
-The exact earlier Bluetooth V2 and API02 APK/source references remain preserved here:
+Original Bluetooth V2 and API02:
 
 https://github.com/efrgdgr0024345/autophone/releases/tag/preserved-v2-api02-20260929
 
-The CatAI-04 working-lineage prerelease remains available here:
+CatAI-04 working-lineage prerelease:
 
 https://github.com/efrgdgr0024345/autophone/releases/tag/ui04-ab34f45d
 
-The previous UI03 prerelease remains available here:
+Previous photo-enabled UI06:
+
+https://github.com/efrgdgr0024345/autophone/releases/tag/ui06-9c46792d
+
+Previous UI03:
 
 https://github.com/efrgdgr0024345/autophone/releases/tag/ui03-44917e02
 
 Do not overwrite the preserved reference releases.
-
-## Current controls
-
-- computer-initiated Bluetooth HID pairing
-- keyboard text input
-- mouse/touchpad controls
-- expandable full keyboard
-- OpenAI Linux command planning
-- saved target-system selection
-- reviewed photo feedback
-- explicit **TYPE ONLY** command approval
-- no automatic Enter or hidden command execution
 
 ## Security
 
