@@ -2,11 +2,13 @@ package com.blackcat.remote
 
 import android.app.Activity
 import android.graphics.Color
+import android.os.Build
 import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
 import android.view.View
+import android.view.WindowInsets
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -78,6 +80,34 @@ object BlackCatStyle {
         view.gravity = Gravity.CENTER
         view.background = round(activity, TINT, 22)
         view.setPadding(dp(activity, 10), dp(activity, 6), dp(activity, 10), dp(activity, 6))
+    }
+
+    @Suppress("DEPRECATION")
+    fun applySystemBarInsets(view: View) {
+        val baseLeft = view.paddingLeft
+        val baseTop = view.paddingTop
+        val baseRight = view.paddingRight
+        val baseBottom = view.paddingBottom
+        view.setOnApplyWindowInsetsListener { v, insets ->
+            val top: Int
+            val bottom: Int
+            if (Build.VERSION.SDK_INT >= 30) {
+                val bars = insets.getInsets(WindowInsets.Type.systemBars())
+                top = bars.top
+                bottom = bars.bottom
+            } else {
+                top = insets.systemWindowInsetTop
+                bottom = insets.systemWindowInsetBottom
+            }
+            v.setPadding(
+                baseLeft,
+                baseTop + top,
+                baseRight,
+                baseBottom + bottom
+            )
+            insets
+        }
+        view.requestApplyInsets()
     }
 
     fun transparent(view: View) {

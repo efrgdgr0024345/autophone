@@ -44,8 +44,8 @@ object AiEntry {
     /** Only adds a button in an existing row; does not access HID or credentials at app startup. */
     fun attach(activity: Activity, row: LinearLayout, manager: () -> HidManager) {
         val button = Button(activity).apply {
-            text = "AI"
-            contentDescription = "Open AI command assistant"
+            text = "Open Linux Assistant"
+            contentDescription = "Open Linux command assistant"
             BlackCatStyle.styleButton(activity, this, primary = true, compact = true)
         }
         row.addView(button, LinearLayout.LayoutParams(0, (46 * activity.resources.displayMetrics.density).toInt(), 1f))
@@ -72,7 +72,7 @@ private class AiPanel(
     manager: HidManager,
     private val onClosed: () -> Unit
 ) {
-    private enum class Tab { PLAN, STEP, FEEDBACK, PREVIEW }
+    private enum class Tab { PLAN, STEP, PREVIEW, FEEDBACK }
 
     private val target = AiTransportScope(activity, manager) { dismiss() }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -91,6 +91,7 @@ private class AiPanel(
     private var currentPlan: CommandPlan? = null
     private var planRevision = 0L
     private var oneShotKey = ""
+    private var lastTypedCommand: String? = null
     private val recentGoals = ArrayDeque<String>()
     private val targetPrefs by lazy { activity.getSharedPreferences(TARGET_PREFS, Activity.MODE_PRIVATE) }
     private var selectedTarget = DEFAULT_TARGET
@@ -167,6 +168,7 @@ private class AiPanel(
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(BG)
         }
+        BlackCatStyle.applySystemBarInsets(root)
         root.addView(buildTopBar(), matchWrap())
         root.addView(buildStatusBar(), matchWrap())
 
@@ -466,8 +468,8 @@ private class AiPanel(
         }
         add(Tab.PLAN, "▤", "Plan")
         add(Tab.STEP, "→", "Step")
-        add(Tab.FEEDBACK, "◇", "Feedback")
         add(Tab.PREVIEW, ">_", "Preview")
+        add(Tab.FEEDBACK, "◇", "Result")
         return bar
     }
 
@@ -651,7 +653,7 @@ private class AiPanel(
     private fun renderFeedback() {
         if (!::feedbackBody.isInitialized) return
         feedbackBody.removeAllViews()
-        pageHeading(feedbackBody, "Feedback", "Only supported feedback is shown here.")
+        pageHeading(feedbackBody, "Result", "What happens after the command reaches the computer.")
         val questions = currentPlan?.questions.orEmpty()
         if (questions.isNotEmpty()) {
             val q = card()
@@ -662,11 +664,39 @@ private class AiPanel(
             feedbackBody.addView(actionButton("Edit goal", true) { switchTab(Tab.PLAN); goal.requestFocus() }, matchWrap(top = 10))
             return
         }
-        val compact = card()
-        compact.addView(label("Screen feedback", 17f, INK, Typeface.BOLD))
-        compact.addView(label("Photo and terminal-result feedback are deliberately not connected in this UI-only build. They are the next separately tested milestone.", 13f, MUTED).apply { setPadding(0, dp(7), 0, 0) })
-        feedbackBody.addView(compact, matchWrap())
-        if (commands.isNotEmpty()) feedbackBody.addView(actionButton("Return to current step", true) { switchTab(Tab.STEP) }, matchWrap(top = 10))
+
+        val typed = lastTypedCommand
+        if (typed == null) {
+            feedbackBody.addView(emptyState(
+                "Nothing has been typed yet",
+                "Follow Plan → Step → Preview. This page becomes useful after TYPE ONLY sends the reviewed text."
+            ), matchWrap())
+            if (commands.isNotEmpty()) {
+                feedbackBody.addView(actionButton("Go to Preview", true) { switchTab(Tab.PREVIEW) }, matchWrap(top = 10))
+            }
+            return
+        }
+
+        val next = card()
+        next.addView(label("Now check the computer", 18f, INK, Typeface.BOLD))
+        next.addView(label(
+            "Black Cat typed the reviewed text only. It did not press Enter.",
+            13f, MUTED
+        ).apply { setPadding(0, dp(7), 0, dp(8)) })
+        next.addView(commandBox(typed), matchWrap(bottom = 9))
+        next.addView(label("1. Confirm the text on the computer is exactly what you expected.", 13f, INK))
+        next.addView(label("2. Press Enter yourself only when you are satisfied.", 13f, INK).apply { setPadding(0, dp(6), 0, 0) })
+        next.addView(label("3. Read the terminal result before asking for the next command.", 13f, INK).apply { setPadding(0, dp(6), 0, 0) })
+        feedbackBody.addView(next, matchWrap())
+
+        val note = card()
+        note.addView(label("Result feedback", 15f, INK, Typeface.BOLD))
+        note.addView(label(
+            "Photo/text result analysis is not enabled in this build yet. If you need a revised plan, return to Plan and include what the terminal showed.",
+            12f, MUTED
+        ).apply { setPadding(0, dp(6), 0, 0) })
+        feedbackBody.addView(note, matchWrap(top = 8))
+        feedbackBody.addView(actionButton("Back to Plan", true) { switchTab(Tab.PLAN) }, matchWrap(top = 10))
     }
 
     private fun renderPreview() {
@@ -801,10 +831,15 @@ private class AiPanel(
                         val outcome = ApprovedCommandSender.send(approval, target)
                         setStatus(
                             if (outcome == SendOutcome.REPORTS_ACCEPTED)
-                                "Android accepted the keyboard reports. Check the laptop before pressing Enter."
+                                "Text typed. Check the computer before pressing Enter."
                             else "Typing stopped ($outcome). Inspect any partial text manually.",
                             error = outcome != SendOutcome.REPORTS_ACCEPTED
                         )
+                        if (outcome == SendOutcome.REPORTS_ACCEPTED) {
+                            lastTypedCommand = command
+                            activeTab = Tab.FEEDBACK
+                            applyActiveTab()
+                        }
                     } catch (e: CancellationException) {
                         throw e
                     } catch (_: Exception) {
