@@ -11,7 +11,7 @@ FROZEN = {
     'HidReports.kt': '5b4369900a92948a58b5d25fcab1022ca8d7fdcf',
     'Diagnostics.kt': '50f57a2bcdbb3b37b245023441178314f47940ab',
 }
-HOOK = '  // BEGIN AI-ONLY ENTRY\n  AiEntry.attach(this,aiRow){hid}\n  // END AI-ONLY ENTRY\n'
+AI_ENTRY = 'AiEntry.openAssistant(this,{hid})'
 
 BEHAVIOR_SNIPPETS = (
     'override fun onCreate(s:Bundle?){super.onCreate(s);buildUi();diagnostics=Diagnostics{runOnUiThread{log.text=it}};hid=HidManager(this){event(it)};permissionsOrInit()}',
@@ -38,11 +38,35 @@ def blob(data: bytes) -> str:
     return hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest()
 
 def verify_activity(text: str) -> None:
-    assert text.count(HOOK) == 1, 'Exactly one reviewed lazy AI entry hook is required'
+    assert text.count(AI_ENTRY) >= 1, 'Reference UI must expose the reviewed AI assistant entry'
     for snippet in BEHAVIOR_SNIPPETS:
         assert snippet in text, 'A V2 Bluetooth/lifecycle/send behavior method changed'
     for forbidden in ('override fun onPause', 'override fun onStop', 'override fun onResume', 'override fun onStart', 'createBond(', 'startDiscovery('):
         assert forbidden not in text, f'Unexpected lifecycle/Bluetooth behavior added: {forbidden}'
+
+    required_reference_ui = (
+        'private fun showSplash()',
+        'private fun showHome()',
+        'private fun showBluetooth()',
+        'private fun showTarget()',
+        'private fun showCustomTarget()',
+        'Black Cat AI',
+        'Remote · Automate · Control',
+        'Bluetooth',
+        'AI Assistant',
+        'Target System',
+        'Settings',
+        'Make Discoverable / Pair New Device',
+        'Computer-initiated HID pairing',
+        'fun openHomeFromChild()',
+        'fun openTargetFromChild()',
+        'fun openSettingsFromChild()',
+        'fun hidForUi():HidManager=hid',
+        'setContentView(root)',
+    )
+    for snippet in required_reference_ui:
+        assert snippet in text, f'Missing approved reference-screen UI element: {snippet}'
+
     required_ui_actions = (
         'setOnClickListener{pair()}',
         'diagnostics.snapshot()',
@@ -51,17 +75,17 @@ def verify_activity(text: str) -> None:
         'hid.sendMouse(0,(e.x-x).toInt(),(e.y-y).toInt())',
         'hid.sendMouse(mask,0,0); hid.sendMouse(0,0,0)',
         'setOnClickListener{hid.sendKeyboard(mod,key)}',
-        'setContentView(root)',
     )
     for snippet in required_ui_actions:
         assert snippet in text, f'Main UI no longer maps to proven HID action: {snippet}'
     for snippet in KEYMAP_SNIPPETS:
         assert snippet in text, f'Full keyboard mapping changed: {snippet}'
-    assert 'BlackCatStyle' in text and 'R.drawable.black_cat_full' in text, 'Approved full-app Black Cat portrait/style missing'
+
     assert 'BlackCatStyle.applySystemBarInsets(root)' in text, 'Main display must sit inside Android system-bar insets'
+    assert 'R.drawable.black_cat_full' in text, 'Approved full Black Cat portrait missing'
     assert 'diagnosticsBody=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;visibility=View.GONE' in text, 'Diagnostics must be collapsed by default'
-    assert text.index(HOOK) < text.index('body.addView(sendPanel'), 'AI tools belong before expanded remote panels'
-    assert text.index('val diagnosticsCard=') > text.index('body.addView(keyboardPanel'), 'Diagnostics must stay at the end of the user flow'
+    assert text.index('private fun showBluetooth()') < text.index('private fun addDiagnostics'), 'Diagnostics must stay subordinate to normal controls'
+    assert 'startDiscovery(' not in text and 'createBond(' not in text, 'Phone-side Bluetooth scanning/pair creation must not replace host-initiated HID pairing'
 
 def verify() -> None:
     src = ROOT / 'app/src/main/java/com/blackcat/remote'
