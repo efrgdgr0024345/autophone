@@ -9,8 +9,8 @@ android {
         applicationId 'com.blackcat.remote'
         minSdk 28
         targetSdk 35
-        versionCode 9
-        versionName '7.0-approved-visual-photo'
+        versionCode 10
+        versionName '8.0-reference-screen-flow'
     }
     flavorDimensions 'capability'
     productFlavors {
