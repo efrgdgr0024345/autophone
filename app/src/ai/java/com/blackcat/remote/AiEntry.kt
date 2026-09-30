@@ -41,52 +41,53 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 
 object AiEntry {
-    /** Adds optional AI surfaces only; no API, camera or HID work occurs at app startup. */
+    /** Lazy entry points only: opening a screen never sends API or HID input by itself. */
+    fun openAssistant(activity: Activity, manager: () -> HidManager) {
+        try {
+            AiPanel(activity, manager()) {}.show()
+        } catch (_: Exception) {
+            Toast.makeText(activity, "Could not open AI Assistant. Bluetooth controls are unchanged.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    fun openPhotoFeedback(activity: Activity, manager: () -> HidManager) {
+        try {
+            PhotoFeedbackPanel(activity, manager()) {}.show()
+        } catch (_: Exception) {
+            Toast.makeText(activity, "Could not open Photo Feedback. Bluetooth controls are unchanged.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    fun openTargetSystem(activity: Activity) {
+        try {
+            TargetSystemPanel(activity).show()
+        } catch (_: Exception) {
+            Toast.makeText(activity, "Could not open Target System.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    fun openSettings(activity: Activity) {
+        try {
+            AiSettingsPanel(activity).show()
+        } catch (_: Exception) {
+            Toast.makeText(activity, "Could not open Settings.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    /** Retained compatibility hook for older UI branches. */
     fun attach(activity: Activity, row: LinearLayout, manager: () -> HidManager) {
-        fun toolTile(title: String, subtitle: String, description: String) = Button(activity).apply {
-            text = "$title\n$subtitle"
-            contentDescription = description
+        val assistant = Button(activity).apply {
+            text = "Linux Assistant"
             isAllCaps = false
-            textSize = 14f
-            gravity = Gravity.CENTER
-            setTextColor(BlackCatStyle.COMMAND_TEXT)
-            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-            background = BlackCatStyle.round(activity, BlackCatStyle.COMMAND_BG, 16, Color.rgb(48, 66, 59), 1)
-            setPadding(
-                BlackCatStyle.dp(activity, 8),
-                BlackCatStyle.dp(activity, 8),
-                BlackCatStyle.dp(activity, 8),
-                BlackCatStyle.dp(activity, 8)
-            )
+            setOnClickListener { openAssistant(activity, manager) }
         }
-        val assistant = toolTile("Linux Assistant", "Plan, review & type", "Open Linux command assistant")
-        val photo = toolTile("Photo Feedback", "Take photo, get help", "Take a computer-screen photo for OpenAI analysis")
-        row.addView(assistant, LinearLayout.LayoutParams(0, BlackCatStyle.dp(activity, 96), 1f).apply {
-            rightMargin = BlackCatStyle.dp(activity, 4)
-        })
-        row.addView(photo, LinearLayout.LayoutParams(0, BlackCatStyle.dp(activity, 96), 1f).apply {
-            leftMargin = BlackCatStyle.dp(activity, 4)
-        })
-
-        assistant.setOnClickListener {
-            assistant.isEnabled = false
-            try {
-                AiPanel(activity, manager()) { assistant.isEnabled = true }.show()
-            } catch (_: Exception) {
-                assistant.isEnabled = true
-                Toast.makeText(activity, "Could not open AI panel. Bluetooth controls are unchanged.", Toast.LENGTH_LONG).show()
-            }
+        val photo = Button(activity).apply {
+            text = "Photo Feedback"
+            isAllCaps = false
+            setOnClickListener { openPhotoFeedback(activity, manager) }
         }
-
-        photo.setOnClickListener {
-            photo.isEnabled = false
-            try {
-                PhotoFeedbackPanel(activity, manager()) { photo.isEnabled = true }.show()
-            } catch (_: Exception) {
-                photo.isEnabled = true
-                Toast.makeText(activity, "Could not open Photo Feedback. Bluetooth controls are unchanged.", Toast.LENGTH_LONG).show()
-            }
-        }
+        row.addView(assistant, LinearLayout.LayoutParams(0, BlackCatStyle.dp(activity, 56), 1f))
+        row.addView(photo, LinearLayout.LayoutParams(0, BlackCatStyle.dp(activity, 56), 1f))
     }
 }
 
