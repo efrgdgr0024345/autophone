@@ -30,8 +30,16 @@ def verify(root: Path = ROOT) -> None:
 
     entry = (ai / 'AiEntry.kt').read_text(encoding='utf-8')
     assert 'CheckBox' not in entry, 'Redundant approval checkboxes were reintroduced'
-    for text in ('Plan', 'Step', 'Feedback', 'Preview', 'TYPE ONLY', 'R.drawable.black_cat_emblem', 'R.drawable.black_cat_peek'):
-        assert text in entry, f'Missing approved UI element: {text}'
+    assert 'targetField' not in entry, 'Free-text target field returned; use saved dropdown/custom edit flow'
+    for text in (
+        'Plan', 'Step', 'Feedback', 'Preview', 'TYPE ONLY',
+        'R.drawable.black_cat_emblem', 'R.drawable.black_cat_peek',
+        'Edit / custom…', 'getSharedPreferences(TARGET_PREFS',
+        'putString(TARGET_KEY', 'Ubuntu Linux / Bash', 'Debian Linux / Bash',
+        'Fedora Linux / Bash', 'Arch Linux / Bash', 'Kali Linux / Bash',
+        'BlackCatStyle.styleButton(activity, this, primary = true, compact = true)'
+    ):
+        assert text in entry, f'Missing approved UI/target element: {text}'
     for forbidden in ('android.permission.CAMERA', 'input_image', 'getUserMedia', 'manager.sendKeyboard', 'manager.init(', 'manager.close(', 'registerApp(', 'unregisterApp('):
         assert forbidden not in entry, f'UI-only milestone crossed a frozen boundary: {forbidden}'
     assert entry.count('planner.propose(') == 1, 'OpenAI requests must remain explicit and singular in the UI path'
@@ -42,15 +50,20 @@ def verify(root: Path = ROOT) -> None:
     for forbidden in ('planner.propose(', 'ApprovedCommandSender.send(', 'manager.'):
         assert forbidden not in dismiss, f'Closing the panel must not trigger API/HID work: {forbidden}'
 
-    assets = root / 'app/src/ai/res/drawable-nodpi'
-    for name, expected in ASSETS.items():
-        data = (assets / name).read_bytes()
-        actual = hashlib.sha256(data).hexdigest()
-        assert actual == expected, f'Approved Black Cat artwork changed: {name}'
+    for source_set in ('ai', 'main'):
+        assets = root / f'app/src/{source_set}/res/drawable-nodpi'
+        for name, expected in ASSETS.items():
+            data = (assets / name).read_bytes()
+            actual = hashlib.sha256(data).hexdigest()
+            assert actual == expected, f'Approved Black Cat artwork changed in {source_set}: {name}'
+
+    style = (root / 'app/src/main/java/com/blackcat/remote/BlackCatStyle.kt').read_text(encoding='utf-8')
+    for value in ('245, 248, 245', '22, 97, 70', '18, 44, 36'):
+        assert value in style, f'Shared Black Cat style palette changed unexpectedly: {value}'
 
     manifest = (root / 'app/src/ai/AndroidManifest.xml').read_text(encoding='utf-8')
     assert 'CAMERA' not in manifest, 'Camera permission belongs to the later photo milestone'
-    print('PASS: UI-only milestone preserves API/transport, uses approved art, click-is-approval, and no camera/HID lifecycle changes')
+    print('PASS: full-app style uses approved art, saved target dropdown/custom edit, click-is-approval, frozen API/transport, and no camera/HID lifecycle changes')
 
 
 if __name__ == '__main__':
