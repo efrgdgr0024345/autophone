@@ -11,7 +11,7 @@ FROZEN = {
     'HidReports.kt': '5b4369900a92948a58b5d25fcab1022ca8d7fdcf',
     'Diagnostics.kt': '50f57a2bcdbb3b37b245023441178314f47940ab',
 }
-HOOK = '  // BEGIN AI-ONLY ENTRY\n  AiEntry.attach(this,da){hid}\n  // END AI-ONLY ENTRY\n'
+HOOK = '  // BEGIN AI-ONLY ENTRY\n  AiEntry.attach(this,assistantTileRow){hid}\n  // END AI-ONLY ENTRY\n'
 
 BEHAVIOR_SNIPPETS = (
     'override fun onCreate(s:Bundle?){super.onCreate(s);buildUi();diagnostics=Diagnostics{runOnUiThread{log.text=it}};hid=HidManager(this){event(it)};permissionsOrInit()}',
@@ -57,7 +57,13 @@ def verify_activity(text: str) -> None:
         assert snippet in text, f'Main UI no longer maps to proven HID action: {snippet}'
     for snippet in KEYMAP_SNIPPETS:
         assert snippet in text, f'Full keyboard mapping changed: {snippet}'
-    assert 'BlackCatStyle' in text and 'R.drawable.black_cat_emblem' in text, 'Approved full-app Black Cat style missing'
+    assert 'BlackCatStyle' in text and 'R.drawable.black_cat_full' in text, 'Approved full-app Black Cat style missing'
+    assert 'BlackCatStyle.applySystemBarInsets(root)' in text, 'Main display must sit inside Android system-bar insets'
+    assert 'diagnosticsBody=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;visibility=View.GONE' in text, 'Diagnostics must be collapsed by default'
+    assert 'R.drawable.black_cat_full' in text, 'Approved full cat hero must be present'
+    assert text.index(HOOK) < text.index('body.addView(sendPanel'), 'Assistant tile belongs before expanded remote panels'
+    assert text.index('val diagnosticsCard=') > text.index('body.addView(keyboardPanel'), 'Diagnostics must stay at the end of the user flow'
+    assert 'hideRemotePanels()' in text, 'Remote tiles must expose one focused control area at a time'
 
 def verify() -> None:
     src = ROOT / 'app/src/main/java/com/blackcat/remote'

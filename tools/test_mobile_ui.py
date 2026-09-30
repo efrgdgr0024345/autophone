@@ -65,6 +65,27 @@ class MobileUiBoundaryTests(unittest.TestCase):
             with self.assertRaises(AssertionError): verify(dst)
         finally: temp.cleanup()
 
+    def test_system_bar_inset_removal_rejected(self):
+        temp, dst = self.clone()
+        try:
+            p = dst / 'app/src/main/java/com/blackcat/remote/BlackCatStyle.kt'
+            p.write_text(p.read_text(encoding='utf-8').replace('WindowInsets.Type.systemBars()', 'WindowInsets.Type.statusBars()'), encoding='utf-8')
+            with self.assertRaises(AssertionError): verify(dst)
+        finally: temp.cleanup()
+
+    def test_flow_order_regression_rejected(self):
+        temp, dst = self.clone()
+        try:
+            p = dst / 'app/src/ai/java/com/blackcat/remote/AiEntry.kt'
+            text = p.read_text(encoding='utf-8')
+            text = text.replace(
+                'add(Tab.PREVIEW, ">_", "Preview")\n        add(Tab.FEEDBACK, "◇", "Result")',
+                'add(Tab.FEEDBACK, "◇", "Result")\n        add(Tab.PREVIEW, ">_", "Preview")'
+            )
+            p.write_text(text, encoding='utf-8')
+            with self.assertRaises(AssertionError): verify(dst)
+        finally: temp.cleanup()
+
     def test_camera_scope_creep_rejected(self):
         temp, dst = self.clone()
         try:

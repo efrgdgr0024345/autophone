@@ -44,11 +44,22 @@ object AiEntry {
     /** Only adds a button in an existing row; does not access HID or credentials at app startup. */
     fun attach(activity: Activity, row: LinearLayout, manager: () -> HidManager) {
         val button = Button(activity).apply {
-            text = "AI"
-            contentDescription = "Open AI command assistant"
-            BlackCatStyle.styleButton(activity, this, primary = true, compact = true)
+            text = "Linux Assistant\nPlan, review & type"
+            contentDescription = "Open Linux command assistant"
+            isAllCaps = false
+            textSize = 14f
+            gravity = Gravity.CENTER
+            setTextColor(BlackCatStyle.COMMAND_TEXT)
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            background = BlackCatStyle.round(activity, BlackCatStyle.COMMAND_BG, 16)
+            setPadding(
+                BlackCatStyle.dp(activity, 8),
+                BlackCatStyle.dp(activity, 8),
+                BlackCatStyle.dp(activity, 8),
+                BlackCatStyle.dp(activity, 8)
+            )
         }
-        row.addView(button, LinearLayout.LayoutParams(0, (46 * activity.resources.displayMetrics.density).toInt(), 1f))
+        row.addView(button, LinearLayout.LayoutParams(0, BlackCatStyle.dp(activity, 96), 1f))
         button.setOnClickListener {
             button.isEnabled = false
             try {
@@ -72,7 +83,7 @@ private class AiPanel(
     manager: HidManager,
     private val onClosed: () -> Unit
 ) {
-    private enum class Tab { PLAN, STEP, FEEDBACK, PREVIEW }
+    private enum class Tab { PLAN, STEP, PREVIEW, FEEDBACK }
 
     private val target = AiTransportScope(activity, manager) { dismiss() }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -91,6 +102,7 @@ private class AiPanel(
     private var currentPlan: CommandPlan? = null
     private var planRevision = 0L
     private var oneShotKey = ""
+    private var lastTypedCommand: String? = null
     private val recentGoals = ArrayDeque<String>()
     private val targetPrefs by lazy { activity.getSharedPreferences(TARGET_PREFS, Activity.MODE_PRIVATE) }
     private var selectedTarget = DEFAULT_TARGET
@@ -167,6 +179,7 @@ private class AiPanel(
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(BG)
         }
+        BlackCatStyle.applySystemBarInsets(root)
         root.addView(buildTopBar(), matchWrap())
         root.addView(buildStatusBar(), matchWrap())
 
@@ -187,54 +200,55 @@ private class AiPanel(
     }
 
     private fun buildTopBar(): View {
-        val row = LinearLayout(activity).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(14), dp(8), dp(10), dp(6))
-            setBackgroundColor(PAPER)
+        val hero = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_HORIZONTAL
+            setPadding(dp(12), dp(5), dp(12), dp(6))
+            setBackgroundColor(Color.WHITE)
         }
-        val logo = ImageView(activity).apply {
-            setImageResource(R.drawable.black_cat_emblem)
+        val cat = ImageView(activity).apply {
+            setImageResource(R.drawable.black_cat_full)
             scaleType = ImageView.ScaleType.CENTER_CROP
             contentDescription = "Black Cat"
-            background = round(PAPER, 30, LINE, 1)
-            clipToOutline = true
         }
-        row.addView(logo, LinearLayout.LayoutParams(dp(46), dp(46)))
+        hero.addView(cat, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(132)))
 
+        val titleRow = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
         val titles = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(9), 0, 0, 0)
         }
-        titles.addView(label("BLACK CAT", 15f, INK, Typeface.BOLD).apply { letterSpacing = .12f })
-        titles.addView(label("Linux assistant · Android", 11f, MUTED))
-        row.addView(titles, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-
+        titles.addView(label("Linux Assistant", 18f, Color.rgb(20, 20, 20), Typeface.BOLD))
+        titles.addView(label("Plan · Review · Type only", 11f, Color.rgb(95, 95, 95)))
+        titleRow.addView(titles, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         val settings = actionButton("Settings", primary = false) { openSettings() }.apply {
             minWidth = 0
-            minHeight = dp(44)
-            setPadding(dp(13), 0, dp(13), 0)
-            textSize = 13f
+            minHeight = dp(42)
+            setPadding(dp(12), 0, dp(12), 0)
+            textSize = 12f
             contentDescription = "Open AI settings"
         }
-        row.addView(settings, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(44)))
-        return row
+        titleRow.addView(settings, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(42)))
+        hero.addView(titleRow, matchWrap())
+        return hero
     }
 
     private fun buildStatusBar(): View {
         val row = LinearLayout(activity).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(14), dp(7), dp(14), dp(7))
-            background = round(BG, 0, LINE, 0)
+            setPadding(dp(12), dp(8), dp(12), dp(8))
+            setBackgroundColor(COMMAND_BG)
         }
-        statusPill = label("●  WAITING", 11f, AMBER, Typeface.BOLD).apply {
+        statusPill = label("●  WAITING", 11f, GREEN, Typeface.BOLD).apply {
             gravity = Gravity.CENTER
-            background = round(AMBER_TINT, 24)
+            background = round(Color.rgb(28, 58, 47), 24)
             setPadding(dp(10), dp(6), dp(10), dp(6))
         }
         row.addView(statusPill)
-        statusText = label("Open Settings for API key", 11f, MUTED).apply {
+        statusText = label("Open Settings for API key", 11f, Color.rgb(205, 218, 212)).apply {
             setPadding(dp(10), 0, 0, 0)
             maxLines = 2
         }
@@ -447,7 +461,7 @@ private class AiPanel(
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER
             setPadding(dp(6), dp(5), dp(6), dp(6))
-            background = round(PAPER, 0, LINE, 1)
+            background = round(COMMAND_BG, 0, Color.rgb(54, 76, 68), 1)
         }
         fun add(tab: Tab, icon: String, title: String) {
             val item = LinearLayout(activity).apply {
@@ -457,8 +471,8 @@ private class AiPanel(
                 isClickable = true
                 isFocusable = true
                 contentDescription = title
-                addView(label(icon, 17f, MUTED, Typeface.BOLD).apply { gravity = Gravity.CENTER })
-                addView(label(title, 11f, MUTED, Typeface.BOLD).apply { gravity = Gravity.CENTER })
+                addView(label(icon, 17f, Color.rgb(188, 204, 198), Typeface.BOLD).apply { gravity = Gravity.CENTER })
+                addView(label(title, 11f, Color.rgb(188, 204, 198), Typeface.BOLD).apply { gravity = Gravity.CENTER })
                 setOnClickListener { switchTab(tab) }
             }
             tabButtons[tab] = item
@@ -466,8 +480,8 @@ private class AiPanel(
         }
         add(Tab.PLAN, "▤", "Plan")
         add(Tab.STEP, "→", "Step")
-        add(Tab.FEEDBACK, "◇", "Feedback")
         add(Tab.PREVIEW, ">_", "Preview")
+        add(Tab.FEEDBACK, "◇", "Result")
         return bar
     }
 
@@ -499,9 +513,9 @@ private class AiPanel(
         previewView.visibility = if (activeTab == Tab.PREVIEW) View.VISIBLE else View.GONE
         tabButtons.forEach { (tab, view) ->
             val active = tab == activeTab
-            view.background = if (active) round(TINT, 14) else ColorDrawable(Color.TRANSPARENT)
+            view.background = if (active) round(Color.rgb(31, 70, 54), 14) else ColorDrawable(Color.TRANSPARENT)
             for (i in 0 until view.childCount) {
-                (view.getChildAt(i) as? TextView)?.setTextColor(if (active) GREEN else MUTED)
+                (view.getChildAt(i) as? TextView)?.setTextColor(if (active) Color.rgb(103, 240, 104) else Color.rgb(188, 204, 198))
             }
         }
     }
@@ -651,7 +665,7 @@ private class AiPanel(
     private fun renderFeedback() {
         if (!::feedbackBody.isInitialized) return
         feedbackBody.removeAllViews()
-        pageHeading(feedbackBody, "Feedback", "Only supported feedback is shown here.")
+        pageHeading(feedbackBody, "Result", "What happens after the command reaches the computer.")
         val questions = currentPlan?.questions.orEmpty()
         if (questions.isNotEmpty()) {
             val q = card()
@@ -662,11 +676,39 @@ private class AiPanel(
             feedbackBody.addView(actionButton("Edit goal", true) { switchTab(Tab.PLAN); goal.requestFocus() }, matchWrap(top = 10))
             return
         }
-        val compact = card()
-        compact.addView(label("Screen feedback", 17f, INK, Typeface.BOLD))
-        compact.addView(label("Photo and terminal-result feedback are deliberately not connected in this UI-only build. They are the next separately tested milestone.", 13f, MUTED).apply { setPadding(0, dp(7), 0, 0) })
-        feedbackBody.addView(compact, matchWrap())
-        if (commands.isNotEmpty()) feedbackBody.addView(actionButton("Return to current step", true) { switchTab(Tab.STEP) }, matchWrap(top = 10))
+
+        val typed = lastTypedCommand
+        if (typed == null) {
+            feedbackBody.addView(emptyState(
+                "Nothing has been typed yet",
+                "Follow Plan → Step → Preview. This page becomes useful after TYPE ONLY sends the reviewed text."
+            ), matchWrap())
+            if (commands.isNotEmpty()) {
+                feedbackBody.addView(actionButton("Go to Preview", true) { switchTab(Tab.PREVIEW) }, matchWrap(top = 10))
+            }
+            return
+        }
+
+        val next = card()
+        next.addView(label("Now check the computer", 18f, INK, Typeface.BOLD))
+        next.addView(label(
+            "Black Cat typed the reviewed text only. It did not press Enter.",
+            13f, MUTED
+        ).apply { setPadding(0, dp(7), 0, dp(8)) })
+        next.addView(commandBox(typed), matchWrap(bottom = 9))
+        next.addView(label("1. Confirm the text on the computer is exactly what you expected.", 13f, INK))
+        next.addView(label("2. Press Enter yourself only when you are satisfied.", 13f, INK).apply { setPadding(0, dp(6), 0, 0) })
+        next.addView(label("3. Read the terminal result before asking for the next command.", 13f, INK).apply { setPadding(0, dp(6), 0, 0) })
+        feedbackBody.addView(next, matchWrap())
+
+        val note = card()
+        note.addView(label("Result feedback", 15f, INK, Typeface.BOLD))
+        note.addView(label(
+            "Photo/text result analysis is not enabled in this build yet. If you need a revised plan, return to Plan and include what the terminal showed.",
+            12f, MUTED
+        ).apply { setPadding(0, dp(6), 0, 0) })
+        feedbackBody.addView(note, matchWrap(top = 8))
+        feedbackBody.addView(actionButton("Back to Plan", true) { switchTab(Tab.PLAN) }, matchWrap(top = 10))
     }
 
     private fun renderPreview() {
@@ -801,10 +843,15 @@ private class AiPanel(
                         val outcome = ApprovedCommandSender.send(approval, target)
                         setStatus(
                             if (outcome == SendOutcome.REPORTS_ACCEPTED)
-                                "Android accepted the keyboard reports. Check the laptop before pressing Enter."
+                                "Text typed. Check the computer before pressing Enter."
                             else "Typing stopped ($outcome). Inspect any partial text manually.",
                             error = outcome != SendOutcome.REPORTS_ACCEPTED
                         )
+                        if (outcome == SendOutcome.REPORTS_ACCEPTED) {
+                            lastTypedCommand = command
+                            activeTab = Tab.FEEDBACK
+                            applyActiveTab()
+                        }
                     } catch (e: CancellationException) {
                         throw e
                     } catch (_: Exception) {
