@@ -29,11 +29,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private object ReferencePanelStyle {
-    const val DARK = 0xff101714.toInt()
-    const val DARK_SOFT = 0xff18221e.toInt()
-    const val LINE = 0xff30423b.toInt()
-    const val GREEN = 0xff74f45b.toInt()
-    const val MUTED = 0xffb7c5be.toInt()
+    val DARK = 0xff101714.toInt()
+    val DARK_SOFT = 0xff18221e.toInt()
+    val LINE = 0xff30423b.toInt()
+    val GREEN = 0xff74f45b.toInt()
+    val MUTED = 0xffb7c5be.toInt()
 
     fun dp(activity: Activity, value: Int) = (value * activity.resources.displayMetrics.density).toInt()
 
