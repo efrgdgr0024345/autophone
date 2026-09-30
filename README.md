@@ -1,86 +1,105 @@
 # Black Cat Remote
 
-Public Android test app that makes a compatible Android phone act as a Bluetooth HID keyboard and mouse, with an optional OpenAI-powered Linux assistant and reviewed screen-photo feedback.
+Android Bluetooth HID keyboard/mouse plus an optional OpenAI-powered Linux assistant with reviewed screen-photo feedback.
 
-## Latest physical-test APK — UI07
+## Latest physical-test APK — UI08
 
 Direct APK:
 
-https://github.com/efrgdgr0024345/autophone/releases/download/ui07-c9cb8c35/CatAI-07.apk
+https://github.com/efrgdgr0024345/autophone/releases/download/ui08-6eec650c/CatAI-08.apk
 
 SHA-256:
 
-`79d43bb4451cd71fb9345034df0b8fdc3e876e03727ff4a5579f56444b8fb9a6`
+`b8d4eeda7a6f4a419fe51ad97617b9480db47dad7e7dd37c220291980121dc9e`
 
-Source commit:
+Exact source commit:
 
-`c9cb8c3572c5bf25a7efd241870552c0d37460a7`
+`6eec650cb3fdf2f0e5b9b463c9c20c10539eaa29`
 
-UI07 GitHub Actions verification:
+UI08 verification / provenance:
 
-https://github.com/efrgdgr0024345/autophone/actions/runs/36671838368
+https://github.com/efrgdgr0024345/autophone/actions/runs/36713102353
 
-Independent Android CI verification:
+Independent Android CI:
 
-https://github.com/efrgdgr0024345/autophone/actions/runs/36671855784
+https://github.com/efrgdgr0024345/autophone/actions/runs/36713109790
 
 Draft PR:
 
-https://github.com/efrgdgr0024345/autophone/pull/20
+https://github.com/efrgdgr0024345/autophone/pull/22
 
-Status: **physical-test prerelease**. Automated golden-Bluetooth behavior guards, planner/photo tests, Android unit tests, Lint, both APK builds, packaged permission/identity/signature inspection, CodeQL and GitHub artifact provenance attestation passed. This is not yet physical handset/Bluetooth/camera/API acceptance.
+Physical acceptance checklist:
 
-## UI07 design and flow
+https://github.com/efrgdgr0024345/autophone/issues/23
 
-UI07 is built on the tested photo-enabled UI06 lineage and follows the golden rule: preserve the known working Bluetooth/HID/photo/API core and build the new interface around it.
+Status: **physical-test prerelease**. Automated golden-Bluetooth behavior guards, UI08 reference-screen tests, planner/photo regressions, Android unit tests, Lint, AI + offline APK builds, packaged permission/identity/signature inspection, CodeQL and exact APK provenance attestation have passed. Physical handset/Bluetooth/camera/API acceptance has not yet been recorded.
 
-- large full Black Cat image on a **white background**
-- operational text and controls on **dark/black panels**
-- green action buttons and status accents
-- display respects Android system-bar/navigation insets
-- Home/Remote quick tools:
-  - **Linux Assistant**
-  - **Photo Feedback**
-  - **Send Text**
-  - **Touchpad**
-  - **Keyboard**
-- only the selected direct-control panel expands
-- Linux Assistant flow: **Plan → Step → Preview → Result**
-- saved target-system dropdown with common Linux systems
-- final **Edit / custom…** target option
-- diagnostics collapsed at the end of the main flow
-- explicit **TYPE ONLY** approval; Enter is never sent automatically
+## UI08 — approved full-screen design
+
+UI08 implements the approved **Black Cat AI Remote — All Screens (v1)** flow while keeping the working core underneath it.
+
+- full black cat presented on a **white background**
+- operational text and controls on dark/black panels
+- bright green action/status accents
+- Android system/navigation insets retained so controls sit above the phone navigation area
+- Main Menu:
+  - Bluetooth
+  - AI Assistant
+  - Target System
+  - Settings
+- Bluetooth screen keeps the proven **computer-initiated HID pairing** architecture
+- AI Assistant screens:
+  - Plan
+  - Step
+  - Feedback
+  - Preview
+- Target System:
+  - common Linux targets
+  - saved selection
+  - Edit / Custom
+- Settings:
+  - encrypted phone-held OpenAI API key
+  - model selection
+- Camera / Photo Feedback:
+  - capture inside the app
+  - review exact photo
+  - explicit send to OpenAI
+  - visible Sending to AI state
 
 ## Photo Feedback
 
-The AI build keeps the reviewed Photo Feedback workflow:
+UI08 includes the reviewed photo workflow:
 
-1. Take a photo of the terminal/error screen inside the app.
-2. Review the exact photo before sending.
-3. Explicitly send it to OpenAI using the same encrypted phone-held API key.
-4. OpenAI analyzes it in the context of the user's stated goal and saved target system.
+1. Capture a photo of the terminal/error screen inside the app.
+2. Review the exact image before upload.
+3. Explicitly send it to OpenAI using the same phone-held API key.
+4. OpenAI analyses it in the context of the stated goal and selected target.
 5. Screen text is treated as **untrusted evidence**, not instructions.
-6. If the image is unclear or critical information is missing, the app expects questions rather than speculative commands.
-7. Any suggested command must still be reviewed and explicitly approved through **TYPE ONLY**.
-8. No automatic Enter, command execution, run-all or hidden replay.
+6. Unclear evidence should produce questions rather than speculative commands.
+7. Any suggested command still requires separate review and **TYPE ONLY** approval.
+8. Enter is never pressed automatically.
 
-The app requests CAMERA only in the AI flavor. It does not request broad gallery/storage access or microphone permission, and the in-app captured photo is not deliberately saved to the gallery.
+The AI build requests camera and internet only as needed for these features. It does not require microphone or broad gallery/storage access for the in-app capture flow.
 
-## Golden rule / preserved working core
+## Golden rule — preserved working core
 
-UI07 is layered above the existing working lineage. The following behavior remains protected by regression tests:
+The UI is built around the existing working lineage rather than replacing it.
+
+Protected by regression tests:
 
 - computer-initiated Bluetooth HID pairing/discoverability
 - HidManager / HidDescriptor / HidReports / Diagnostics
 - Bluetooth permissions and Activity lifecycle
 - direct text typing
-- mouse/touchpad reports
+- mouse/touchpad HID reports
 - full HID keyboard mappings
 - encrypted phone-held API key flow
 - OpenAI text planner
 - Camera2 capture/review/photo-analysis path
 - reviewed **TYPE ONLY** sender
-- no automatic Enter, run-all or replay
+- no automatic Enter
+- no run-all
+- no hidden replay
 
 ## Preserved references
 
@@ -88,24 +107,24 @@ Original Bluetooth V2 and API02:
 
 https://github.com/efrgdgr0024345/autophone/releases/tag/preserved-v2-api02-20260929
 
-CatAI-04 working-lineage prerelease:
+UI04:
 
 https://github.com/efrgdgr0024345/autophone/releases/tag/ui04-ab34f45d
 
-Previous photo-enabled UI06:
+UI06 photo-enabled lineage:
 
 https://github.com/efrgdgr0024345/autophone/releases/tag/ui06-9c46792d
 
-Previous UI03:
+UI07:
 
-https://github.com/efrgdgr0024345/autophone/releases/tag/ui03-44917e02
+https://github.com/efrgdgr0024345/autophone/releases/tag/ui07-c9cb8c35
 
-Do not overwrite the preserved reference releases.
+UI08:
 
-## Security
+https://github.com/efrgdgr0024345/autophone/releases/tag/ui08-6eec650c
 
-This is an experimental HID controller. Test candidate APKs on a non-sensitive session first. Bluetooth HID can inject keyboard and mouse input into the connected computer.
+Previous releases are never overwritten.
 
 ## Android requirements
 
-Android 9 / API 28 or newer, with Bluetooth HID Device support exposed by the handset. Camera support is optional unless Photo Feedback is used.
+Android 9 / API 28 or newer, with Bluetooth HID Device support exposed by the handset. Camera support is required only when using Photo Feedback.
