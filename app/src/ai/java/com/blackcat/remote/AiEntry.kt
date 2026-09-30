@@ -253,7 +253,7 @@ private class AiSettingsPanel(
             bar.addView(item, LinearLayout.LayoutParams(0, dp(56), 1f))
         }
         add("⌂","Home"){ dialog.dismiss(); (activity as? MainActivity)?.openHomeFromChild() }
-        add("✣","AI"){ dialog.dismiss(); (activity as? MainActivity)?.let{ AiEntry.openAssistant(it,{ it.hidForUi() }) } }
+        add("✣","AI"){ dialog.dismiss(); (activity as? MainActivity)?.let { main -> AiEntry.openAssistant(main, { main.hidForUi() }) } }
         add("▣","Target"){ dialog.dismiss(); (activity as? MainActivity)?.openTargetFromChild() }
         add("⚙","Settings",true){}
         return bar
