@@ -251,7 +251,7 @@ private class AiPanel(
             setPadding(dp(10), dp(6), dp(10), dp(6))
         }
         row.addView(statusPill)
-        statusText = label("Open Settings for API key", 11f, MUTED).apply {
+        statusText = label("Open Settings for API key", 11f, Color.DKGRAY).apply {
             setPadding(dp(10), 0, 0, 0)
             maxLines = 2
         }
@@ -496,6 +496,7 @@ private class AiPanel(
         val body = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(12), dp(12), dp(12), dp(18))
+            background = round(PAPER, 18, LINE, 1)
             assign()
         }
         scroll.addView(body, matchWrap())
@@ -811,7 +812,8 @@ private class AiPanel(
         val command = selectedCommand.command
         val content = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(18), dp(8), dp(18), dp(8))
+            setPadding(dp(18), dp(12), dp(18), dp(12))
+            background = round(PAPER, 16, LINE, 1)
             addView(label("Destination", 11f, MUTED, Typeface.BOLD))
             addView(label(host.label, 15f, INK, Typeface.BOLD).apply { setPadding(0, dp(4), 0, dp(10)) })
             addView(label("Risk: ${selectedCommand.risk.uppercase()}${if (selectedCommand.requiresAdmin) " · admin may be required" else ""}", 12f, MUTED))
@@ -990,7 +992,7 @@ private class AiPanel(
     private fun setStatus(value: String, error: Boolean = false) {
         if (!::statusText.isInitialized) return
         statusText.text = value
-        statusText.setTextColor(if (error) RED else MUTED)
+        statusText.setTextColor(if (error) RED else Color.DKGRAY)
     }
 
     private fun pageHeading(parent: LinearLayout, title: String, subtitle: String) {
@@ -1127,19 +1129,19 @@ private class AiPanel(
             "Alpine Linux / ash"
         )
 
-        private val BG = Color.rgb(245, 248, 245)
-        private val PAPER = Color.WHITE
-        private val INK = Color.rgb(18, 38, 34)
-        private val MUTED = Color.rgb(86, 110, 103)
-        private val LINE = Color.rgb(212, 225, 217)
-        private val GREEN = Color.rgb(22, 97, 70)
-        private val TINT = Color.rgb(234, 244, 231)
-        private val FIELD = Color.rgb(250, 252, 249)
-        private val FIELD_LINE = Color.rgb(190, 209, 198)
-        private val AMBER = Color.rgb(130, 83, 27)
-        private val AMBER_TINT = Color.rgb(255, 241, 219)
-        private val RED = Color.rgb(162, 45, 57)
-        private val COMMAND_BG = Color.rgb(18, 44, 36)
-        private val COMMAND_TEXT = Color.rgb(224, 240, 199)
+        private val BG = Color.WHITE
+        private val PAPER = Color.rgb(18, 26, 23)
+        private val INK = Color.rgb(244, 248, 246)
+        private val MUTED = Color.rgb(166, 184, 176)
+        private val LINE = Color.rgb(51, 70, 63)
+        private val GREEN = Color.rgb(86, 220, 91)
+        private val TINT = Color.rgb(29, 67, 46)
+        private val FIELD = Color.rgb(28, 39, 35)
+        private val FIELD_LINE = Color.rgb(60, 82, 73)
+        private val AMBER = Color.rgb(190, 128, 48)
+        private val AMBER_TINT = Color.rgb(59, 47, 26)
+        private val RED = Color.rgb(207, 72, 82)
+        private val COMMAND_BG = Color.rgb(11, 20, 17)
+        private val COMMAND_TEXT = Color.rgb(207, 242, 194)
     }
 }
