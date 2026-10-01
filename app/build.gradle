@@ -9,13 +9,24 @@ android {
         applicationId 'com.blackcat.remote'
         minSdk 28
         targetSdk 35
-        versionCode 2
-        versionName '2.0-hid-computer-pairing'
+        versionCode 4
+        versionName '2.1-ai-repair.2'
     }
+    flavorDimensions 'capability'
+    productFlavors {
+        offline { dimension 'capability' }
+        ai {
+            dimension 'capability'
+        }
+    }
+    // Preview is non-debuggable. Both flavors use the original identity, never a second HID app.
+    buildTypes { debug { debuggable false } }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = '17' }
+    lint { abortOnError true; textReport true; xmlReport true; htmlReport true }
 }
 dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0'
     testImplementation 'junit:junit:4.13.2'
+    testAiImplementation 'org.json:json:20240303'
 }
