@@ -1,19 +1,21 @@
 name: Android CI
-
 on:
   pull_request:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
-
 permissions:
   contents: read
-
+concurrency:
+  group: android-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -21,36 +23,35 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Unit tests, Android Lint and debug build
-        env:
-          ANDROID_HOME: /usr/local/lib/android/sdk
-          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-        run: gradle testDebugUnitTest lintDebug assembleDebug --stacktrace
-      - name: Enforce security invariants
-        shell: bash
+      - name: Protect golden HID core and permission boundaries
+        run: python3 tools/check_policy.py
+      - name: Build, test and lint both variants
+        run: gradle testOfflineDebugUnitTest testAiDebugUnitTest lintOfflineDebug lintAiDebug assembleOfflineDebug assembleAiDebug --continue --console=plain --stacktrace
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-reports-${{ github.run_id }}
+          path: |
+            app/build/reports/
+            app/build/test-results/
+          if-no-files-found: warn
+      - name: Inspect packaged APKs and create previews
         run: |
           set -euo pipefail
-          manifest="app/src/main/AndroidManifest.xml"
-          if grep -q 'android.permission.INTERNET' "$manifest"; then echo '::error::INTERNET permission is forbidden for V1'; exit 1; fi
-          if grep -R -E -i --exclude-dir=build --exclude='*.md' '(firebase-analytics|google-analytics|appsflyer|adjust|mixpanel|amplitude)' app build.gradle settings.gradle 2>/dev/null; then echo '::error::Potential analytics/telemetry dependency detected'; exit 1; fi
-          if grep -q 'android.permission.BIND_ACCESSIBILITY_SERVICE' "$manifest"; then echo '::error::Accessibility Service is forbidden for V1'; exit 1; fi
-          if ! grep -q 'android:allowBackup="false"' "$manifest"; then echo '::error::android:allowBackup must remain false'; exit 1; fi
-      - name: Check APK manifest
-        shell: bash
-        run: |
-          set -euo pipefail
-          APK="app/build/outputs/apk/debug/app-debug.apk"
-          test -f "$APK"
-          "${ANDROID_HOME}/build-tools/35.0.0/aapt" dump permissions "$APK" | tee apk-permissions.txt
-          if grep -q 'android.permission.INTERNET' apk-permissions.txt; then echo '::error::Built APK unexpectedly contains INTERNET permission'; exit 1; fi
-      - name: Generate checksum
-        run: sha256sum app/build/outputs/apk/debug/app-debug.apk | tee app-debug.apk.sha256
+          AAPT=$(find "$ANDROID_HOME/build-tools" -name aapt -type f | sort -V | tail -n 1)
+          mkdir -p preview
+          for flavor in ai offline; do
+            apk="app/build/outputs/apk/$flavor/debug/app-$flavor-debug.apk"
+            python3 tools/check_apk.py "$apk" "$flavor" "$AAPT" | tee "preview/$flavor-manifest.txt"
+          done
+          cp app/build/outputs/apk/ai/debug/app-ai-debug.apk preview/CatAI-01.apk
+          cp app/build/outputs/apk/offline/debug/app-offline-debug.apk preview/CatBT-01.apk
+          git rev-parse HEAD > preview/SOURCE.txt
+          printf '%s\n' 'TEST-SIGNED PREVIEWS. Physical Bluetooth and live user-key API tests pending.' > preview/STATUS.txt
+          (cd preview && sha256sum *.apk > SHA256SUMS)
       - uses: actions/upload-artifact@v4
         with:
-          name: BlackCatRemote-CI-${{ github.sha }}
-          path: |
-            app/build/outputs/apk/debug/app-debug.apk
-            app-debug.apk.sha256
-            apk-permissions.txt
-            app/build/reports/lint-results-debug.html
+          name: CatAI-preview-${{ github.run_id }}
+          path: preview/
           if-no-files-found: error

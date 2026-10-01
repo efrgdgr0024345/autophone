@@ -1,0 +1,49 @@
+name: Publish AI preview
+on:
+  push:
+    branches:
+      - feature/ai-command-assistant-v1
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: publish-ai-preview
+  cancel-in-progress: true
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Verify golden HID core
+        run: python3 tools/check_policy.py
+      - name: Test, lint and build AI preview
+        run: gradle testAiDebugUnitTest lintAiDebug assembleAiDebug --console=plain --stacktrace
+      - name: Package preview
+        run: |
+          set -euo pipefail
+          AAPT=$(find "$ANDROID_HOME/build-tools" -name aapt -type f | sort -V | tail -n 1)
+          python3 tools/check_apk.py app/build/outputs/apk/ai/debug/app-ai-debug.apk ai "$AAPT"
+          cp app/build/outputs/apk/ai/debug/app-ai-debug.apk CatAI-01.apk
+          sha256sum CatAI-01.apk > CatAI-01.apk.sha256
+          printf '%s\n' "$GITHUB_SHA" > SOURCE.txt
+      - name: Publish stable preview download
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view ai-preview-v1 >/dev/null 2>&1; then
+            gh release upload ai-preview-v1 CatAI-01.apk CatAI-01.apk.sha256 SOURCE.txt --clobber
+          else
+            gh release create ai-preview-v1 CatAI-01.apk CatAI-01.apk.sha256 SOURCE.txt \
+              --title "Black Cat AI Preview 01" \
+              --notes "Test-only AI preview. Built from the V2 HID baseline. Physical Bluetooth regression and live user-key API tests are still required before promotion." \
+              --target "$GITHUB_SHA" \
+              --prerelease
+          fi
