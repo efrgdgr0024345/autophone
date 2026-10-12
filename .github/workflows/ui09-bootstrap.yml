@@ -33,6 +33,9 @@ jobs:
         run: |
           set -euo pipefail
           python3 tools/apply_ui09_changes.py
+          # The release workflow is already checked in by the repository owner. A normal
+          # GITHUB_TOKEN may not rewrite workflow files, so this bootstrap commits source only.
+          git checkout -- .github/workflows/ui09-ci.yml
           python3 tools/check_policy.py
           python3 tools/check_mobile_ui.py
           python3 tools/check_offline_catalog.py
@@ -51,7 +54,6 @@ jobs:
             app/src/ai/java/com/blackcat/remote/AiEntry.kt \
             app/build.gradle \
             tools/check_mobile_ui.py \
-            tools/check_offline_catalog.py \
-            .github/workflows/ui09-ci.yml
+            tools/check_offline_catalog.py
           git commit -m "UI09: apply planner/library UI contract [ui09-generated]"
           git push origin HEAD:feature/ui09-planner-offline-library
