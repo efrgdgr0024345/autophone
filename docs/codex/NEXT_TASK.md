@@ -1,34 +1,273 @@
-# Next task — approved Android AI-panel UI integration
+# Next task — Codex UI09 intake, audit and continuation plan
 
-## The user-approved direction
+This is the first bounded task for the new Codex project.
 
-Black Cat is an Android phone that appears to a computer as a normal Bluetooth HID keyboard/mouse. The computer discovers and pairs with the phone. No companion computer software, phone-side scan-first architecture, root service, or unrelated phone access. Preserve this method before any UI enhancement.
+It is deliberately an intake/audit task rather than another feature implementation. UI09 has automated evidence but does not yet have recorded physical acceptance. Do not invent UI10 or rewrite Bluetooth before establishing the real current state.
 
-The user approved the compact 03.0-cat-mobile PHP demonstration and its visual design. Transfer that experience to the existing Android AI panel; do not run PHP inside Android and do not substitute a remote website for the phone-held API key. The web prototype makes real OpenAI requests but simulates keyboard delivery. The Android app must continue using its existing approved Bluetooth sending path.
+---
 
-## Immediate deliverable: one bounded UI change
+# Objective
 
-- Keep the original MainActivity (including exactly its current three-line lazy AI entry), HidManager, HidDescriptor, HidReports and Diagnostics unchanged. Keep app identity, normal manual controls, permissions and Bluetooth lifecycle unchanged.
-- Keep OpenAiPlanner, ApiKeyVault, AiTransportScope and CommandSafety behaviour unchanged for this UI-only milestone. The planner-contract/photo integration is the next separately tested milestone; do not silently bundle it into styling.
-- Reproduce the approved light/off-white, dark-green and black visual language. Use the exact approved cat/emblem imagery. The face/paws may overlap card decoration but never hide text, hit targets or input. No giant hero, slogans or redundant reassurance panels. Dense, readable mobile layout with useful screen space and thumb-accessible actions.
-- Settings are separate from the task. Keep the goal visible and the current step easy to inspect. Keep Plan, Step, Feedback and Preview/navigation behaviour consistent with the approved prototype where implemented, but never fake unsupported functionality.
-- The existing Android schema supports explanations and individual commands; do not invent successful prerequisite/checkpoint state from that old schema. A not-yet-supported guided/photo action must be explicitly unavailable, not a pretend live feature.
-- Remove redundant approval checkboxes in the AI UI. The labelled action button is the user's approval for that one reviewed request or command. Retain the review screen, exact command, actual destination, one-use approval and stale-session checks. Selecting a command alone sends nothing. Never append Enter, run all, retry or replay automatically.
-- Show actual API and connection errors. Ordinary keyboard/mouse must remain usable when AI fails. Do not persist goals, commands or photographs in diagnostics.
-- Include a regression test for opening/closing the panel without acquiring/releasing HID, issuing an API request or sending keyboard reports. Exercise repeated taps, cancel, stale selections and application-background transitions without altering the original Activity lifecycle.
-- Check 320/360/390/412 CSS-equivalent phone widths or corresponding native layouts, large text, landscape, long commands and soft-keyboard occlusion. Record what was actually tested.
+Produce an evidence-based current-state report for Black Cat UI09 and identify the smallest justified next step.
 
-## Next milestone, already approved as a goal but not part of a styling-only change
+Do not change production source during the first pass unless a test cannot run because of a handover-document error. Any source change requires a new branch and user approval after the intake report.
 
-Integrate the guided-plan contract and screen-photo feedback, based on the isolated lab and improvements in web/lab.php:
-Goal/context -> plan -> one step -> explicitly approved type-only command -> user-observed result -> optional reviewed screen photo -> proposed interpretation -> user confirmation -> visible plan revision.
+---
 
-Use check/change/manual/decision/verify steps, dependencies, blocking questions and separately recorded human results. Manual/decision steps carry no sendable command. Do not assume a logged-in username is a requested new account. Do not turn standard-user creation into administrator creation. Distinguish a password prompt from a shell prompt; the user must finish the entire interactive operation before later commands are available.
+# Required starting point
 
-Photo work remains inside the existing AI panel and uses the same user-held key. User captures one still, optionally crops/covers private content, reviews exactly the flattened image sent, and explicitly sends it with bounded goal/step/history context. OpenAI interprets the image; it is NOT an image-edit request. No continuous camera upload or gallery-wide reads. Screen text is untrusted evidence, not instructions/approval. Unreadable evidence produces a retake/question rather than speculative commands. Interpretation confirmation never approves keyboard input or marks success. Camera permission and in-panel capture need a separate manifest-policy change and real-phone acceptance test. Do not launch a separate Activity and silently change HID lifecycle to make it work.
+Repository:
 
-## Required evidence before the new app is promoted
+`efrgdgr0024345/autophone`
 
-Run unchanged preservation/mutation tests and the complete Android build, tests, Lint, packaged-permission/identity/signature checks and CodeQL. Test the UI using a fake sender first. Publish only the exact checked APK bytes with a new short filename, source SHA and checksum, after the user authorises a preview. Keep previous APKs untouched. Never rebuild only to rename the artifact. No auto-merge.
+Starting branch:
 
-Physical acceptance: normal pair/type/mouse -> AI open/close -> normal input -> API proposal -> one approved harmless command -> cancel/background/disconnect cases -> normal input again. Camera gets its own additional regression sequence later. Report hardware and live-API gaps plainly. A passing build is not proof that Bluetooth works on the handset.
+`codex/ui09-handover-2026-10-12`
+
+This branch contains the full UI09 source and the current handover.
+
+Do not switch to `main` for implementation. Do not merge branches during intake.
+
+Record:
+
+```bash
+git status --short
+git branch --show-current
+git rev-parse HEAD
+git log --oneline --decorate -12
+```
+
+Confirm that the released APK source is an ancestor of the handover lineage:
+
+`2153ab44a6fb98ecb35bfd849b8e629a27748a80`
+
+Confirm that later commits are documentation/handover changes rather than a silently rebuilt release.
+
+---
+
+# Mandatory document review
+
+Read:
+
+- `AGENTS.md`;
+- `CODEX_START_HERE.md`;
+- `docs/codex/FULL_PROJECT_HANDOVER.md`;
+- `docs/codex/CHAT_HISTORY_TIMELINE.md`;
+- `docs/UI09-TEST-PLAN.md`;
+- `README.md`.
+
+In the intake report, explicitly confirm the golden rule:
+
+> Preserve the working Bluetooth core and build around it.
+
+---
+
+# Source inventory
+
+Confirm that these major areas exist and summarize their responsibilities:
+
+## Frozen/shared Bluetooth path
+
+- `HidManager.kt`
+- `HidDescriptor.kt`
+- `HidReports.kt`
+- `Diagnostics.kt`
+- critical `MainActivity.kt` lifecycle/input path
+
+## Shared command safety/library
+
+- `CommandSafety.kt`
+- `LibraryHidTarget.kt`
+- `LinuxCommandCatalog.kt`
+- `LinuxCommandLibraryPanel.kt`
+- `app/src/main/assets/linux_commands_*.b64`
+
+## AI flavor
+
+- `AiEntry.kt`
+- `AiTransportScope.kt`
+- `ApiKeyVault.kt`
+- `CommandPlan.kt`
+- `OpenAiPlanner.kt`
+- photo capture/analysis/panel classes
+
+## Offline flavor
+
+- `app/src/offline/java/com/blackcat/remote/AiEntry.kt`
+
+## Tests/policy
+
+- `tools/check_policy.py`
+- `tools/test_policy.py`
+- `tools/check_mobile_ui.py`
+- `tools/test_mobile_ui.py`
+- `tools/check_offline_catalog.py`
+- `planner_lab/`
+- Android unit-test source sets
+
+Do not refactor any of these during inventory.
+
+---
+
+# Required automated checks
+
+Run from repository root:
+
+```bash
+python3 tools/check_policy.py
+python3 tools/test_policy.py -v
+python3 tools/check_mobile_ui.py
+python3 tools/check_offline_catalog.py
+python3 tools/test_mobile_ui.py -v
+python3 -m pip install -r planner_lab/requirements.txt
+python3 -m unittest planner_lab.test_contract -v
+```
+
+Record the exact output summary and test counts.
+
+Do not report a test as passed if it was skipped because a tool or dependency was missing.
+
+When Java/Android tooling is available, run:
+
+```bash
+gradle testOfflineDebugUnitTest testAiDebugUnitTest \
+  lintOfflineDebug lintAiDebug \
+  assembleOfflineDebug assembleAiDebug \
+  --continue --console=plain --stacktrace
+```
+
+Record:
+
+- Gradle version;
+- Java version;
+- generated APK paths;
+- test totals;
+- Lint result and warnings;
+- APK sizes and SHA-256 if builds succeed.
+
+Do not publish those local builds and do not call them UI09 release artifacts. The published release is tied to source `2153ab44...`.
+
+---
+
+# Required source audit
+
+Without changing code, inspect and report on these questions:
+
+1. Does the current production planner visibly implement `Plan → Step → Preview → Result`?
+2. Is **Start with step 1** present and functional from source inspection?
+3. Can a user still select later commands directly, and does the production Android schema enforce dependencies?
+4. Does the Result page contain wording that contradicts the separate Photo Feedback capability?
+5. Does opening/closing AI acquire, close or otherwise manage HID?
+6. Is any API request triggered merely by opening a panel?
+7. Can selection, copy, search or photo review type a command?
+8. Is Enter excluded from both AI and library reviewed send paths?
+9. Does the offline flavor contain any Internet permission or OpenAI client path?
+10. Does the AI flavor request only reviewed additional permissions?
+11. Do both variants share the original application identity?
+12. Does the offline library validate to exactly 212 commands, 13 categories and 63 topics?
+13. Are long commands, large fonts, soft keyboard and narrow screens adequately covered by current tests, or only by static/source contracts?
+14. Do current OpenAI model identifiers and request fields require a future official-doc verification task?
+15. Are there any swallowed errors, stale wording or unreachable UI actions that can be demonstrated from source/tests?
+
+Distinguish:
+
+- confirmed defect;
+- suspected issue;
+- design limitation;
+- untested physical behaviour.
+
+---
+
+# Physical testing gap report
+
+Codex cannot claim these without real hardware evidence:
+
+- phone registers successfully as HID;
+- computer discovers/pairs;
+- keyboard/mouse reports work on the intended devices;
+- disconnect/reconnect works;
+- Bluetooth off/on recovery works;
+- Camera2 works on the intended handset;
+- Android Keystore works as intended;
+- host layout renders every ASCII character correctly;
+- OpenAI request works with the user's current account/model access;
+- a shell command produces its expected result.
+
+List exactly which physical feedback should be requested from the user next. Reuse `docs/UI09-TEST-PLAN.md` rather than inventing a new incompatible checklist.
+
+---
+
+# Required intake response format
+
+```text
+BLACK CAT CODEX INTAKE REPORT
+
+Repository:
+Branch:
+Commit:
+Released UI09 source relationship:
+Working tree clean:
+
+DOCUMENTS REVIEWED
+- ...
+
+SOURCE MAP
+- Bluetooth:
+- Manual remote:
+- AI planner:
+- Photo feedback:
+- Offline library:
+- Tests/policy:
+
+AUTOMATED CHECKS
+- Command:
+- Result:
+- Test count:
+- Notes:
+
+ANDROID BUILD
+- Tools available:
+- Java:
+- Gradle:
+- AI build:
+- Offline build:
+- Lint:
+- APK paths/hashes:
+
+AUDIT FINDINGS
+- Confirmed defects:
+- Suspected issues:
+- Known limitations:
+- Security/privacy observations:
+
+PHYSICAL TESTS STILL REQUIRED
+- ...
+
+SMALLEST RECOMMENDED NEXT TASK
+- Purpose:
+- Why now:
+- Proposed branch:
+- Files expected to change:
+- Protected files guaranteed untouched:
+- Tests required:
+- Risk:
+- Rollback point:
+```
+
+---
+
+# What not to do in this task
+
+- Do not modify Bluetooth source.
+- Do not merge to main.
+- Do not publish a new release.
+- Do not bump version numbers.
+- Do not change model names without current official verification.
+- Do not add dependencies.
+- Do not run a paid live API batch.
+- Do not add a server/proxy.
+- Do not weaken tests.
+- Do not claim physical success.
+- Do not call the offline catalogue an offline LLM.
+
+The task is complete when the intake report is evidence-based, reproducible and specific enough for the user to approve the next bounded branch.
