@@ -1,0 +1,57 @@
+name: UI09 guarded source bootstrap
+
+on:
+  push:
+    branches: [feature/ui09-planner-offline-library]
+    paths:
+      - tools/apply_ui09_changes.py
+      - .github/workflows/ui09-bootstrap.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ui09-bootstrap-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    name: Apply exact-guard UI09 edits
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Apply guarded source transformations
+        run: |
+          set -euo pipefail
+          python3 tools/apply_ui09_changes.py
+          python3 tools/check_policy.py
+          python3 tools/check_mobile_ui.py
+          python3 tools/check_offline_catalog.py
+          git diff --check
+
+      - name: Commit generated source changes
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "No generated changes"
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add \
+            app/src/ai/java/com/blackcat/remote/AiEntry.kt \
+            app/build.gradle \
+            tools/check_mobile_ui.py \
+            tools/check_offline_catalog.py \
+            .github/workflows/ui09-ci.yml
+          git commit -m "UI09: apply planner/library UI contract [ui09-generated]"
+          git push origin HEAD:feature/ui09-planner-offline-library
