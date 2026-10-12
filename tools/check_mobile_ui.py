@@ -33,7 +33,8 @@ def verify(root: Path = ROOT) -> None:
     assert 'CheckBox' not in entry, 'Redundant approval checkboxes were reintroduced'
     assert 'targetField' not in entry, 'Free-text target field returned; use saved dropdown/custom edit flow'
     for text in (
-        'Plan', 'Step', 'Feedback', 'Preview', 'TYPE ONLY',
+        'Plan', 'Step', 'Preview', 'Result', 'TYPE ONLY',
+        'Browse Offline Linux Library', 'Start with step 1',
         'R.drawable.black_cat_peek',
         'Edit / custom…', 'getSharedPreferences(TARGET_PREFS',
         'putString(TARGET_KEY', 'Ubuntu Linux / Bash', 'Debian Linux / Bash',
@@ -49,9 +50,9 @@ def verify(root: Path = ROOT) -> None:
     assert entry.count('planner.propose(') == 1, 'OpenAI requests must remain explicit and singular in the UI path'
     nav = entry.split('private fun buildBottomNav()', 1)[1].split('private fun buildAppNav()', 1)[0]
     order = [nav.index(token) for token in (
-        'add(Tab.PLAN', 'add(Tab.STEP', 'add(Tab.FEEDBACK', 'add(Tab.PREVIEW'
+        'add(Tab.PLAN', 'add(Tab.STEP', 'add(Tab.PREVIEW', 'add(Tab.FEEDBACK'
     )]
-    assert order == sorted(order), 'Reference flow tabs must be Plan → Step → Feedback → Preview'
+    assert order == sorted(order), 'Reference flow tabs must be Plan → Step → Preview → Result'
     show = entry.split('fun show() {', 1)[1].split('private fun buildShell()', 1)[0]
     for forbidden in ('planner.propose(', 'ApprovedCommandSender.send(', 'sendKeyboard(', 'openSettings()'):
         assert forbidden not in show, f'Opening the panel must not trigger work: {forbidden}'
@@ -110,7 +111,7 @@ def verify(root: Path = ROOT) -> None:
     for required in ('Black Cat AI', 'Remote · Automate · Control', 'Make Discoverable', 'Remote Controls', 'Handler(Looper.getMainLooper()).postDelayed'):
         assert required in main, f'Missing UI08 home/Bluetooth reference element: {required}'
 
-    print('PASS: UI08 12-screen reference flow, reviewed photo analysis, system-bar clearance, and frozen V2/API boundaries')
+    print('PASS: UI09 planner flow, offline Linux library, reviewed photo analysis, and frozen V2/API boundaries')
 
 
 if __name__ == '__main__':

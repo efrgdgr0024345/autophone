@@ -392,6 +392,12 @@ private class AiPanel(
         actionRow.addView(photoButton, LinearLayout.LayoutParams(dp(58), dp(54)).apply { rightMargin = dp(8) })
         actionRow.addView(buildButton, LinearLayout.LayoutParams(0, dp(54), 1f))
         card.addView(actionRow, matchWrap(top = 12))
+        card.addView(
+            actionButton("Browse Offline Linux Library", primary = false) {
+                LinuxCommandLibraryPanel(activity, manager).show()
+            },
+            matchWrap(top = 8)
+        )
         stage.minimumHeight = dp(360)
         body.addView(stage, matchWrap())
 
@@ -512,8 +518,8 @@ private class AiPanel(
         }
         add(Tab.PLAN, "Plan")
         add(Tab.STEP, "Step")
-        add(Tab.FEEDBACK, "Feedback")
         add(Tab.PREVIEW, "Preview")
+        add(Tab.FEEDBACK, "Result")
         return bar
     }
 
@@ -671,6 +677,13 @@ private class AiPanel(
                 row.addView(label("›", 19f, MUTED, Typeface.BOLD))
                 card.addView(row, matchWrap(top = 5))
             }
+            card.addView(
+                actionButton("Start with step 1  →", true) {
+                    selected = 0
+                    switchTab(Tab.STEP)
+                },
+                matchWrap(top = 10)
+            )
         }
         planResult.addView(card, matchWrap())
     }

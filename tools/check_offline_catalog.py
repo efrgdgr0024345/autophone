@@ -155,9 +155,11 @@ def verify() -> None:
     assert "LinuxCommandLibraryPanel" in offline_entry, "Offline build must open the local command library"
     assert "AI features are available" not in offline_entry, "Offline assistant may not remain a placeholder"
 
-    main_activity = (MAIN / "MainActivity.kt").read_text(encoding="utf-8")
-    assert "Offline Linux Library" in main_activity, "AI build needs a visible offline-mode entry"
-    assert main_activity.count("AiEntry.openAssistant(this@MainActivity){hid}") == 1, "Primary AI hook changed"
+    online_entry = (
+        ROOT / "app/src/ai/java/com/blackcat/remote/AiEntry.kt"
+    ).read_text(encoding="utf-8")
+    assert "Browse Offline Linux Library" in online_entry, "AI build needs a visible offline-mode entry"
+    assert online_entry.count("LinuxCommandLibraryPanel(activity, manager).show()") == 1, "Offline library entry changed"
 
     print(
         f"PASS: {len(rows)} offline commands, {len(categories)} categories, "
