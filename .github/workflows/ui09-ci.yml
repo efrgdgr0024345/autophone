@@ -1,0 +1,192 @@
+name: Black Cat UI09 planner and offline Linux library
+
+on:
+  push:
+    branches: [feature/ui09-planner-offline-library]
+    paths-ignore: ['README.md']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ui09-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify and build UI09
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify golden HID behavior and UI09 contracts
+        run: |
+          python3 tools/check_policy.py
+          python3 tools/test_policy.py -v
+          python3 tools/check_mobile_ui.py
+          python3 tools/check_offline_catalog.py
+          python3 tools/test_mobile_ui.py -v
+
+      - name: Guided planner and photo regression tests
+        run: |
+          python3 -m pip install -r planner_lab/requirements.txt
+          python3 -m unittest planner_lab.test_contract -v
+
+      - name: Build, unit test and lint both variants
+        run: gradle testOfflineDebugUnitTest testAiDebugUnitTest lintOfflineDebug lintAiDebug assembleOfflineDebug assembleAiDebug --continue --console=plain --stacktrace
+
+      - name: Upload reports even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui09-reports-${{ github.run_id }}
+          path: |
+            app/build/reports/
+            app/build/test-results/
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Inspect and package exact tested preview
+        run: |
+          set -euo pipefail
+          AAPT=$(find "$ANDROID_HOME/build-tools" -name aapt -type f | sort -V | tail -n 1)
+          SIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)
+          mkdir -p preview
+          for flavor in ai offline; do
+            apk="app/build/outputs/apk/$flavor/debug/app-$flavor-debug.apk"
+            python3 tools/check_apk.py "$apk" "$flavor" "$AAPT" | tee "preview/$flavor-manifest.txt"
+            "$SIGNER" verify --verbose --print-certs "$apk" > "preview/$flavor-signature.txt"
+          done
+          cp app/build/outputs/apk/ai/debug/app-ai-debug.apk preview/CatAI-09.apk
+          cp app/build/outputs/apk/offline/debug/app-offline-debug.apk preview/CatBT-09.apk
+          git rev-parse HEAD > preview/SOURCE.txt
+          git diff --stat 6eec650cb3fdf2f0e5b9b463c9c20c10539eaa29 HEAD > preview/DIFFSTAT.txt
+          printf '%s\n' \
+            'UI09 adds the guided planner flow and offline Linux command library above the exact tested UI08 core.' \
+            'Home and Bluetooth: proven computer-initiated HID pairing, keyboard and mouse behavior remain protected.' \
+            'Assistant tabs: Plan → Step → Preview → Result, with an explicit Start with step 1 action.' \
+            'Offline library: 212 explained commands arranged as Category → Topic → Command with ranked search.' \
+            'No automatic Enter, run-all, hidden replay, network call from the offline library, or AI-managed Bluetooth lifecycle.' \
+            > preview/README.txt
+          (cd preview && sha256sum *.apk > SHA256SUMS)
+
+      - name: Attest exact AI APK provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: preview/CatAI-09.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: blackcat-ui09-${{ github.run_id }}
+          path: preview/
+          if-no-files-found: error
+          retention-days: 90
+
+  analyze:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: java-kotlin
+          build-mode: manual
+          queries: security-and-quality
+      - run: gradle clean assembleOfflineDebug assembleAiDebug --console=plain --stacktrace
+      - uses: github/codeql-action/analyze@v4
+
+  release:
+    name: Publish exact UI09 prerelease
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: [verify, analyze]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: blackcat-ui09-${{ github.run_id }}
+          path: preview
+
+      - name: Verify packaged candidate before publishing
+        run: |
+          set -euo pipefail
+          test -f preview/CatAI-09.apk
+          test -f preview/CatBT-09.apk
+          test -f preview/SHA256SUMS
+          (cd preview && sha256sum -c SHA256SUMS)
+          test "$(cat preview/SOURCE.txt)" = "$GITHUB_SHA"
+
+      - name: Publish immutable physical-test prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="ui09-${GITHUB_SHA:0:8}"
+          TITLE="Black Cat UI09 planner + offline library physical-test candidate"
+          NOTES=$(cat <<'EOF'
+          UI09 adds a phone-first AI planner progression and a 212-command offline Linux library above the preserved, tested UI08 Bluetooth/AI/photo core.
+
+          This is a physical-test prerelease, not a promoted baseline.
+
+          Automated gates passed before publication:
+          - frozen Bluetooth HID behavior and mappings
+          - 212-command offline catalog integrity and TYPE ONLY boundary
+          - UI09 mobile planner and offline-library contracts
+          - planner/photo regression tests
+          - Android unit tests and lint
+          - AI + offline APK builds
+          - packaged identity/permission/signature inspection
+          - CodeQL
+          - exact APK provenance attestation
+
+          Golden rule remains: the computer initiates normal Bluetooth HID pairing. The Bluetooth screen uses Make Discoverable rather than replacing the proven architecture with phone-side discovery.
+
+          TYPE ONLY remains explicit; Enter is never appended automatically. The offline library performs no API or network call.
+          EOF
+          )
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" preview/CatAI-09.apk preview/CatBT-09.apk preview/SHA256SUMS preview/SOURCE.txt preview/README.txt --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" preview/CatAI-09.apk preview/CatBT-09.apk preview/SHA256SUMS preview/SOURCE.txt preview/README.txt \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "$TITLE" \
+              --notes "$NOTES" \
+              --prerelease
+          fi
