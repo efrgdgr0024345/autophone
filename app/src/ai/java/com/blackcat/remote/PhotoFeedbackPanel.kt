@@ -165,10 +165,13 @@ internal class PhotoFeedbackPanel(
             setPadding(dp(12), dp(10), dp(12), dp(10))
         }
         panel.addView(goal, matchWrap(top = 8, bottom = 10))
-        texture = TextureView(activity).apply {
+        texture = TextureView(activity)
+        val cameraFrame = FrameLayout(activity).apply {
             background = round(Color.BLACK, 14)
+            clipToOutline = true
+            addView(texture, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
         }
-        panel.addView(texture, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(300)).apply { bottomMargin = dp(10) })
+        panel.addView(cameraFrame, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(300)).apply { bottomMargin = dp(10) })
 
         val action = Button(activity).apply {
             text = if (activity.checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) "Start camera" else "Enable camera"
