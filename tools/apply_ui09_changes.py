@@ -86,8 +86,8 @@ def patch_mobile_contract() -> bool:
     )
     changed |= replace_once(
         path,
-        '''        'add(Tab.PLAN', 'add(Tab.STEP', 'add(Tab.FEEDBACK', 'add(Tab.PREVIEW' ''',
-        '''        'add(Tab.PLAN', 'add(Tab.STEP', 'add(Tab.PREVIEW', 'add(Tab.FEEDBACK' ''',
+        "        'add(Tab.PLAN', 'add(Tab.STEP', 'add(Tab.FEEDBACK', 'add(Tab.PREVIEW'",
+        "        'add(Tab.PLAN', 'add(Tab.STEP', 'add(Tab.PREVIEW', 'add(Tab.FEEDBACK'",
         "'add(Tab.PLAN', 'add(Tab.STEP', 'add(Tab.PREVIEW', 'add(Tab.FEEDBACK'",
     )
     changed |= replace_once(
