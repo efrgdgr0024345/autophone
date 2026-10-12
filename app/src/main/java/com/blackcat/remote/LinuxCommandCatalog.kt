@@ -1,6 +1,8 @@
 package com.blackcat.remote
 
 import android.content.Context
+import android.util.Base64
+import java.io.ByteArrayInputStream
 import java.util.Locale
 import java.util.zip.GZIPInputStream
 
@@ -23,7 +25,7 @@ data class LinuxCommandItem(
 data class LinuxCommandGroup(val name: String, val count: Int)
 
 object LinuxCommandCatalog {
-    const val ASSET_NAME = "linux_commands.tsv.gz"
+    const val ASSET_NAME = "linux_commands.tsv.gz.b64"
     const val MIN_EXPECTED_COMMANDS = 200
 
     @Volatile
@@ -32,15 +34,20 @@ object LinuxCommandCatalog {
     fun load(context: Context): List<LinuxCommandItem> {
         cached?.let { return it }
         return synchronized(this) {
-            cached ?: GZIPInputStream(context.assets.open(ASSET_NAME))
-                .bufferedReader(Charsets.UTF_8)
-                .use { reader ->
-                    parse(reader.readText()).also { loaded ->
-                        require(loaded.size >= MIN_EXPECTED_COMMANDS) {
-                            "Offline Linux command data is incomplete."
+            cached ?: context.assets.open(ASSET_NAME)
+                .bufferedReader(Charsets.US_ASCII)
+                .use { encoded ->
+                    val compressed = Base64.decode(encoded.readText().trim(), Base64.DEFAULT)
+                    GZIPInputStream(ByteArrayInputStream(compressed))
+                        .bufferedReader(Charsets.UTF_8)
+                        .use { reader ->
+                            parse(reader.readText()).also { loaded ->
+                                require(loaded.size >= MIN_EXPECTED_COMMANDS) {
+                                    "Offline Linux command data is incomplete."
+                                }
+                                cached = loaded
+                            }
                         }
-                        cached = loaded
-                    }
                 }
         }
     }
@@ -171,7 +178,6 @@ object LinuxCommandCatalog {
         else if (command.contains(cleanQuery)) score += 70
 
         var matchedOriginal = 0
-        val originalTokens = cleanQuery.split(' ').filter { it.length >= 2 }.toSet()
         tokens.forEach { token ->
             var tokenScore = 0
             if (title.startsWith(token)) tokenScore = maxOf(tokenScore, 62)
@@ -182,14 +188,19 @@ object LinuxCommandCatalog {
             if (category.contains(token)) tokenScore = maxOf(tokenScore, 28)
             if (command.contains(token)) tokenScore = maxOf(tokenScore, 24)
             if (explanation.contains(token)) tokenScore = maxOf(tokenScore, 12)
-            if (tokenScore > 0 && token in originalTokens) matchedOriginal++
+            if (tokenScore > 0 && token in cleanQuery.split(' ')) matchedOriginal++
             score += tokenScore
         }
-        if (originalTokens.size > 1 && matchedOriginal >= originalTokens.size) {
+        if (rawQueryTokenCount(cleanQuery) > 1 &&
+            matchedOriginal >= rawQueryTokenCount(cleanQuery)
+        ) {
             score += 80
         }
         return score
     }
+
+    private fun rawQueryTokenCount(value: String): Int =
+        value.split(' ').count { it.length >= 2 }
 
     private fun normalize(value: String): String =
         value.lowercase(Locale.ROOT)
