@@ -1,130 +1,180 @@
-# Black Cat Remote
+# Black Cat AI Remote
 
-Android Bluetooth HID keyboard/mouse plus an optional OpenAI-powered Linux assistant with reviewed screen-photo feedback.
+Android Bluetooth HID keyboard/mouse plus a phone-first Linux AI planner, reviewed photo feedback and a fully offline Linux command library.
 
-## Latest physical-test APK — UI08
+## Latest physical-test APKs — UI09
 
-Direct APK:
+UI09 preserves the tested UI08 Bluetooth/HID core and adds the new planner progression and local command library. It is a **physical-test prerelease**, not yet the promoted protected baseline.
 
-https://github.com/efrgdgr0024345/autophone/releases/download/ui08-6eec650c/CatAI-08.apk
+### CatAI-09 — AI planner + offline Linux library
+
+**Full APK download URL:**
+
+https://github.com/efrgdgr0024345/autophone/releases/download/ui09-2153ab44/CatAI-09.apk
 
 SHA-256:
 
-`b8d4eeda7a6f4a419fe51ad97617b9480db47dad7e7dd37c220291980121dc9e`
+`f969bbcc24390f2acca8a5e5eec04d6a2686b811f21f75683ade3fa31d75c1db`
 
-Exact source commit:
+Size: `3,441,281 bytes`
 
-`6eec650cb3fdf2f0e5b9b463c9c20c10539eaa29`
+CatAI includes the online AI planner, reviewed photo feedback and the offline Linux command library. Online AI functions require networking and a user-supplied API key. The offline library does not.
 
-UI08 verification / provenance:
+### CatBT-09 — Bluetooth remote + offline Linux library
 
-https://github.com/efrgdgr0024345/autophone/actions/runs/36713102353
+**Full APK download URL:**
 
-Independent Android CI:
+https://github.com/efrgdgr0024345/autophone/releases/download/ui09-2153ab44/CatBT-09.apk
 
-https://github.com/efrgdgr0024345/autophone/actions/runs/36713109790
+SHA-256:
 
-Draft PR:
+`8753552ba6703451d5e4c02e4a79e00fbe6448395493c34f6e6a0cd5f7df992f`
 
-https://github.com/efrgdgr0024345/autophone/pull/22
+Size: `3,281,317 bytes`
 
-Physical acceptance checklist:
+CatBT contains no AI API integration or AI network mode. It includes the Bluetooth keyboard/mouse remote and the same local Linux command library.
 
-https://github.com/efrgdgr0024345/autophone/issues/23
+Both APKs use the original application identity, so install **one variant at a time**.
 
-Status: **physical-test prerelease**. Automated golden-Bluetooth behavior guards, UI08 reference-screen tests, planner/photo regressions, Android unit tests, Lint, AI + offline APK builds, packaged permission/identity/signature inspection, CodeQL and exact APK provenance attestation have passed. Physical handset/Bluetooth/camera/API acceptance has not yet been recorded.
+## UI09 release evidence
 
-## UI08 — approved full-screen design
+- Release page: https://github.com/efrgdgr0024345/autophone/releases/tag/ui09-2153ab44
+- Exact release source: `2153ab44a6fb98ecb35bfd849b8e629a27748a80`
+- Protected UI08 parent: `6eec650cb3fdf2f0e5b9b463c9c20c10539eaa29`
+- Automated verification run: https://github.com/efrgdgr0024345/autophone/actions/runs/38205227657
+- Checksums: https://github.com/efrgdgr0024345/autophone/releases/download/ui09-2153ab44/SHA256SUMS
+- Source record: https://github.com/efrgdgr0024345/autophone/releases/download/ui09-2153ab44/SOURCE.txt
+- Development branch: https://github.com/efrgdgr0024345/autophone/tree/feature/ui09-planner-offline-library
 
-UI08 implements the approved **Black Cat AI Remote — All Screens (v1)** flow while keeping the working core underneath it.
+Automated gates passed for the exact released APKs:
 
-- full black cat presented on a **white background**
-- operational text and controls on dark/black panels
-- bright green action/status accents
-- Android system/navigation insets retained so controls sit above the phone navigation area
-- Main Menu:
-  - Bluetooth
-  - AI Assistant
-  - Target System
-  - Settings
-- Bluetooth screen keeps the proven **computer-initiated HID pairing** architecture
-- AI Assistant screens:
-  - Plan
-  - Step
-  - Feedback
-  - Preview
-- Target System:
-  - common Linux targets
-  - saved selection
-  - Edit / Custom
-- Settings:
-  - encrypted phone-held OpenAI API key
-  - model selection
-- Camera / Photo Feedback:
-  - capture inside the app
-  - review exact photo
-  - explicit send to OpenAI
-  - visible Sending to AI state
+- frozen Bluetooth HID behaviour and mappings;
+- UI09 phone-layout and planner-flow contracts;
+- 212-command offline-catalogue integrity and safety checks;
+- planner and photo regression tests;
+- Android unit tests and Lint for both variants;
+- AI and offline APK builds;
+- packaged app identity, permission and signature inspection;
+- CodeQL security-and-quality analysis;
+- SHA-256 generation and exact APK provenance attestation.
 
-## Photo Feedback
+Physical Android handset, computer pairing, keyboard, mouse, camera and API acceptance still needs to be recorded.
 
-UI08 includes the reviewed photo workflow:
+## UI09 — guided planner
 
-1. Capture a photo of the terminal/error screen inside the app.
-2. Review the exact image before upload.
-3. Explicitly send it to OpenAI using the same phone-held API key.
-4. OpenAI analyses it in the context of the stated goal and selected target.
-5. Screen text is treated as **untrusted evidence**, not instructions.
-6. Unclear evidence should produce questions rather than speculative commands.
-7. Any suggested command still requires separate review and **TYPE ONLY** approval.
-8. Enter is never pressed automatically.
+The Linux assistant now follows the visible phone progression:
 
-The AI build requests camera and internet only as needed for these features. It does not require microphone or broad gallery/storage access for the in-app capture flow.
+`Plan → Step → Preview → Result`
+
+1. Enter the goal and select the target Linux system.
+2. Generate and review the full plan.
+3. Press **Start with step 1**.
+4. Work through one step at a time.
+5. Review the exact command and current Bluetooth destination.
+6. Approve **TYPE ONLY**.
+7. Check the computer and press Enter manually.
+8. Review the result or provide a photo for follow-up help.
+
+The user remains in control. There is no automatic Enter, run-all or hidden replay.
+
+## UI09 — offline Linux command library
+
+The application now carries a checked-in reference library containing:
+
+- `212` explained Linux commands;
+- `13` top-level categories;
+- `63` topics;
+- a `Category → Topic → Command → Detail` tree;
+- ranked local search over task names, commands, explanations, tags and synonyms;
+- expected output, risk, administrator requirement and compatibility notes;
+- no API request, account, cloud lookup or network requirement.
+
+The user can browse categories such as network, storage, performance, processes, services, logs, permissions, packages, security, containers and development tools. Browsing and copying do not require Bluetooth. Typing requires an already connected Bluetooth HID host and a new one-use confirmation.
 
 ## Golden rule — preserved working core
 
-The UI is built around the existing working lineage rather than replacing it.
+UI09 is built above the tested UI08 source rather than replacing it.
 
-Protected by regression tests:
+Protected by regression checks:
 
-- computer-initiated Bluetooth HID pairing/discoverability
-- HidManager / HidDescriptor / HidReports / Diagnostics
-- Bluetooth permissions and Activity lifecycle
-- direct text typing
-- mouse/touchpad HID reports
-- full HID keyboard mappings
-- encrypted phone-held API key flow
-- OpenAI text planner
-- Camera2 capture/review/photo-analysis path
-- reviewed **TYPE ONLY** sender
-- no automatic Enter
-- no run-all
-- no hidden replay
+- computer-initiated Bluetooth HID pairing and discoverability;
+- `HidManager`, `HidDescriptor`, `HidReports` and diagnostics;
+- Bluetooth permissions and Activity lifecycle;
+- direct text typing;
+- keyboard mappings;
+- mouse and touchpad HID reports;
+- encrypted phone-held API-key flow;
+- OpenAI text planner;
+- Camera2 capture, review and photo-analysis flow;
+- reviewed **TYPE ONLY** sender;
+- no automatic Enter;
+- no run-all;
+- no hidden replay;
+- no AI-managed Bluetooth lifecycle.
 
-## Preserved references
+## Verify before installing
 
-Original Bluetooth V2 and API02:
+Linux or macOS:
 
-https://github.com/efrgdgr0024345/autophone/releases/tag/preserved-v2-api02-20260929
+```bash
+sha256sum CatAI-09.apk
+sha256sum CatBT-09.apk
+```
 
-UI04:
+Windows PowerShell:
 
-https://github.com/efrgdgr0024345/autophone/releases/tag/ui04-ab34f45d
+```powershell
+Get-FileHash .\CatAI-09.apk -Algorithm SHA256
+Get-FileHash .\CatBT-09.apk -Algorithm SHA256
+```
 
-UI06 photo-enabled lineage:
+The reported SHA-256 must exactly match the value above for the selected APK.
 
-https://github.com/efrgdgr0024345/autophone/releases/tag/ui06-9c46792d
+## Physical acceptance checklist
 
-UI07:
+1. Install one UI09 APK on the intended Android phone.
+2. Confirm no important control is hidden behind the Android status or navigation bars.
+3. Start normal Bluetooth pairing from the computer.
+4. Confirm text typing, keyboard controls, mouse movement, left click and right click.
+5. Turn Bluetooth off and on and confirm safe recovery.
+6. In CatAI, complete **Plan → Step → Preview → Result**.
+7. Confirm **TYPE ONLY** types the reviewed text and never presses Enter.
+8. Disconnect or change the host before approval and confirm the action is blocked or stopped.
+9. Put the app in the background during approval and confirm the approval cannot be reused.
+10. Disable networking and confirm the offline library still browses and searches correctly.
+11. Confirm **Copy command** copies only and does not type.
+12. Test photo capture, exact-image review and explicit AI upload in CatAI.
 
-https://github.com/efrgdgr0024345/autophone/releases/tag/ui07-c9cb8c35
+Report the Android model/version, computer operating system, test results and any partial text visible after an interrupted typing action.
 
-UI08:
+## Photo feedback
 
-https://github.com/efrgdgr0024345/autophone/releases/tag/ui08-6eec650c
+The reviewed photo workflow remains:
+
+1. Capture a terminal or error-screen photo inside the app.
+2. Review the exact image before upload.
+3. Explicitly send it to the AI service using the phone-held API key.
+4. Treat all screen text as **untrusted evidence**, not instructions.
+5. Ask questions instead of inventing commands when evidence is unclear.
+6. Review any suggested command separately before **TYPE ONLY**.
+
+The AI build requests camera and internet only for these features. It does not require microphone or broad gallery/storage permission for the in-app capture path.
+
+## Preserved releases
+
+- Original Bluetooth V2 and API02: https://github.com/efrgdgr0024345/autophone/releases/tag/preserved-v2-api02-20260929
+- UI04: https://github.com/efrgdgr0024345/autophone/releases/tag/ui04-ab34f45d
+- UI06 photo-enabled lineage: https://github.com/efrgdgr0024345/autophone/releases/tag/ui06-9c46792d
+- UI07: https://github.com/efrgdgr0024345/autophone/releases/tag/ui07-c9cb8c35
+- UI08: https://github.com/efrgdgr0024345/autophone/releases/tag/ui08-6eec650c
+- UI09: https://github.com/efrgdgr0024345/autophone/releases/tag/ui09-2153ab44
 
 Previous releases are never overwritten.
 
 ## Android requirements
 
-Android 9 / API 28 or newer, with Bluetooth HID Device support exposed by the handset. Camera support is required only when using Photo Feedback.
+Android 9 / API 28 or newer, with Bluetooth HID Device support exposed by the handset. Camera support is required only for Photo Feedback.
+
+## Security note
+
+This is an experimental HID controller. Test first on a non-sensitive computer session. Bluetooth HID can inject keyboard and mouse input into the connected computer. Read and understand each command before manually pressing Enter.
