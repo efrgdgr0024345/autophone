@@ -66,8 +66,11 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$ANDROID_AVD_HOME" "$ANDROID_EMULATOR_HOME"
-          sdkmanager 'system-images;android-35;default;x86_64'
+          export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
+          sdkmanager 'emulator' 'platform-tools' 'system-images;android-35;default;x86_64'
           printf 'no\n' | avdmanager create avd --force --name ui10 --package 'system-images;android-35;default;x86_64' --device pixel_5
+          test -c /dev/kvm
+          sudo chmod 666 /dev/kvm
           "$ANDROID_HOME/emulator/emulator" -avd ui10 -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader -camera-back emulated -camera-front none > /tmp/ui10-emulator.log 2>&1 &
           task_emulator_pid=$!
           trap 'kill "$task_emulator_pid" 2>/dev/null || true' EXIT

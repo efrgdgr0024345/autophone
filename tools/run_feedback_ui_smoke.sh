@@ -8,7 +8,7 @@ adb -s "$task_serial" install -r -g app/build/outputs/apk/ai/debug/app-ai-debug.
 adb -s "$task_serial" install -r -g app/build/outputs/apk/androidTest/ai/debug/app-ai-debug-androidTest.apk
 adb -s "$task_serial" shell am instrument -w com.blackcat.remote.test/com.blackcat.remote.FeedbackSmokeInstrumentation > "$task_output/instrumentation.log" 2>&1
 cat "$task_output/instrumentation.log"
-if ! rg -q 'UI10_SMOKE_PASS' "$task_output/instrumentation.log" || rg -q 'UI10_SMOKE_FAIL' "$task_output/instrumentation.log"; then
+if ! grep -q 'UI10_SMOKE_PASS' "$task_output/instrumentation.log" || grep -q 'UI10_SMOKE_FAIL' "$task_output/instrumentation.log"; then
   exit 1
 fi
 # These files contain fixture screenshots only; root is restricted to our disposable emulator.
