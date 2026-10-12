@@ -40,7 +40,7 @@ def verify(root: Path = ROOT) -> None:
         'putString(TARGET_KEY', 'Ubuntu Linux / Bash', 'Debian Linux / Bash',
         'Fedora Linux / Bash', 'Arch Linux / Bash', 'Kali Linux / Bash',
         'Linux Assistant', 'Photo Feedback', 'R.drawable.black_cat_full',
-        'Get Plan', 'AiEntry.openPhotoFeedback', 'buildAppNav',
+        'Get Plan', 'openPlanPhotoFeedback', 'buildAppNav',
         'BlackCatStyle.applySystemBarInsets(root)',
         'lastTypedCommand = command', 'activeTab = Tab.FEEDBACK'
     ):
@@ -69,7 +69,7 @@ def verify(root: Path = ROOT) -> None:
     portrait = root / 'app/src/main/res/drawable-nodpi/black_cat_portrait.webp'
     assert hashlib.sha256(portrait.read_bytes()).hexdigest() == PORTRAIT_SHA256, 'Existing photo-enabled Black Cat portrait changed'
     full_cat = root / 'app/src/main/res/drawable-nodpi/black_cat_full.webp'
-    assert full_cat.exists() and full_cat.stat().st_size > 10000, 'Approved full Black Cat hero missing or empty'
+    assert hashlib.sha256(full_cat.read_bytes()).hexdigest() == '96e9cd8a3e8d199ecd2d403f769d52c79d9861c3161d0c111a708c74dff17895', 'UI10 repaired full Black Cat hero changed'
 
     style = (root / 'app/src/main/java/com/blackcat/remote/BlackCatStyle.kt').read_text(encoding='utf-8')
     for value in ('245, 248, 245', '22, 97, 70', '18, 44, 36'):
@@ -79,7 +79,8 @@ def verify(root: Path = ROOT) -> None:
 
     manifest = (root / 'app/src/ai/AndroidManifest.xml').read_text(encoding='utf-8')
     assert 'android.permission.CAMERA' in manifest and 'android.permission.INTERNET' in manifest
-    for forbidden_permission in ('READ_MEDIA_IMAGES', 'READ_EXTERNAL_STORAGE', 'WRITE_EXTERNAL_STORAGE', 'RECORD_AUDIO'):
+    assert 'android.permission.RECORD_AUDIO' in manifest, 'AI-only opt-in dictation permission missing'
+    for forbidden_permission in ('READ_MEDIA_IMAGES', 'READ_EXTERNAL_STORAGE', 'WRITE_EXTERNAL_STORAGE'):
         assert forbidden_permission not in manifest, f'Photo milestone requested broad/unrelated permission: {forbidden_permission}'
 
     capture = (ai / 'PhotoCaptureController.kt').read_text(encoding='utf-8')

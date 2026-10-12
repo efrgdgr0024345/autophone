@@ -45,7 +45,8 @@ import kotlinx.coroutines.launch
 class LinuxCommandLibraryPanel(
     private val activity: Activity,
     private val manager: HidManager,
-    private val onClosed: () -> Unit = {}
+    private val onClosed: () -> Unit = {},
+    private val onSelectForPlan: ((LinuxCommandItem) -> Unit)? = null
 ) {
     private enum class Level { CATEGORIES, TOPICS, COMMANDS, SEARCH, DETAIL }
 
@@ -526,6 +527,19 @@ class LinuxCommandLibraryPanel(
             infoBlock(card, "Search terms", item.tags.joinToString(", "))
         }
         contentBody.addView(card, matchWrap(bottom = 9))
+
+        onSelectForPlan?.let { select ->
+            val add = Button(activity).apply {
+                text = "Add to current plan"
+                BlackCatStyle.styleButton(activity, this, true)
+                setOnClickListener {
+                    // Selection changes plan data only. It never creates a typing approval.
+                    select(item)
+                    dismiss()
+                }
+            }
+            contentBody.addView(add, matchWrap(bottom = 8))
+        }
 
         val copy = Button(activity).apply {
             text = "Copy command"
