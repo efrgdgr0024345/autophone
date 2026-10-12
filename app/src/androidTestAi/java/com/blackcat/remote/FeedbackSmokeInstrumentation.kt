@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit
 /** Credential-free rendered UI checks. All goal/command/photo-analysis data below is synthetic. */
 class FeedbackSmokeInstrumentation : Instrumentation() {
     private lateinit var activity: Activity
+    private lateinit var startupMonitor: ActivityMonitor
     private lateinit var panel: Any
     private lateinit var dialog: Dialog
     private val checks = mutableListOf<String>()
@@ -37,6 +38,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         File(targetContext.filesDir, "ui10-rendered").listFiles()?.filter { it.extension == "png" }?.forEach { it.delete() }
         sendStatus(0, Bundle().apply { putString("stream", "UI10_SMOKE_START\n") })
         try {
+            startupMonitor = addMonitor("com.blackcat.remote.MainActivity", null, false)
             activity = startActivitySync(Intent().setClassName(targetContext,
                 "com.blackcat.remote.MainActivity").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             waitForIdleSync()
@@ -169,7 +171,6 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
             onMain {
                 scrollBottom(dialog)
                 findButton(dialog, "Speak feedback").performClick()
-                val consent = field(panel, "confirmation") as AlertDialog
                 check((field(panel, "voice") as VoiceFeedbackController).listening.not())
             }
             screenshot("voice-consent", field(panel, "confirmation") as Dialog)
@@ -229,7 +230,16 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
 
     private fun onMain(action: () -> Unit) {
         var failure: Throwable? = null
-        runOnMainSync { try { action() } catch (error: Throwable) { failure = error } }
+        runOnMainSync {
+            try {
+                // A newly booted emulator may recreate the Activity as its display settles.
+                // Follow startup only; a recreation during the planner workflow must still fail.
+                if (!::panel.isInitialized && ::startupMonitor.isInitialized) {
+                    startupMonitor.lastActivity?.takeUnless { it.isDestroyed }?.let { activity = it }
+                }
+                action()
+            } catch (error: Throwable) { failure = error }
+        }
         failure?.let { throw it }
     }
 

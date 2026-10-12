@@ -79,6 +79,12 @@ jobs:
             sleep 3
           done
           test "$(adb -s emulator-5554 shell getprop sys.boot_completed | tr -d '\r')" = 1
+          adb -s emulator-5554 shell settings put system accelerometer_rotation 0
+          adb -s emulator-5554 shell settings put system user_rotation 0
+          adb -s emulator-5554 shell wm size 720x1560
+          adb -s emulator-5554 shell wm density 294
+          adb -s emulator-5554 shell input keyevent KEYCODE_WAKEUP
+          adb -s emulator-5554 shell wm dismiss-keyguard
           bash tools/run_feedback_ui_smoke.sh preview/screens
       - uses: actions/upload-artifact@v4
         if: always()
