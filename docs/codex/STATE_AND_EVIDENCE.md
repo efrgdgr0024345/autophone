@@ -1,41 +1,143 @@
-# State and evidence at the Codex handover
+# Black Cat — current state and evidence
 
-## Preserve history; do not repeat the regression
+Prepared: **2026-10-12**
 
-V2 (9771772b) was explicitly reported working by the user and is the original physical Bluetooth reference. CatAI-01 changed MainActivity, ordinary-send gating/lifecycle and the Android application identity while keeping only four HID-named files unchanged. The user reported Bluetooth failure before testing AI. Those changes were risks and violated the intended boundary; the exact handset failure was not conclusively isolated from logs.
+This file replaces the obsolete September handover snapshot. The detailed source of truth is `FULL_PROJECT_HANDOVER.md`.
 
-CatAI-02 (7712ea98) restores the original Activity with only the lazy AI-button hook, original application identity, normal controls and four unchanged helper files. The user most recently asked to preserve the Bluetooth version and the API-connected version as the two working references. Record that request without manufacturing detailed device-test logs or saying either is defect-free. Existing PR #9's earlier physical-testing caveat remains part of history.
+## Current branches and commits
 
-The preservation release `preserved-v2-api02-20260929` now contains the exact APKs/source snapshots and checksum records. It has immutable=false in GitHub metadata and baseline branches report protected=false. Preservation is not administrator-enforced locking.
+- Default branch: `main`
+- `main` head at handover: `83380e2a3e26a43899fe9596a08d91a3f27dba91`
+- Latest UI09 development/documentation head: `85ba15ec22399806f3c5bdae4795e55dd65c1f16`
+- Exact UI09 release source: `2153ab44a6fb98ecb35bfd849b8e629a27748a80`
+- Codex handover branch: `codex/ui09-handover-2026-10-12`
+- Tested UI08 parent: `6eec650cb3fdf2f0e5b9b463c9c20c10539eaa29`
+- Physically successful Bluetooth V2 reference: `9771772bbe25dd8eba8d7303f7e4680aa84175df`
+- API02 preservation reference: `7712ea981230a2782a83b0920d3da5f09bc47c1d`
 
-## Repository map
+Do not use `main` as the implementation starting point. It has the current public README but an older source tree.
 
-- main: eab976708ebc2fd30d5a254ecd4c50ab80546826 at handover; not the starting point for this UI work.
-- baseline/bluetooth-v2-9771772b: 9771772bbe25dd8eba8d7303f7e4680aa84175df.
-- baseline/api02-7712ea98 and fix/ai-preserve-v2: 7712ea981230a2782a83b0920d3da5f09bc47c1d.
-- PR #9: API02 repair, historically draft/unmerged.
-- test/guided-photo-planner / PR #10: 9448fa94a66c1a88c14e296058c6a2c543bc268f, adds isolated lab/planning docs without app-source changes.
-- codex/blackcat-ui-handoff: derived from 9448fa94; only handover docs and a credential-free source/check packaging workflow are added here.
-- web/lab.php: approved 03.0-cat-mobile prototype imported from the companion handover attachment, not presumed already in GitHub.
+## Latest released candidate
 
-Live refs can change: fetch current branch/PR state before any future write. Do not rewrite/depend on truncated SHA strings when exact values are available.
+Release:
 
-## Test evidence and limitations
+`https://github.com/efrgdgr0024345/autophone/releases/tag/ui09-2153ab44`
 
-The prior API02 reports recorded 6 baseline guard tests, 21 AI unit tests, 14 offline test executions and successful build/CodeQL. Lint had zero blocking errors but 44 AI and 22 offline warnings; do not call the application warning-free.
+AI APK:
 
-The guided lab run 36374998234 used a bounded live batch of 12 synthetic cases, including 8 fabricated terminal images; no generated commands were executed. Saved summary: 23,473 input tokens and 6,756 output tokens; only 2 cases passed the implemented indicators and 10 were rejected by the contract. These are development failures to analyse, not evidence of a production-ready planner. Some questions/commands were blocked too broadly; missing usernames, mutually exclusive sudo paths and continuing after unreadable images were genuine problems. Do not loosen safety gates just to improve a score.
+`https://github.com/efrgdgr0024345/autophone/releases/download/ui09-2153ab44/CatAI-09.apk`
 
-The approved PHP prototype reports 22 backend checks, 60 browser-workflow checks, 39 layout/photo checks and 12 HTTP/request checks from its creation. This handover preserves those reports, not falsely re-executing the whole browser suite. Its real API implementation remained; test runs used controlled responses. New paid requests require a fresh, explicit bounded approval.
+SHA-256:
 
-## Credentials and privacy
+`f969bbcc24390f2acca8a5e5eec04d6a2686b811f21f75683ade3fa31d75c1db`
 
-No credential value from chat is included. A key previously pasted into chat should be treated as exposed and replaced; never recover/copy it into any handover. GitHub secret name `openai_api_key` was available in an earlier workflow. Its current validity/expiry is unknown. Presence is not proof of API access, automatic expiry or spend control. Do not read/export it or inject it into Codex/project files. No new live requests are authorised by migration.
+Offline-focused APK:
 
-Android uses direct OpenAI requests with an optional encrypted on-phone key. The PHP demo uses a key in browser-tab memory which passes through PHP per request; no storage by the script. This web-only arrangement is not a decision to add a website dependency to Android. Keep both privacy models distinct.
+`https://github.com/efrgdgr0024345/autophone/releases/download/ui09-2153ab44/CatBT-09.apk`
 
-## Design and source provenance
+SHA-256:
 
-Preserve the original GhostBoard/ToxicOrca and Linkpad/Devdas Kumar attribution/licences. Artwork consists of user-provided/generated Black Cat material, including forward-facing black fur and green eyes and the approved face/paws integration. The requested Library folder was `/linux usb project/Graphical design for black cat project`; tool folder listing returned no contents, so do not claim every image was verified as that folder's final master. The actual approved prototype and bundled images are the immediate UI reference.
+`8753552ba6703451d5e4c02e4a79e00fbe6448395493c34f6e6a0cd5f7df992f`
 
-Only project-relevant source, specifications, artwork and synthetic results are transferred. The raw conversation, exposed credentials, personal laptop/cafe photographs, local TLS private keys and unrelated Black Cat projects are intentionally excluded.
+Both APKs use application ID `com.blackcat.remote`; install one variant at a time.
+
+## Automated release evidence
+
+Workflow run:
+
+`https://github.com/efrgdgr0024345/autophone/actions/runs/38205227657`
+
+Final jobs succeeded:
+
+- Verify and build UI09;
+- CodeQL;
+- Publish exact UI09 prerelease.
+
+The run covered:
+
+- frozen Bluetooth/HID policy checks;
+- UI09 mobile planner contract;
+- offline catalogue checks;
+- 212 commands, 13 categories and 63 topics;
+- planner/photo regression tests;
+- shared and AI Android tests;
+- Android Lint;
+- AI and offline APK assembly;
+- APK identity, permission and signature inspection;
+- CodeQL;
+- SHA-256 and provenance attestation.
+
+## Evidence boundary
+
+The automated run does **not** prove:
+
+- physical Android HID registration;
+- computer discovery/pairing;
+- keyboard/mouse operation on the user's hardware;
+- Bluetooth reconnection or off/on recovery;
+- Camera2 operation on the intended phone;
+- Android Keystore behaviour on the intended phone;
+- host keyboard-layout correctness;
+- current OpenAI model/account access;
+- successful execution of any Linux command.
+
+UI09 remains a physical-test prerelease.
+
+## Current product scope
+
+Shared:
+
+- normal Bluetooth HID keyboard/mouse;
+- send text;
+- touchpad and clicks;
+- HID key panel;
+- diagnostics;
+- offline Linux command library.
+
+AI flavor:
+
+- user-held OpenAI key;
+- strict structured command proposal;
+- Plan → Step → Preview → Result;
+- reviewed photo feedback;
+- one-use TYPE ONLY approval;
+- no automatic Enter.
+
+Offline flavor:
+
+- no OpenAI client/network mode;
+- local tree/search/explanation library;
+- same reviewed Bluetooth typing boundary.
+
+## Important unresolved items
+
+- Physical UI09 acceptance has not been recorded.
+- The production Android planner is simpler than the experimental guided-plan state machine.
+- Offline mode is a static command library, not a local LLM.
+- Result-page wording may conflict with the separate Photo Feedback feature and should be audited.
+- Current source model IDs/API fields may require a future official-documentation verification task.
+- `main` and the UI09 lineage are heavily diverged; no automatic merge is authorized.
+
+## Credential state
+
+No API key is part of this handover.
+
+Any key previously used in chat or an isolated test environment must not be recovered, copied or embedded. Moving to Codex does not authorize live paid API testing.
+
+## Source provenance
+
+Preserve:
+
+- Linkpad licence/attribution;
+- GhostBoard licence/attribution;
+- existing Black Cat artwork assets;
+- previous release tags and APKs;
+- the exact V2/API02/UI08/UI09 references.
+
+For current instructions, read:
+
+- `AGENTS.md`;
+- `CODEX_START_HERE.md`;
+- `FULL_PROJECT_HANDOVER.md`;
+- `CHAT_HISTORY_TIMELINE.md`;
+- `NEXT_TASK.md`.
