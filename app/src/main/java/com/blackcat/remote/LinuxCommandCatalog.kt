@@ -25,7 +25,15 @@ data class LinuxCommandItem(
 data class LinuxCommandGroup(val name: String, val count: Int)
 
 object LinuxCommandCatalog {
-    const val ASSET_NAME = "linux_commands.tsv.gz.b64"
+    val ASSET_PARTS = listOf(
+        "linux_commands_00.b64",
+        "linux_commands_01.b64",
+        "linux_commands_02.b64",
+        "linux_commands_03.b64",
+        "linux_commands_04.b64",
+        "linux_commands_05.b64",
+        "linux_commands_06.b64"
+    )
     const val MIN_EXPECTED_COMMANDS = 200
 
     @Volatile
@@ -34,21 +42,25 @@ object LinuxCommandCatalog {
     fun load(context: Context): List<LinuxCommandItem> {
         cached?.let { return it }
         return synchronized(this) {
-            cached ?: context.assets.open(ASSET_NAME)
-                .bufferedReader(Charsets.US_ASCII)
-                .use { encoded ->
-                    val compressed = Base64.decode(encoded.readText().trim(), Base64.DEFAULT)
-                    GZIPInputStream(ByteArrayInputStream(compressed))
-                        .bufferedReader(Charsets.UTF_8)
-                        .use { reader ->
-                            parse(reader.readText()).also { loaded ->
-                                require(loaded.size >= MIN_EXPECTED_COMMANDS) {
-                                    "Offline Linux command data is incomplete."
-                                }
-                                cached = loaded
-                            }
-                        }
+            cached ?: buildString {
+                ASSET_PARTS.forEach { name ->
+                    context.assets.open(name)
+                        .bufferedReader(Charsets.US_ASCII)
+                        .use { append(it.readText().trim()) }
                 }
+            }.let { encoded ->
+                val compressed = Base64.decode(encoded, Base64.DEFAULT)
+                GZIPInputStream(ByteArrayInputStream(compressed))
+                    .bufferedReader(Charsets.UTF_8)
+                    .use { reader ->
+                        parse(reader.readText()).also { loaded ->
+                            require(loaded.size >= MIN_EXPECTED_COMMANDS) {
+                                "Offline Linux command data is incomplete."
+                            }
+                            cached = loaded
+                        }
+                    }
+            }
         }
     }
 
