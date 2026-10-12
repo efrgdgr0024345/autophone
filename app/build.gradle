@@ -17,6 +17,7 @@ android {
         offline { dimension 'capability' }
         ai {
             dimension 'capability'
+            testInstrumentationRunner 'com.blackcat.remote.FeedbackSmokeInstrumentation'
         }
     }
     // Preview is non-debuggable. Both flavors use the original identity, never a second HID app.
