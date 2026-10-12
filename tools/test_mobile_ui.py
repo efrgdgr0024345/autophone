@@ -78,11 +78,13 @@ class MobileUiBoundaryTests(unittest.TestCase):
         try:
             p = dst / 'app/src/ai/java/com/blackcat/remote/AiEntry.kt'
             text = p.read_text(encoding='utf-8')
-            text = text.replace(
-                'add(Tab.FEEDBACK, "Feedback")\n        add(Tab.PREVIEW, "Preview")',
-                'add(Tab.PREVIEW, "Preview")\n        add(Tab.FEEDBACK, "Feedback")'
+            mutated = text.replace(
+                'add(Tab.PREVIEW, "Preview")\n        add(Tab.FEEDBACK, "Result")',
+                'add(Tab.FEEDBACK, "Result")\n        add(Tab.PREVIEW, "Preview")',
+                1,
             )
-            p.write_text(text, encoding='utf-8')
+            self.assertNotEqual(text, mutated, 'The UI09 tab-order fixture was not found')
+            p.write_text(mutated, encoding='utf-8')
             with self.assertRaises(AssertionError): verify(dst)
         finally: temp.cleanup()
 
