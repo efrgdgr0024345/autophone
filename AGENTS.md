@@ -1,23 +1,190 @@
-# Black Cat — governing development rules
+# Black Cat AI Remote — governing rules for Codex
 
-## Golden behaviour
-The physically successful V2 source is 9771772bbe25dd8eba8d7303f7e4680aa84175df. Do not write to locked branches or overwrite BlackCat-v2.apk. The computer discovers/pairs with the phone; no phone-side scan-first architecture.
+This repository has a long history of physically working Bluetooth code being damaged while adding UI and AI features. These rules are not suggestions. They are the development hierarchy for every task.
 
-Freeze the full input path, not just files named HID. check_policy.py must verify MainActivity equals the golden blob after removal of exactly one reviewed lazy AI button hook. Normal manual Send, mouse, permission flow, pairing and lifecycle must not depend on AI state. Freeze HidManager, HidDescriptor, HidReports and Diagnostics byte-for-byte. Any future changes require a separately approved regression experiment and physical evidence; never silently relax these gates.
+## Mandatory reading order
 
-## AI separation and credentials
-AI is optional and lazy. Offline variant has no Internet permission or AI client. User explicitly approved INTERNET only in the AI variant for direct requests to OpenAI. Key entry/storage stays on the phone: no hardcoded key, website, proxy or credential in git/CI/logs. Optional Android Keystore storage has no plaintext fallback. Do not claim it makes a compromised phone safe.
+Before editing any source, read:
 
-Model responses are untrusted proposals. No API handler can type, press Enter, execute a process or manage Bluetooth. The user reviews one command and explicitly confirms TYPE ONLY. Guard AI input/cancellation/session changes without changing ordinary manual input. Do not log API keys, goals, commands or derived key identities. Preserve licences/attribution.
+1. `CODEX_START_HERE.md`
+2. `docs/codex/FULL_PROJECT_HANDOVER.md`
+3. `docs/codex/CHAT_HISTORY_TIMELINE.md`
+4. `docs/codex/NEXT_TASK.md`
+5. `docs/UI09-TEST-PLAN.md`
+6. the current `README.md`
 
-## Verification and release
-Use a feature branch and PR. Run full build, actual tests, Lint, policy/APK checks and CodeQL; upload complete reports on failure. No suppressions merely to get green. Report test counts and inherited limitations honestly. Publish the exact tested APK bytes with commit/checksum/certificate; never rebuild solely for a filename change or overwrite a prior preview. No merge to main until physical regression review.
+Do not begin from `main`. The default branch contains release-facing documentation and an older source tree. The complete UI09 source and this handover are on:
 
-A green run is not proof of Bluetooth hardware, on-device Keystore, host keyboard layout, background survival or successful shell execution. Root cause remains unconfirmed without handset evidence. See AI_COMMAND_ASSISTANT.md and docs/AI02_INSTALL.md.
+`codex/ui09-handover-2026-10-12`
 
-## Codex handover and latest user-approved UI decisions
-Read CODEX_START_HERE.md and docs/codex/NEXT_TASK.md before implementation. They distinguish the immediate UI port from the later guided-photo integration and list the exact preserved references. The new UI uses the clearly labelled action button as one-time approval, without redundant approval checkboxes; it still retains explicit review, exact destination/command, stale-session checks and no automatic Enter/replay.
+This handover branch was created from UI09 branch head:
 
-The approved PHP demo and artwork arrive in the companion BlackCat-Codex-Handoff.zip; verify/import them, do not invent replacements or silently claim they are present. Reuse existing API/key-storage/transport code for the UI milestone. Do not use arbitrary HTML/model text in privileged WebView bridges.
+`85ba15ec22399806f3c5bdae4795e55dd65c1f16`
 
-Migration is not authorisation for paid model batches, publishing, baseline changes or auto-merge. The previous isolated lab's explicitly authorised Actions-secret use was test-only; its secret must not be exported, embedded or copied into the app or Codex workspace. Current key validity is unknown. Keep the user-provided-key flow and the credential-free deterministic tests.
+The exact source used to build the released UI09 APKs was:
+
+`2153ab44a6fb98ecb35bfd849b8e629a27748a80`
+
+The difference is documentation only: commit `85ba15ec...` added exact release URLs and testing instructions after the APKs were published.
+
+---
+
+# Priority 0 — the golden rule
+
+## Preserve the working Bluetooth core and build around it
+
+The physically successful normal-HID reference is:
+
+`9771772bbe25dd8eba8d7303f7e4680aa84175df`
+
+The computer discovers and pairs with the Android phone as a standard Bluetooth HID keyboard/mouse. No desktop companion application, browser bridge, custom PC driver, Wi-Fi transport, root service or phone-side scan-first replacement is permitted unless the user explicitly approves a separate experiment.
+
+Never rewrite or casually clean up working Bluetooth code. Never infer that a newer architecture is better simply because it is cleaner. A working baseline outranks a theoretical redesign.
+
+The following source is protected by policy checks and must remain byte-for-byte stable unless the user approves a separately isolated Bluetooth experiment:
+
+- `app/src/main/java/com/blackcat/remote/HidManager.kt`
+- `app/src/main/java/com/blackcat/remote/HidDescriptor.kt`
+- `app/src/main/java/com/blackcat/remote/HidReports.kt`
+- `app/src/main/java/com/blackcat/remote/Diagnostics.kt`
+
+The ordinary `MainActivity` Bluetooth, permission, typing, touchpad, keyboard and lifecycle behaviour is also guarded. UI work must wrap the known input path rather than replacing it.
+
+Never edit locked/reference branches or overwrite old APKs and releases. Previous artifacts are evidence and rollback points.
+
+---
+
+# Priority 1 — user control
+
+AI and the offline command library may propose and explain commands. They may not execute shell commands on Android or on the target computer.
+
+Required interaction boundary:
+
+1. show the goal and target system;
+2. show a reviewable plan;
+3. show one step at a time;
+4. show the exact command;
+5. show the actual current Bluetooth destination;
+6. require a fresh one-use confirmation;
+7. type text only;
+8. never append Enter;
+9. require the person to inspect the computer and press Enter manually.
+
+Selecting a command, opening a screen, generating a plan, confirming a photo interpretation, copying text or navigating the tree must never type anything.
+
+No run-all, no automatic retry, no background replay, no hidden queue and no resuming a partially transmitted command.
+
+A host change, Bluetooth interruption, Activity backgrounding, plan revision or consumed approval invalidates the approval.
+
+---
+
+# Priority 2 — separation of concerns
+
+Keep these layers independent:
+
+- Bluetooth/HID core: registration, descriptor, reports, pairing callbacks and connection state.
+- Manual remote UI: direct send-text, touchpad, clicks and keyboard keys.
+- AI planner: OpenAI request, strict plan parsing, plan/step/preview/result UI.
+- Photo feedback: reviewed Camera2 capture and explicit analysis request.
+- Offline Linux library: local catalogue, tree navigation, search and explanations.
+- Diagnostics: redacted operational state only.
+
+The AI client must not register, connect, disconnect, pair, close or otherwise manage Bluetooth. The offline catalogue must not perform network requests. The Bluetooth path must continue to work when AI fails or is unavailable.
+
+---
+
+# Priority 3 — credentials and privacy
+
+There is no repository, CI or proxy-held OpenAI key for normal app operation.
+
+The AI variant accepts a user-supplied key on the phone. Optional storage uses Android Keystore-backed encryption and has no plaintext fallback. Never hardcode, log, export, recover or copy a key from chat, Actions secrets, local files or previous test environments.
+
+Do not log or persist:
+
+- API keys;
+- user goals;
+- command text;
+- terminal photographs;
+- typed text;
+- Bluetooth MAC addresses beyond the bounded UI session information already reviewed;
+- derived key identities.
+
+The offline flavor has no AI networking. The AI flavor may have only the reviewed `INTERNET` and `CAMERA` additions required for AI/photo functions, in addition to the shared minimum Bluetooth permissions. Do not add microphone, Accessibility Service, broad storage/gallery permissions, analytics, advertising, telemetry or crash-reporting SDKs.
+
+`android:allowBackup` remains false. Cleartext traffic remains disabled.
+
+---
+
+# Priority 4 — mobile-first UI
+
+The application is always operated on a phone.
+
+The approved visual language is:
+
+- black cat on white or near-white space;
+- operational text and controls on dark charcoal/black-green panels;
+- vivid green primary actions and state highlights;
+- large, obvious touch targets;
+- minimal horizontal crowding;
+- no controls hidden behind Android status/navigation bars;
+- settings separate from the task flow;
+- expandable diagnostics kept out of the normal workflow;
+- the cat may overlap card decoration but must never obscure text, input or hit targets.
+
+The current planner flow is:
+
+`Plan → Step → Preview → Result`
+
+The offline tree is:
+
+`Category → Topic → Command → Detail`
+
+Test at phone widths equivalent to 320, 360, 390 and 412 dp, with large text, soft keyboard, long commands and landscape considered.
+
+---
+
+# Priority 5 — change control
+
+Use a new feature branch from this handover branch for substantive work. Do not work directly on `main`, baseline branches or release tags.
+
+Before editing:
+
+- record current branch and full commit SHA;
+- run the preservation checks;
+- identify exactly which files will change;
+- explain what will remain untouched;
+- establish a rollback point.
+
+Prefer small commits and exact guarded changes. Do not mix Bluetooth, UI, API, catalogue and dependency changes in one commit.
+
+Never upgrade SDKs, Gradle, Kotlin, dependencies or models merely because a newer version exists. Dependency or API migrations need their own justification and tests.
+
+---
+
+# Priority 6 — testing and release truthfulness
+
+A successful compile is not proof of Bluetooth correctness. A green CI run is not proof of physical pairing, reconnection, keyboard layout, Camera2 behaviour, on-device Keystore operation or successful shell execution.
+
+Before publishing a candidate, run the full relevant policy, unit, Lint, APK inspection and CodeQL gates. Publish the exact tested APK bytes with source SHA and SHA-256. Never rebuild solely to rename a file. Never overwrite a previous release.
+
+UI09 is currently a physical-test prerelease. It must not be promoted as the protected working baseline until the user records physical Android/computer acceptance.
+
+Required manual evidence is in `docs/UI09-TEST-PLAN.md`.
+
+---
+
+# First response expected from Codex
+
+Before changing code, report:
+
+- current branch and commit;
+- whether the full UI09 source is present;
+- whether protected file hashes pass;
+- build/tool availability;
+- tests actually run and their results;
+- the exact proposed next change;
+- files that would change;
+- rollback point;
+- physical tests that Codex cannot perform.
+
+Do not claim completion, bug-free status or physical Bluetooth success without evidence.
