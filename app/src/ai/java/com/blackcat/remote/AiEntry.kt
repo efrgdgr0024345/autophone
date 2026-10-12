@@ -1360,8 +1360,8 @@ private class AiPanel(
     }
 
     private fun pageHeading(parent: LinearLayout, title: String, subtitle: String) {
-        parent.addView(label(title, 22f, Color.BLACK, Typeface.BOLD))
-        parent.addView(label(subtitle, 12f, Color.DKGRAY).apply { setPadding(0, dp(3), 0, dp(10)) })
+        parent.addView(label(title, 22f, INK, Typeface.BOLD))
+        parent.addView(label(subtitle, 12f, MUTED).apply { setPadding(0, dp(3), 0, dp(10)) })
     }
 
     private fun emptyState(title: String, copy: String): View = card().apply {
