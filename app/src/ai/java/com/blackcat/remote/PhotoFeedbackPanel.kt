@@ -76,6 +76,9 @@ internal class PhotoFeedbackPanel(
         }
         scroll.addView(body, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         root.addView(scroll, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
+        (activity as? MainActivity)?.let { main ->
+            root.addView(main.createBottomNavigation("AI") { dismiss() })
+        }
 
         dialog.setContentView(root)
         dialog.setCanceledOnTouchOutside(false)
@@ -112,20 +115,13 @@ internal class PhotoFeedbackPanel(
             setBackgroundColor(Color.WHITE)
             setPadding(dp(10), dp(4), dp(10), dp(4))
         }
-        val portrait = ImageView(activity).apply {
-            setImageResource(R.drawable.black_cat_full)
-            scaleType = ImageView.ScaleType.FIT_CENTER
-            contentDescription = "Black Cat"
-        }
-        hero.addView(portrait, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(80), Gravity.TOP))
-
         val title = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(8), dp(92), dp(48), dp(8))
+            setPadding(dp(8), dp(8), dp(48), dp(8))
             addView(label("Photo Feedback", 21f, Color.BLACK, Typeface.BOLD))
             addView(label("Take a photo → review it → send it to OpenAI.", 12f, Color.DKGRAY))
         }
-        hero.addView(title, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(142)))
+        hero.addView(title, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(62)))
         val close = Button(activity).apply {
             text = "×"
             textSize = 22f
@@ -265,7 +261,9 @@ internal class PhotoFeedbackPanel(
         val targetSystem = initialTarget ?: prefs.getString("target_system", "Ubuntu Linux / Bash")?.trim().orEmpty().ifBlank { "Ubuntu Linux / Bash" }
         if (requestedGoal.isBlank()) return setStatus("Describe the task before sending the photo.")
         val generation = ++analysisGeneration
-        val enteredKey = requestKey
+        // Consume a checked temporary key only after the reviewed photo is explicitly submitted.
+        // Opening/cancelling the camera must not move it out of foreground lifecycle cleanup.
+        val enteredKey = requestKey.ifBlank { PendingApiKey.take(activity) }
         requestKey = ""
         busy = true
         state = State.ANALYZING
@@ -274,7 +272,7 @@ internal class PhotoFeedbackPanel(
         analysisJob = scope.launch {
             try {
                 val key = withContext(Dispatchers.IO) { enteredKey.ifEmpty { vault.read().orEmpty() } }
-                if (!OpenAiPlanner.validKey(key)) throw PlanException("No saved OpenAI key. Open Linux Assistant → Settings and save your key first.")
+                if (!OpenAiPlanner.validKey(key)) throw PlanException("No API key is ready. Open Settings and check your key; remembering it is optional.")
                 val selectedModel = prefs.getString(AiSettingsPanel.MODEL_KEY, PlanCodec.DEFAULT_MODEL)
                     ?.takeIf { it in PlanCodec.MODELS } ?: PlanCodec.DEFAULT_MODEL
                 val result = withTimeout(75000) {

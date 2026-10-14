@@ -1,0 +1,6 @@
+Repository: https://github.com/efrgdgr0024345/autophone
+Branch: feature/ui11-compact-controls-bluetooth
+Source: 85c02ec0859ae0a6d9f37b392d97e4191b00ceca
+Version: 12 / 11.0-compact-controls
+Build type: development test APK, application non-debuggable
+Delivery: exact tested APK bytes, copied without rebuilding

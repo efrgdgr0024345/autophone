@@ -148,6 +148,9 @@ class LinuxCommandLibraryPanel(
         }
         scroll.addView(contentBody, matchWrap())
         root.addView(scroll, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
+        (activity as? MainActivity)?.let { main ->
+            root.addView(main.createBottomNavigation("AI") { dismiss() })
+        }
         return root
     }
 

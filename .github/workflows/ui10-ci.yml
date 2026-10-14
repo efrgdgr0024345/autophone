@@ -1,14 +1,14 @@
-name: UI10 editable plans and feedback
+name: UI11 compact controls and Bluetooth feedback
 on:
   push:
-    branches: [feature/ui10-feedback-tree-camera]
+    branches: [feature/ui11-compact-controls-bluetooth]
   pull_request:
-    branches: [codex/ui09-handover-2026-10-12]
+    branches: [feature/ui10-feedback-tree-camera]
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: ui10-${{ github.ref }}
+  group: ui11-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   verify:
@@ -54,10 +54,10 @@ jobs:
             python3 tools/check_apk.py "$apk" "$flavor" "$AAPT"
             "$SIGNER" verify --verbose --print-certs "$apk" > "preview/$flavor-signature.txt"
           done
-          cp app/build/outputs/apk/ai/debug/app-ai-debug.apk preview/CatAI-10.apk
-          cp app/build/outputs/apk/offline/debug/app-offline-debug.apk preview/CatBT-10.apk
+          cp app/build/outputs/apk/ai/debug/app-ai-debug.apk preview/CatAI-11.apk
+          cp app/build/outputs/apk/offline/debug/app-offline-debug.apk preview/CatBT-11.apk
           git rev-parse HEAD > preview/SOURCE.txt
-          cp docs/UI10-FEEDBACK-TEST-PLAN.md preview/ACCEPTANCE.md
+          cp docs/UI11-CONTROLS-TEST-PLAN.md preview/ACCEPTANCE.md
           (cd preview && sha256sum *.apk > SHA256SUMS)
       - name: Rendered UI and Camera2 on disposable Android 15 emulator
         env:
@@ -68,10 +68,10 @@ jobs:
           mkdir -p "$ANDROID_AVD_HOME" "$ANDROID_EMULATOR_HOME"
           export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
           sdkmanager 'emulator' 'platform-tools' 'system-images;android-35;default;x86_64'
-          printf 'no\n' | avdmanager create avd --force --name ui10 --package 'system-images;android-35;default;x86_64' --device pixel_5
+          printf 'no\n' | avdmanager create avd --force --name ui11 --package 'system-images;android-35;default;x86_64' --device pixel_5
           test -c /dev/kvm
           sudo chmod 666 /dev/kvm
-          "$ANDROID_HOME/emulator/emulator" -avd ui10 -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader -camera-back emulated -camera-front none > /tmp/ui10-emulator.log 2>&1 &
+          "$ANDROID_HOME/emulator/emulator" -avd ui11 -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader -camera-back emulated -camera-front none > /tmp/ui11-emulator.log 2>&1 &
           task_emulator_pid=$!
           trap 'kill "$task_emulator_pid" 2>/dev/null || true' EXIT
           for attempt in $(seq 1 120); do
@@ -89,12 +89,12 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ui10-reports-${{ github.run_id }}
+          name: ui11-reports-${{ github.run_id }}
           path: |
             app/build/reports/
             app/build/test-results/
             preview/
-            /tmp/ui10-emulator.log
+            /tmp/ui11-emulator.log
           if-no-files-found: warn
   analyze:
     name: CodeQL
