@@ -51,6 +51,7 @@ def verify(root=ROOT):
     revise = panel.split('private suspend fun proposeRevision(', 1)[1].split('private fun explainStep()', 1)[0]
     assert 'if (!value.canAutoRevise(current.current!!.command))' in revise, 'Error feedback lost its fresh-prompt guard'
     assert revise.index('if (!value.canAutoRevise(current.current!!.command))') < revise.index('planner.propose('), 'Error feedback must establish a fresh prompt before any automatic revision'
+    assert 'current.index != originIndex' in revise and 'current.stage != AutoStage.REVIEW_RESULT' in revise, 'Late error revisions must remain bound to their original result'
     for forbidden in ('manager.init(', 'manager.close(', 'manager.sendKeyboard(', 'registerApp(', 'startDiscovery(',
                       'Runtime.getRuntime', 'ProcessBuilder(', 'FileOutputStream', 'android.util.Log'):
         assert forbidden not in panel, f'Auto crossed frozen core/privacy boundary: {forbidden}'

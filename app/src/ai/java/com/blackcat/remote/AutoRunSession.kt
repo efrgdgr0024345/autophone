@@ -139,7 +139,7 @@ internal class AutoRunSession(
     fun block() { generation++; stage = AutoStage.BLOCKED }
     fun stop() { generation++; stage = AutoStage.STOPPED }
 
-    fun canAdopt(candidate: CommandPlan): Boolean = runAllReviewed && revisions < 3 &&
+    fun canAdopt(candidate: CommandPlan): Boolean = stage == AutoStage.REVIEW_RESULT && runAllReviewed && revisions < 3 &&
         candidate.questions.isEmpty() && candidate.commands.isNotEmpty() &&
         index + 1 + candidate.commands.size <= PlanCodec.MAX_COMMANDS && candidate.commands.all {
             (it.command in originallyApproved || AutoRunPolicy.canRun(it)) && canRun(it) &&

@@ -146,4 +146,15 @@ class AutoRunSessionTest {
         assertFalse(session().canAdopt(plan))
         assertFalse(session(auto = true).canAdopt(plan))
     }
+    @Test fun advancingOrStoppingInvalidatesAPlanRevisionFromThePreviousResult() {
+        val candidate = CommandPlan("Update", emptyList(), emptyList(), listOf(step("id")))
+        val value = session(full = true, steps = listOf(step(), step("whoami")))
+        value.observed(observe(value))
+        assertTrue(value.canAdopt(candidate))
+        value.next(true, true)
+        assertFalse(value.canAdopt(candidate))
+        assertFalse(value.adopt(candidate, 8))
+        value.stop()
+        assertFalse(value.canAdopt(candidate))
+    }
 }

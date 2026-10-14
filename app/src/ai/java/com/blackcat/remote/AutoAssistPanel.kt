@@ -333,6 +333,7 @@ internal class AutoAssistPanel(
     }
 
     private suspend fun proposeRevision(current: AutoRunSession, value: AutoObservation) {
+        val originIndex = current.index
         if (!value.canAutoRevise(current.current!!.command)) {
             pause("The terminal needs manual attention. Auto stopped before any plan request or revised command.", keepObservation = true)
             return
@@ -344,7 +345,8 @@ internal class AutoAssistPanel(
             "\nVisible evidence: " + value.evidence.joinToString("\n")
         val context = PlanFeedbackRequest.goal(originalGoal, current.current, emptySet(), feedback, current.steps.drop(current.index))
         val candidate = withTimeout(75000) { planner.propose(context, targetSystem, model, key) }
-        if (!current.valid(target.current(), revision()) || closed) return
+        if (!current.valid(target.current(), revision()) || current.index != originIndex ||
+            current.stage != AutoStage.REVIEW_RESULT || closed) return
         if (current.canAdopt(candidate)) {
             val updated = CommandPlan(candidate.explanation, candidate.assumptions, candidate.questions,
                 current.steps.take(current.index + 1) + candidate.commands, candidate.roadmap.ifEmpty { plan.roadmap })
