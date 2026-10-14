@@ -26,6 +26,7 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.Spinner
 import android.widget.TextView
+import android.widget.Toast
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -287,6 +288,28 @@ class AiSettingsPanel(private val activity: Activity, private val keyChecker: Ap
         }, LinearLayout.LayoutParams(-1, dp(48)))
         body.addView(systemCard, sectionLp())
 
+        val voiceCard = ReferencePanelStyle.card(activity)
+        voiceCard.addView(ReferencePanelStyle.label(activity, "Spoken explanations", 14f, ReferencePanelStyle.GREEN, true))
+        voiceCard.addView(ReferencePanelStyle.label(activity,
+            "Auto explains why each step helps and what to expect. OpenAI speech is AI-generated and uses paid audio requests; explanation text goes to OpenAI. Phone voice uses only an available offline voice. Audio is kept in memory and stopped on background/close.", 12f))
+        val voiceInput = Spinner(activity).apply {
+            adapter = object : ArrayAdapter<String>(activity, android.R.layout.simple_spinner_item, NarrationVoice.values().map { it.label }) {
+                override fun getView(position: Int, convertView: View?, parent: ViewGroup): View =
+                    super.getView(position, convertView, parent).apply { (this as TextView).setTextColor(Color.WHITE); textSize = 13f }
+                override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View =
+                    super.getDropDownView(position, convertView, parent).apply { (this as TextView).setTextColor(Color.BLACK); setBackgroundColor(Color.WHITE) }
+            }.apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
+            val saved = prefs.getString(AssistantNarrator.VOICE_KEY, NarrationVoice.OPENAI.name)
+            setSelection(NarrationVoice.values().indexOfFirst { it.name == saved }.coerceAtLeast(0))
+            contentDescription = "Explanation voice"
+        }
+        voiceCard.addView(voiceInput, LinearLayout.LayoutParams(-1, dp(56)))
+        voiceCard.addView(ReferencePanelStyle.darkButton(activity, "Save explanation voice") {
+            prefs.edit().putString(AssistantNarrator.VOICE_KEY, NarrationVoice.values()[voiceInput.selectedItemPosition].name).apply()
+            Toast.makeText(activity, "Explanation voice saved. No audio request was made.", Toast.LENGTH_SHORT).show()
+        }, LinearLayout.LayoutParams(-1, dp(48)))
+        body.addView(voiceCard, sectionLp())
+
         val apiCard = ReferencePanelStyle.card(activity)
         apiCard.addView(ReferencePanelStyle.label(activity, "OpenAI API key", 14f, ReferencePanelStyle.GREEN, true))
         keyInput = EditText(activity).apply {
@@ -366,7 +389,7 @@ class AiSettingsPanel(private val activity: Activity, private val keyChecker: Ap
         val aboutCard = ReferencePanelStyle.card(activity)
         aboutCard.addView(ReferencePanelStyle.label(activity, "About Black Cat AI", 14f, ReferencePanelStyle.GREEN, true))
         aboutCard.addView(ReferencePanelStyle.label(activity,
-            "Phone keyboard and mouse with reviewed Linux plans. Commands require your approval and never send Enter. API keys stay encrypted on this phone; there is no shared developer key.",
+            "Phone keyboard and mouse with reviewed Linux plans. Ordinary typing never sends Enter. Full Auto can run the plan you explicitly approve, with camera checks and a Stop control. Keys are optionally encrypted on this phone; there is no shared developer key.",
             12f).apply { setPadding(0, dp(8), 0, 0) })
         body.addView(aboutCard, sectionLp())
         root.addView(scroll, LinearLayout.LayoutParams(-1, 0, 1f))
