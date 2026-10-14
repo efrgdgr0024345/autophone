@@ -145,6 +145,31 @@ Test at phone widths equivalent to 320, 360, 390 and 412 dp, with large text, so
 
 # Priority 5 — change control
 
+## Reviewed UI12 continuation — 14 October 2026
+
+The user reports UI11 installs/works, requests a better command-selection flow, comprehensive
+multi-step security plans, and explicitly requests Auto to "auto run all the way until the end"
+and "Use OpenAI-generated speech". This is the user-authorized exception to Priority 1's
+ordinary TYPE ONLY boundary, isolated to `AutoAssistPanel`, `AutoRunSession` and
+`AutoReadOnlySender`. The ordinary AI, photo and offline library senders remain TYPE ONLY.
+Full Auto requires upfront review of exact commands/destination, explicit foreground session
+consent, an idle-terminal preflight photo, bounded automatic photos/uploads, and a Stop control.
+It may press Enter only within that approved session. Unsupported/destructive commands,
+password prompts, uncertain/error evidence, disconnect, backgrounding or expanded plan scope
+stop unattended progression. Automatic revisions are limited to remaining originally approved
+commands or exact allowlisted read-only diagnostics; they cannot retry a transmitted change.
+Human confirmation and visual assessment remain distinct. No hidden background execution,
+automatic restart, shell/process execution on Android, or changes to the frozen HID files,
+manual sender, `AiTransportScope`, `ApiKeyVault` or `PhotoCaptureController` are authorized.
+
+Start/rollback: `84ff5219962608955317239cda520d2c5779b857`, on the separate branch
+`feature/ui12-detailed-plans-auto-assist`. Scope: planner roadmap/wire/workspace, single-screen
+approval in AI/library, foreground Auto coordinator/observer/state, in-memory OpenAI narration,
+voice Settings, AI TTS-service visibility (no added permission), version, meaningful contract/UI
+tests, policy checks and handover docs. Toolchain/dependencies, old APKs/releases and baseline
+branches remain unchanged. See `docs/UI12-AUTO-TEST-PLAN.md`. This does not authorize merging
+or promoting a physical Bluetooth baseline.
+
 ## Reviewed UI11 continuation — 14 October 2026
 
 The user explicitly authorized compact Home / Keyboard / AI / Settings navigation, restored keyboard/mouse access and dictation, visible Bluetooth-off feedback and the Android enable flow, a real Black Cat icon, API-key verification, the latest verified model and structured-response corrections, and investigation of rapid Bluetooth disconnections.

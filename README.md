@@ -4,6 +4,28 @@ Android phone remote that preserves the proven Bluetooth HID keyboard/mouse core
 
 > **UI09 is a physical-test prerelease.** All automated build, policy, unit, lint, APK inspection, CodeQL and provenance gates passed. Real Android-to-computer Bluetooth testing is still required before this version becomes the protected baseline.
 
+## UI12.1 test download — detailed plans and Auto
+
+Full direct APK download URL:
+
+https://raw.githubusercontent.com/efrgdgr0024345/autophone/409b3c536627108ceda9826971474abedb9c1f2b/docs/ui12.1/install/CatAI-12.1.apk
+
+The exact checked APK can update UI10/UI11 directly. Source: `437e98e45812703077e10d86b8c4d7fea11b136b`.
+SHA-256: `6da0a22851da44b1a2be4221a2452360ccdbd7497aa6bfcca42741ba4bf1f298`.
+Local verification passed: 135 Android tests, 79 policy/mutation checks, both builds/APK inspection,
+20 real-window emulator checks, zero Lint errors and CodeQL over 44/44 files. Live phone,
+vision, speech/API and Keystore acceptance remain required. [Install details](docs/ui12.1/install/README.md)
+and [all 36 rendered screens](docs/ui12.1/screens/README.md). This is a development test build;
+the existing releases below remain unchanged.
+
+`feature/ui12-detailed-plans-auto-assist` adds phased roadmaps with up to 40 command steps,
+one-screen command approval and an explicitly approved foreground Auto session with terminal
+photos and OpenAI-generated spoken explanations. Full Auto may press Enter for the reviewed
+plan; ordinary AI/library typing still excludes Enter. Unsupported commands, unclear feedback,
+password prompts, disconnection/backgrounding and expanded plan scope stop automatic progress.
+See [scope, limits and handset acceptance](docs/UI12-AUTO-TEST-PLAN.md). This development work
+has not replaced the releases below or established physical Auto/voice/API correctness.
+
 ## UI10 development — editable plans and feedback
 
 The next update is developed on `feature/ui11-compact-controls-bluetooth`: compact Home / Keyboard / AI / Settings controls, visible Bluetooth enable feedback and foreground session support, a Black Cat launcher icon, explicit API-key checking and exclusive structured clarification/command responses. See [UI11 acceptance and scope](docs/UI11-CONTROLS-TEST-PLAN.md). It remains a hardware-test candidate; physical connection stability and live user-key requests are still required.

@@ -70,7 +70,7 @@ def verify(root=ROOT):
                       'sendKeyboard(', 'ApprovedCommandSender', 'propose(', 'android.util.Log', 'println('):
         assert forbidden not in pending, f'Pending key gained persistence/network/execution capability: {forbidden}'
     assert entry.count('PendingApiKey.take(activity)') == 1, 'Only the explicit plan request may consume a pending key in AiEntry'
-    generate = entry.split('private fun generateProposal(', 1)[1].split('private fun confirmSelected()', 1)[0]
+    generate = entry.split('private fun generateProposal(', 1)[1].split('private fun confirmSelected(', 1)[0]
     assert 'PendingApiKey.take(activity)' in generate, 'The pending plan key must be consumed by explicit generation'
     photo_open = entry.split('private fun openPlanPhotoFeedback()', 1)[1].split('private fun openSettings()', 1)[0]
     assert 'PendingApiKey.take(' not in photo_open, 'Opening or cancelling a photo must not consume the queued key'

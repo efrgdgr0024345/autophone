@@ -1,0 +1,6 @@
+Repository: https://github.com/efrgdgr0024345/autophone
+Branch: feature/ui12-detailed-plans-auto-assist
+Exact build source: 6325cda (full SHA recorded below)
+Version: 13 / 12.0-detailed-auto-assist
+Exact tested bytes: copied without rebuilding
+6325cda2621a8a0b8f455518d2566bc5cad10a81

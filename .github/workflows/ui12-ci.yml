@@ -1,0 +1,125 @@
+name: UI12 detailed plans and Auto assistance
+on:
+  push:
+    branches: [feature/ui12-detailed-plans-auto-assist]
+  pull_request:
+    branches: [feature/ui12-compact-controls-bluetooth]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ui12-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Preservation, catalogue and feedback boundaries
+        run: |
+          python3 tools/check_policy.py
+          python3 tools/test_policy.py -v
+          python3 tools/check_mobile_ui.py
+          python3 tools/test_mobile_ui.py -v
+          python3 tools/check_offline_catalog.py
+          python3 tools/check_feedback_ui.py
+          python3 tools/test_feedback_ui.py -v
+          python3 tools/check_auto_ui.py
+          python3 tools/test_auto_ui.py -v
+          python3 -m pip install -r planner_lab/requirements.txt
+          python3 tools/test_artwork.py -v
+          python3 -m unittest planner_lab.test_contract -v
+      - name: Build, actual unit tests and Lint
+        run: gradle testOfflineDebugUnitTest testAiDebugUnitTest lintOfflineDebug lintAiDebug assembleOfflineDebug assembleAiDebug assembleAiDebugAndroidTest --continue --console=plain --stacktrace
+      - name: Inspect exact APK capabilities and signatures
+        run: |
+          set -euo pipefail
+          AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
+          SIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          mkdir -p preview
+          for flavor in ai offline; do
+            apk="app/build/outputs/apk/$flavor/debug/app-$flavor-debug.apk"
+            python3 tools/check_apk.py "$apk" "$flavor" "$AAPT"
+            "$SIGNER" verify --verbose --print-certs "$apk" > "preview/$flavor-signature.txt"
+          done
+          cp app/build/outputs/apk/ai/debug/app-ai-debug.apk preview/CatAI-12.1.apk
+          cp app/build/outputs/apk/offline/debug/app-offline-debug.apk preview/CatBT-12.1.apk
+          git rev-parse HEAD > preview/SOURCE.txt
+          cp docs/UI12-AUTO-TEST-PLAN.md preview/ACCEPTANCE.md
+          (cd preview && sha256sum *.apk > SHA256SUMS)
+      - name: Rendered UI and Camera2 on disposable Android 15 emulator
+        env:
+          ANDROID_AVD_HOME: /tmp/blackcat-avd
+          ANDROID_EMULATOR_HOME: /tmp/blackcat-emulator
+        run: |
+          set -euo pipefail
+          mkdir -p "$ANDROID_AVD_HOME" "$ANDROID_EMULATOR_HOME"
+          export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
+          sdkmanager 'emulator' 'platform-tools' 'system-images;android-35;default;x86_64'
+          printf 'no\n' | avdmanager create avd --force --name ui12 --package 'system-images;android-35;default;x86_64' --device pixel_5
+          test -c /dev/kvm
+          sudo chmod 666 /dev/kvm
+          "$ANDROID_HOME/emulator/emulator" -avd ui12 -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader -camera-back emulated -camera-front none > /tmp/ui12-emulator.log 2>&1 &
+          task_emulator_pid=$!
+          trap 'kill "$task_emulator_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 120); do
+            if test "$(adb -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1; then break; fi
+            sleep 3
+          done
+          test "$(adb -s emulator-5554 shell getprop sys.boot_completed | tr -d '\r')" = 1
+          adb -s emulator-5554 shell settings put system accelerometer_rotation 0
+          adb -s emulator-5554 shell settings put system user_rotation 0
+          adb -s emulator-5554 shell wm size 720x1560
+          adb -s emulator-5554 shell wm density 294
+          adb -s emulator-5554 shell input keyevent KEYCODE_WAKEUP
+          adb -s emulator-5554 shell wm dismiss-keyguard
+          bash tools/run_feedback_ui_smoke.sh preview/screens
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui12-reports-${{ github.run_id }}
+          path: |
+            app/build/reports/
+            app/build/test-results/
+            preview/
+            /tmp/ui12-emulator.log
+          if-no-files-found: warn
+  analyze:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: java-kotlin
+          build-mode: manual
+          queries: security-and-quality
+      - run: gradle clean assembleOfflineDebug assembleAiDebug --console=plain --stacktrace
+      - uses: github/codeql-action/analyze@v4

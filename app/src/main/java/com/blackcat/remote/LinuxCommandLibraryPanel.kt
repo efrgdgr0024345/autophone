@@ -554,15 +554,16 @@ class LinuxCommandLibraryPanel(
         })
 
         val host = target.current()
+        contentBody.addView(text("Destination: ${host?.label ?: "No Bluetooth host"}", 14f, Color.BLACK, Typeface.BOLD), matchWrap(bottom = 7))
         val type = Button(activity).apply {
             text = when {
                 busy -> "Typing…"
                 host == null -> "Connect Bluetooth first"
-                else -> "Preview & type only"
+                else -> "Approve & type once"
             }
             BlackCatStyle.styleButton(activity, this, true)
             isEnabled = !busy && host != null
-            setOnClickListener { showTypeConfirmation(item) }
+            setOnClickListener { if (host != null) approveType(item, host) }
         }
         contentBody.addView(type, LinearLayout.LayoutParams(-1, dp(54)).apply {
             bottomMargin = dp(7)
@@ -710,112 +711,28 @@ class LinuxCommandLibraryPanel(
         Toast.makeText(activity, "Command copied. Nothing was typed.", Toast.LENGTH_SHORT).show()
     }
 
-    private fun showTypeConfirmation(item: LinuxCommandItem) {
-        if (busy || confirmation?.isShowing == true) return
-        val problem = CommandPolicy.problem(item.command)
-        if (problem != null) {
-            Toast.makeText(activity, problem, Toast.LENGTH_LONG).show()
+    /** The detail page already shows the command and destination; approve once there. */
+    private fun approveType(item: LinuxCommandItem, host: HostSession) {
+        if (busy || !dialog.isShowing || level != Level.DETAIL || selectedItem !== item || target.current() != host) {
+            Toast.makeText(activity, "The command or destination changed. Review again.", Toast.LENGTH_LONG).show()
             return
         }
-        val host = target.current()
-        if (host == null) {
-            Toast.makeText(
-                activity,
-                "Connect the phone as a Bluetooth keyboard first.",
-                Toast.LENGTH_LONG
-            ).show()
-            refreshConnectionState()
-            render()
-            return
+        CommandPolicy.problem(item.command)?.let { Toast.makeText(activity, it, Toast.LENGTH_LONG).show(); return }
+        busy = true
+        connectionText.text = "Typing reviewed text only · Enter excluded"
+        render()
+        val approval = CommandApproval(item.command, host)
+        scope.launch {
+            try {
+                val outcome = ApprovedCommandSender.send(approval, target)
+                val message = if (outcome == SendOutcome.REPORTS_ACCEPTED)
+                    "Text typed. Check the computer and press Enter manually."
+                    else "Typing stopped ($outcome). Inspect any partial text; no automatic retry."
+                Toast.makeText(activity, message, Toast.LENGTH_LONG).show()
+            } catch (cancelled: CancellationException) { throw cancelled }
+              catch (_: Exception) { Toast.makeText(activity, "Typing stopped. Inspect any partial text manually.", Toast.LENGTH_LONG).show() }
+              finally { busy = false; refreshConnectionState(); render() }
         }
-
-        val detail = LinearLayout(activity).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(18), dp(11), dp(18), dp(8))
-            addView(text("Destination", 11f, Color.DKGRAY, Typeface.BOLD))
-            addView(text(host.label, 15f, Color.BLACK, Typeface.BOLD).apply {
-                setPadding(0, dp(4), 0, dp(10))
-            })
-            addView(text("Command", 11f, Color.DKGRAY, Typeface.BOLD))
-            addView(commandBox(item.command), matchWrap(top = 6, bottom = 8))
-            addView(
-                text(
-                    "One-use approval: type this exact text only. Enter is excluded.",
-                    12f,
-                    BlackCatStyle.GREEN,
-                    Typeface.BOLD
-                )
-            )
-        }
-
-        val confirm = AlertDialog.Builder(activity)
-            .setTitle("Review before typing")
-            .setView(ScrollView(activity).apply { addView(detail) })
-            .setNegativeButton("CANCEL", null)
-            .setPositiveButton("TYPE ONLY", null)
-            .create()
-        confirmation = confirm
-        confirm.setCanceledOnTouchOutside(false)
-        confirm.setOnShowListener {
-            confirm.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-            confirm.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                if (busy || target.current() != host ||
-                    CommandPolicy.problem(item.command) != null
-                ) {
-                    Toast.makeText(
-                        activity,
-                        "The Bluetooth destination changed. Review again.",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    confirm.dismiss()
-                    refreshConnectionState()
-                    render()
-                    return@setOnClickListener
-                }
-
-                confirm.dismiss()
-                busy = true
-                connectionText.text = "Typing reviewed text only · Enter excluded"
-                render()
-                val approval = CommandApproval(item.command, host)
-                scope.launch {
-                    try {
-                        val outcome = ApprovedCommandSender.send(approval, target)
-                        val message = when (outcome) {
-                            SendOutcome.REPORTS_ACCEPTED ->
-                                "Text typed. Check the computer and press Enter manually."
-                            SendOutcome.HOST_CHANGED ->
-                                "Typing stopped because the Bluetooth destination changed."
-                            SendOutcome.REJECTED ->
-                                "Typing was rejected. Inspect any partial text on the computer."
-                            SendOutcome.INVALID ->
-                                "The command failed the local send policy."
-                            SendOutcome.ALREADY_USED ->
-                                "This one-use approval was already consumed."
-                        }
-                        Toast.makeText(
-                            activity,
-                            message,
-                            Toast.LENGTH_LONG
-                        ).show()
-                    } catch (cancelled: CancellationException) {
-                        throw cancelled
-                    } catch (_: Exception) {
-                        Toast.makeText(
-                            activity,
-                            "Typing stopped. Inspect any partial text manually.",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    } finally {
-                        busy = false
-                        refreshConnectionState()
-                        render()
-                    }
-                }
-            }
-        }
-        confirm.setOnDismissListener { confirmation = null }
-        confirm.show()
     }
 
     private fun refreshConnectionState() {

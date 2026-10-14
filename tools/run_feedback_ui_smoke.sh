@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 task_serial=${ANDROID_SERIAL:-emulator-5554}
-task_output=${1:-app/build/reports/ui11-rendered}
+task_output=${1:-app/build/reports/ui12-rendered}
 mkdir -p "$task_output"
 test "$(adb -s "$task_serial" shell getprop ro.kernel.qemu | tr -d '\r')" = 1
 adb -s "$task_serial" install -r -g app/build/outputs/apk/ai/debug/app-ai-debug.apk
@@ -17,7 +17,7 @@ cat "$task_output/instrumentation.log"
 adb -s "$task_serial" root
 adb -s "$task_serial" wait-for-device
 task_pull_status=0
-adb -s "$task_serial" pull /data/user/0/com.blackcat.remote/files/ui11-rendered/. "$task_output/" || task_pull_status=$?
-if test "$task_status" != 0 || test "$task_pull_status" != 0 || ! grep -q 'UI11_SMOKE_PASS' "$task_output/instrumentation.log" || grep -q 'UI11_SMOKE_FAIL' "$task_output/instrumentation.log"; then
+adb -s "$task_serial" pull /data/user/0/com.blackcat.remote/files/ui12-rendered/. "$task_output/" || task_pull_status=$?
+if test "$task_status" != 0 || test "$task_pull_status" != 0 || ! grep -q 'UI12_SMOKE_PASS' "$task_output/instrumentation.log" || grep -q 'UI12_SMOKE_FAIL' "$task_output/instrumentation.log"; then
   exit 1
 fi
