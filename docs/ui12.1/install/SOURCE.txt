@@ -1,0 +1,5 @@
+Repository: https://github.com/efrgdgr0024345/autophone
+Branch: feature/ui12-detailed-plans-auto-assist
+Exact build source: 437e98e45812703077e10d86b8c4d7fea11b136b
+Version: 14 / 12.1-detailed-auto-assist
+Delivery: exact tested APK bytes, copied without rebuilding

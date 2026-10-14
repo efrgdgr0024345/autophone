@@ -34,7 +34,10 @@ is the rollback point. Work is isolated on `feature/ui12-detailed-plans-auto-ass
 - Error feedback can generate a revised remaining plan. At most three revision requests are
   allowed in a session. Full Auto can adopt revisions containing only remaining originally
   approved commands or strict read-only diagnostics, never a repeated transmitted change.
-  Expanded scope is proposed for review and stops the current session.
+  Expanded scope is proposed for review and stops the current session. Error revisions require
+  a fresh shell prompt, the actual visible command and evidence before any new plan request.
+  Password/busy/unclear input frames stop immediately. Late replies after the person advances
+  or stops cannot replace the plan.
 - The Stop control is always at the top. Backgrounding, navigation, destruction, host/epoch or
   plan change stop typing/capture/network/playback and clear session key/audio/photo references.
   Nothing resumes automatically. An already issued network request or command cannot be undone

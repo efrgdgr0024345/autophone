@@ -1,5 +1,7 @@
 # UI12 phone-install test build
 
+**Superseded candidate:** use [UI12.1](../../ui12.1/install/README.md), which adds the fresh-prompt and late-revision guards. These older APK bytes remain as test evidence.
+
 [Download CatAI-12.apk](CatAI-12.apk?raw=true) — the complete AI/camera/voice, Linux command library and Bluetooth keyboard/mouse app.
 
 [Download CatBT-12.apk](CatBT-12.apk?raw=true) — the offline alternative. It excludes AI, camera, microphone, narration and Auto networking. These flavors share an application ID and cannot be installed side by side.
