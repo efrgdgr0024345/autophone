@@ -82,11 +82,11 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                     "explanation":"Inspect before changing the system.", "assumptions":[],
                     "decision":{"mode":"commands","questions":[],"commands":[
                         {"title":"List failed services","command":"systemctl --failed",
-                         "explanation":"Read-only synthetic test step.","risk":"low","requiresAdmin":false,
-                         "expectedResult":"Inspect the result yourself.","warnings":[]},
+                         "explanation":"Read-only synthetic test step.","risk":"low","requires_admin":false,
+                         "expected_result":"Inspect the result yourself.","warnings":[]},
                         {"title":"Read service logs","command":"journalctl -n 20",
-                         "explanation":"Read-only synthetic test step.","risk":"low","requiresAdmin":false,
-                         "expectedResult":"Inspect the result yourself.","warnings":[]}]}}
+                         "explanation":"Read-only synthetic test step.","risk":"low","requires_admin":false,
+                         "expected_result":"Inspect the result yourself.","warnings":[]}]}}
                 """)
                 check(parsed.commands.map { it.command } == listOf("systemctl --failed", "journalctl -n 20"))
                 val clarify = PlanCodec.parsePlan("""{"explanation":"More context is needed.","assumptions":[],
@@ -252,8 +252,8 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                     "observations":["An error is visible."],
                     "decision":{"mode":"commands","questions":[],"commands":[
                         {"title":"Read error logs","command":"journalctl -u nginx -n 20",
-                         "explanation":"Read-only synthetic test step.","risk":"low","requiresAdmin":false,
-                         "expectedResult":"Inspect the result yourself.","warnings":[]}]}}
+                         "explanation":"Read-only synthetic test step.","risk":"low","requires_admin":false,
+                         "expected_result":"Inspect the result yourself.","warnings":[]}]}}
                 """)
                 setField(photo, "analysis", value)
                 setEnum(photo, "state", "RESULT")
