@@ -4,6 +4,16 @@ Android phone remote that preserves the proven Bluetooth HID keyboard/mouse core
 
 > **UI09 is a physical-test prerelease.** All automated build, policy, unit, lint, APK inspection, CodeQL and provenance gates passed. Real Android-to-computer Bluetooth testing is still required before this version becomes the protected baseline.
 
+## UI12 development — detailed plans and Auto
+
+`feature/ui12-detailed-plans-auto-assist` adds phased roadmaps with up to 40 command steps,
+one-screen command approval and an explicitly approved foreground Auto session with terminal
+photos and OpenAI-generated spoken explanations. Full Auto may press Enter for the reviewed
+plan; ordinary AI/library typing still excludes Enter. Unsupported commands, unclear feedback,
+password prompts, disconnection/backgrounding and expanded plan scope stop automatic progress.
+See [scope, limits and handset acceptance](docs/UI12-AUTO-TEST-PLAN.md). This development work
+has not replaced the releases below or established physical Auto/voice/API correctness.
+
 ## UI10 development — editable plans and feedback
 
 The next update is developed on `feature/ui11-compact-controls-bluetooth`: compact Home / Keyboard / AI / Settings controls, visible Bluetooth enable feedback and foreground session support, a Black Cat launcher icon, explicit API-key checking and exclusive structured clarification/command responses. See [UI11 acceptance and scope](docs/UI11-CONTROLS-TEST-PLAN.md). It remains a hardware-test candidate; physical connection stability and live user-key requests are still required.
