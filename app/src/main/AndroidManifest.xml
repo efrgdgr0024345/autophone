@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"/>
     <uses-feature android:name="android.hardware.bluetooth" android:required="true"/>
-    <application android:allowBackup="false" android:label="Black Cat Remote" android:theme="@style/AppTheme" android:usesCleartextTraffic="false">
+    <application android:allowBackup="false" android:label="Black Cat Remote" android:theme="@style/AppTheme" android:usesCleartextTraffic="false" android:icon="@mipmap/ic_launcher_black_cat" android:roundIcon="@mipmap/ic_launcher_black_cat">
         <service android:name=".BluetoothSessionService" android:exported="false" android:foregroundServiceType="connectedDevice" android:stopWithTask="true"/>
         <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="portrait">
             <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>

@@ -45,11 +45,16 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 
 object AiEntry {
+    private val assistantPanels = mutableMapOf<Activity, AiPanel>()
     /** Lazy entry points only: opening a screen never sends API or HID input by itself. */
     fun openAssistant(activity: Activity, manager: () -> HidManager) {
         try {
-            AiPanel(activity, manager()) {}.show()
+            val panel = assistantPanels[activity] ?: AiPanel(activity, manager()) {
+                assistantPanels.remove(activity)
+            }.also { assistantPanels[activity] = it }
+            panel.show()
         } catch (_: Exception) {
+            assistantPanels.remove(activity)
             Toast.makeText(activity, "Could not open AI Assistant. Bluetooth controls are unchanged.", Toast.LENGTH_LONG).show()
         }
     }
@@ -76,6 +81,30 @@ object AiEntry {
         } catch (_: Exception) {
             Toast.makeText(activity, "Could not open Settings.", Toast.LENGTH_LONG).show()
         }
+    }
+
+    fun leaveAssistantForNavigation(activity: Activity) {
+        assistantPanels[activity]?.hideForNavigation()
+    }
+
+    /** Explicit dictation produces editable text only; it never sends a key report. */
+    fun dictateManualText(activity: Activity, onTranscript: (String) -> Unit, onStatus: (String) -> Unit): () -> Unit {
+        val voice = VoiceFeedbackController(activity)
+        var active = true
+        val consent = AlertDialog.Builder(activity)
+            .setTitle("Speak text")
+            .setMessage(if (voice.onDeviceAvailable())
+                "Use on-device speech recognition. Review the transcript before pressing Send Text."
+                else "Your Android speech provider may process audio online. Review the transcript before pressing Send Text. Black Cat saves no audio.")
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("Start dictation") { _, _ ->
+                if (active) voice.start({ text -> if (active) onTranscript(text) },
+                    { status -> if (active) onStatus(status) })
+            }
+            .create()
+        consent.setOnShowListener { consent.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE) }
+        consent.show()
+        return { active = false; voice.cancel(); consent.dismiss() }
     }
 
     /** Retained compatibility hook for older UI branches. */
@@ -116,7 +145,6 @@ private class AiPanel(
     private val dialog = Dialog(activity, android.R.style.Theme_Material_Light_NoActionBar)
 
     private var confirmation: AlertDialog? = null
-    private var settingsDialog: AlertDialog? = null
     private var job: Job? = null
     private var busy = false
     private var activeTab = Tab.PLAN
@@ -138,11 +166,9 @@ private class AiPanel(
     private val targetPrefs by lazy { activity.getSharedPreferences(TARGET_PREFS, Activity.MODE_PRIVATE) }
     private var selectedTarget = DEFAULT_TARGET
     private var customTarget = ""
-    private var targetOptions = emptyList<String>()
-    private var suppressTargetSelection = false
 
     private lateinit var goal: EditText
-    private lateinit var targetSpinner: Spinner
+    private lateinit var targetLabel: TextView
     private lateinit var buildButton: Button
     private lateinit var cancelButton: Button
     private lateinit var statusPill: TextView
@@ -161,10 +187,12 @@ private class AiPanel(
     private lateinit var feedbackBody: LinearLayout
     private lateinit var previewBody: LinearLayout
     private val tabButtons = linkedMapOf<Tab, LinearLayout>()
+    private var viewBuilt = false
+    private var panelVisible = false
 
     private val lifecycle = object : Application.ActivityLifecycleCallbacks {
         override fun onActivityResumed(a: Activity) {
-            if (a === activity && transportPaused && dialog.isShowing) {
+            if (a === activity && transportPaused && panelVisible && dialog.isShowing) {
                 transportPaused = false
                 target = AiTransportScope(activity, manager) { suspendForBackground() }
                 target.start()
@@ -181,13 +209,15 @@ private class AiPanel(
     }
 
     fun show() {
+        if (viewBuilt) { resumeForNavigation(); return }
         selectedModel = targetPrefs.getString(AiSettingsPanel.MODEL_KEY, PlanCodec.DEFAULT_MODEL)
             ?.takeIf { it in PlanCodec.MODELS } ?: PlanCodec.DEFAULT_MODEL
         dialog.setContentView(buildShell())
+        viewBuilt = true
         dialog.setCanceledOnTouchOutside(false)
         dialog.setOnDismissListener {
+            panelVisible = false
             confirmation?.dismiss()
-            settingsDialog?.dismiss()
             target.close()
             activity.application.unregisterActivityLifecycleCallbacks(lifecycle)
             photoPanel?.dismiss()
@@ -212,6 +242,7 @@ private class AiPanel(
 
         try {
             dialog.show()
+            panelVisible = true
         } catch (e: Exception) {
             target.close()
             throw e
@@ -224,10 +255,46 @@ private class AiPanel(
         activity.application.registerActivityLifecycleCallbacks(lifecycle)
         scope.launch {
             while (isActive) {
-                refreshConnectionState()
+                if (panelVisible) refreshConnectionState()
                 delay(350)
             }
         }
+        renderAll()
+    }
+
+    fun hideForNavigation() {
+        if (!panelVisible) return
+        cancelWork()
+        confirmation?.dismiss()
+        voice.cancel()
+        photoPanel?.dismiss()
+        libraryPanel?.dismiss()
+        workspace.touch()
+        oneShotKey = ""
+        target.close()
+        transportPaused = true
+        panelVisible = false
+        dialog.hide()
+    }
+
+    private fun resumeForNavigation() {
+        if (panelVisible) return
+        val previousTarget = selectedTarget
+        loadTargetState()
+        selectedModel = targetPrefs.getString(AiSettingsPanel.MODEL_KEY, PlanCodec.DEFAULT_MODEL)
+            ?.takeIf { it in PlanCodec.MODELS } ?: PlanCodec.DEFAULT_MODEL
+        if (previousTarget != selectedTarget) {
+            workspace.touch()
+            lastTypedCommand = null
+            lastTypedIndex = -1
+        }
+        targetLabel.text = "Target: $selectedTarget"
+        transportPaused = false
+        panelVisible = true
+        dialog.show()
+        target = AiTransportScope(activity, manager) { suspendForBackground() }
+        target.start()
+        setStatus("Draft ready. Review the current target and command before typing.")
         renderAll()
     }
 
@@ -242,7 +309,6 @@ private class AiPanel(
     private fun suspendForBackground() {
         transportPaused = true
         confirmation?.dismiss()
-        settingsDialog?.dismiss()
         voice.cancel()
         cancelWork()
         workspace.touch()
@@ -251,7 +317,9 @@ private class AiPanel(
     }
 
     fun dismiss() {
-        if (dialog.isShowing) dialog.dismiss()
+        // hide() can make isShowing false while the dialog still owns its window and draft.
+        // Final Activity destruction must run the dismissal cleanup for hidden drafts too.
+        dialog.dismiss()
     }
 
     private fun buildShell(): View {
@@ -260,7 +328,6 @@ private class AiPanel(
             setBackgroundColor(BG)
         }
         BlackCatStyle.applySystemBarInsets(root)
-        root.addView(buildTopBar(), matchWrap())
         root.addView(buildBottomNav(), matchWrap())
         root.addView(buildStatusBar(), matchWrap())
 
@@ -278,41 +345,6 @@ private class AiPanel(
 
         applyActiveTab()
         return root
-    }
-
-    private fun buildTopBar(): View {
-        val hero = LinearLayout(activity).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER_HORIZONTAL
-            setPadding(dp(10), dp(4), dp(10), dp(5))
-            setBackgroundColor(Color.WHITE)
-        }
-        val portrait = ImageView(activity).apply {
-            setImageResource(R.drawable.black_cat_full)
-            scaleType = ImageView.ScaleType.FIT_CENTER
-            contentDescription = "Black Cat"
-        }
-        hero.addView(portrait, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(96)))
-
-        val titleRow = LinearLayout(activity).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-        }
-        val titles = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
-        titles.addView(label("Linux Assistant", 19f, Color.BLACK, Typeface.BOLD))
-        titles.addView(label("See it. Ask it. Solve it.", 11f, Color.DKGRAY))
-        titles.addView(label("Plan → Step → Preview → Result", 11f, Color.DKGRAY))
-        titleRow.addView(titles, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-        val settings = actionButton("Settings", primary = false) { openSettings() }.apply {
-            minWidth = 0
-            minHeight = dp(40)
-            setPadding(dp(10), 0, dp(10), 0)
-            textSize = 12f
-            contentDescription = "Open AI settings"
-        }
-        titleRow.addView(settings, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(40)))
-        hero.addView(titleRow, matchWrap())
-        return hero
     }
 
     private fun buildStatusBar(): View {
@@ -353,23 +385,8 @@ private class AiPanel(
             setPadding(dp(16), dp(15), dp(16), dp(16))
             background = round(PAPER, 20, LINE, 1)
         }
-        val cardLp = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-            topMargin = dp(45)
-        }
-        stage.addView(card, cardLp)
-
-        val mascot = ImageView(activity).apply {
-            setImageResource(R.drawable.black_cat_peek)
-            scaleType = ImageView.ScaleType.FIT_CENTER
-            contentDescription = null
-            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-        }
-        val mascotLp = FrameLayout.LayoutParams(dp(156), dp(108), Gravity.TOP or Gravity.END).apply {
-            rightMargin = dp(3)
-        }
-        stage.addView(mascot, mascotLp)
-
-        card.addView(label("Goal", 17f, INK, Typeface.BOLD).apply { setPadding(0, 0, dp(142), dp(8)) })
+        stage.addView(card, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        card.addView(label("Goal", 17f, INK, Typeface.BOLD).apply { setPadding(0, 0, 0, dp(8)) })
         goal = input("What do you want to achieve?", 2000, multiline = true).apply {
             minHeight = dp(96)
             textSize = 17f
@@ -377,45 +394,12 @@ private class AiPanel(
         card.addView(goal, matchWrap())
         card.addView(actionButton("Speak your goal", primary = false) { dictateGoal() }, matchWrap(top = 8))
 
-        card.addView(label("Target system & shell", 13f, INK, Typeface.BOLD).apply { setPadding(0, dp(13), 0, dp(7)) })
         loadTargetState()
-        val targetRow = LinearLayout(activity).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            background = round(FIELD, 11, FIELD_LINE, 1)
-            setPadding(dp(10), 0, dp(5), 0)
+        targetLabel = label("Target: $selectedTarget", 12f, MUTED).apply {
+            setPadding(0, dp(8), 0, dp(2))
         }
-        targetRow.addView(label(">_", 15f, GREEN, Typeface.BOLD).apply {
-            gravity = Gravity.CENTER
-            typeface = Typeface.MONOSPACE
-            background = round(TINT, 8)
-            setPadding(dp(7), dp(7), dp(7), dp(7))
-        })
-        targetSpinner = Spinner(activity).apply {
-            minimumHeight = dp(50)
-            contentDescription = "Target Linux system and shell"
-        }
-        targetRow.addView(targetSpinner, LinearLayout.LayoutParams(0, dp(50), 1f))
-        card.addView(targetRow, matchWrap())
-        refreshTargetSpinner()
-        targetSpinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
-            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
-                if (suppressTargetSelection) return
-                val chosen = targetOptions.getOrNull(position) ?: return
-                if (chosen == EDIT_TARGET) {
-                    showCustomTargetEditor()
-                    return
-                }
-                val value = if (chosen.startsWith(CUSTOM_PREFIX)) customTarget else chosen
-                if (value.isNotBlank() && value != selectedTarget) {
-                    selectedTarget = value
-                    targetPrefs.edit().putString(TARGET_KEY, selectedTarget).apply()
-                    invalidatePlanForInputChange()
-                    renderAll()
-                }
-            }
-        }
+        card.addView(targetLabel, matchWrap())
+        card.addView(textButton("Change target in Settings") { openSettings() }, matchWrap())
 
         val next = LinearLayout(activity).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -466,7 +450,6 @@ private class AiPanel(
             },
             matchWrap(top = 8)
         )
-        stage.minimumHeight = dp(360)
         body.addView(stage, matchWrap())
 
         recentSection = LinearLayout(activity).apply {
@@ -510,62 +493,6 @@ private class AiPanel(
         if (selectedTarget !in COMMON_TARGETS && selectedTarget.isNotBlank()) customTarget = selectedTarget
     }
 
-    private fun refreshTargetSpinner() {
-        if (!::targetSpinner.isInitialized) return
-        val options = mutableListOf<String>()
-        options.addAll(COMMON_TARGETS)
-        if (customTarget.isNotBlank()) options.add(CUSTOM_PREFIX + customTarget)
-        options.add(EDIT_TARGET)
-        targetOptions = options
-        suppressTargetSelection = true
-        targetSpinner.adapter = object : ArrayAdapter<String>(activity, android.R.layout.simple_spinner_dropdown_item, targetOptions) {
-            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View =
-                super.getView(position, convertView, parent).apply { (this as? TextView)?.setTextColor(INK) }
-        }
-        val selectedLabel = when {
-            selectedTarget in COMMON_TARGETS -> selectedTarget
-            customTarget.isNotBlank() && selectedTarget == customTarget -> CUSTOM_PREFIX + customTarget
-            else -> DEFAULT_TARGET
-        }
-        targetSpinner.setSelection(targetOptions.indexOf(selectedLabel).coerceAtLeast(0), false)
-        suppressTargetSelection = false
-    }
-
-    private fun showCustomTargetEditor() {
-        val editor = input("Distribution / OS and shell", 500, multiline = false).apply {
-            val initial = if (customTarget.isNotBlank()) customTarget else if (selectedTarget !in COMMON_TARGETS) selectedTarget else ""
-            setText(initial)
-            setSelection(text.length)
-        }
-        val d = AlertDialog.Builder(activity)
-            .setTitle("Edit target system")
-            .setMessage("Example: Proxmox VE / Bash, Ubuntu Server / Zsh, or a remote SSH target.")
-            .setView(editor)
-            .setNegativeButton("CANCEL") { _, _ -> refreshTargetSpinner() }
-            .setPositiveButton("SAVE") { _, _ ->
-                val value = editor.text.toString().trim()
-                if (value.isNotBlank()) {
-                    customTarget = value
-                    selectedTarget = value
-                    targetPrefs.edit()
-                        .putString(TARGET_KEY, selectedTarget)
-                        .putString(CUSTOM_TARGET_KEY, customTarget)
-                        .apply()
-                    refreshTargetSpinner()
-                    invalidatePlanForInputChange()
-                    renderAll()
-                } else {
-                    refreshTargetSpinner()
-                }
-            }
-            .create()
-        d.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        d.setOnDismissListener {
-            if (::targetSpinner.isInitialized && targetSpinner.selectedItem?.toString() == EDIT_TARGET) refreshTargetSpinner()
-        }
-        d.show()
-    }
-
     private fun buildBottomNav(): View {
         val bar = LinearLayout(activity).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -594,32 +521,9 @@ private class AiPanel(
         return bar
     }
 
-    private fun buildAppNav(): View {
-        val bar = LinearLayout(activity).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER
-            setPadding(dp(4), dp(4), dp(4), dp(4))
-            background = round(COMMAND_BG, 0, Color.rgb(48, 66, 59), 1)
-        }
-        fun add(icon: String, title: String, active: Boolean = false, action: () -> Unit) {
-            val item = LinearLayout(activity).apply {
-                orientation = LinearLayout.VERTICAL
-                gravity = Gravity.CENTER
-                isClickable = true
-                isFocusable = true
-                contentDescription = title
-                setOnClickListener { action() }
-                addView(label(icon, 16f, if (active) GREEN else Color.rgb(220, 228, 224), Typeface.BOLD).apply { gravity = Gravity.CENTER })
-                addView(label(title, 10f, if (active) GREEN else Color.rgb(220, 228, 224), Typeface.BOLD).apply { gravity = Gravity.CENTER })
-            }
-            bar.addView(item, LinearLayout.LayoutParams(0, dp(56), 1f))
-        }
-        add("⌂", "Home") { dismiss() }
-        add("✣", "AI", true) { }
-        add("▣", "Target") { TargetSystemPanel(activity).show() }
-        add("⚙", "Settings") { AiSettingsPanel(activity).show() }
-        return bar
-    }
+    private fun buildAppNav(): View = (activity as? MainActivity)
+        ?.createBottomNavigation("AI") { hideForNavigation() }
+        ?: actionButton("Home", false) { dismiss() }
 
     private fun scrollPage(assign: LinearLayout.() -> Unit): View {
         val scroll = ScrollView(activity).apply {
@@ -965,7 +869,7 @@ private class AiPanel(
         }
         val requestedTarget = selectedTarget
         val requestedModel = selectedModel
-        val enteredKey = oneShotKey
+        val enteredKey = oneShotKey.ifBlank { PendingApiKey.take(activity) }
         oneShotKey = ""
         confirmation?.dismiss()
         voice.cancel()
@@ -985,7 +889,7 @@ private class AiPanel(
                     openSettings()
                     return@launch
                 }
-                val plan = withTimeout(65000) { planner.propose(requestedGoal, requestedTarget, requestedModel, key) }
+                val plan = withTimeout(75000) { planner.propose(requestedGoal, requestedTarget, requestedModel, key) }
                 if (operation != operationToken || planRevision != requestRevision) return@launch
                 if (revise) workspace.stage(requestRevision, plan) else {
                     workspace.replace(plan)
@@ -1215,6 +1119,7 @@ private class AiPanel(
             "\nCurrent step to investigate (untrusted context): ${it.command}"
         } ?: "")
         if (contextGoal.length > 2000) return setStatus("Shorten the goal before adding photo context.", error = true)
+        // Opening camera feedback does not consume the next-use key. The explicit upload does.
         val key = oneShotKey
         oneShotKey = ""
         photoPanel = PhotoFeedbackPanel(activity, manager, { photoPanel = null },
@@ -1237,96 +1142,8 @@ private class AiPanel(
     }
 
     private fun openSettings() {
-        if (settingsDialog?.isShowing == true) return
-        val body = LinearLayout(activity).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(18), dp(8), dp(18), dp(4))
-        }
-        body.addView(label("OpenAI", 18f, INK, Typeface.BOLD))
-        body.addView(label("Build plan sends the visible goal and target to OpenAI using your key. No request is made just by opening Settings.", 12f, MUTED).apply { setPadding(0, dp(5), 0, dp(9)) })
-        val key = input(if (vault.exists()) "Saved key available · enter only to replace/use once" else "OpenAI API key", 512, multiline = false, password = true)
-        body.addView(key, matchWrap())
-        body.addView(label("Model", 12f, MUTED, Typeface.BOLD).apply { setPadding(0, dp(10), 0, dp(5)) })
-        val model = Spinner(activity).apply {
-            adapter = ArrayAdapter(activity, android.R.layout.simple_spinner_dropdown_item, PlanCodec.MODELS)
-            setSelection(PlanCodec.MODELS.indexOf(selectedModel).coerceAtLeast(0))
-        }
-        body.addView(model, matchWrap())
-        val message = label(if (vault.exists()) "Saved key is available on this phone." else "No saved key on this phone.", 12f, MUTED).apply { setPadding(0, dp(8), 0, dp(4)) }
-        body.addView(message)
-        val actions = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
-        val useOnce = actionButton("Use key for next request", true) {
-            val value = key.text.toString().trim()
-            if (!OpenAiPlanner.validKey(value)) {
-                message.text = "Enter a valid API key first."
-            } else {
-                oneShotKey = value
-                key.text.clear()
-                selectedModel = PlanCodec.MODELS[model.selectedItemPosition.coerceIn(PlanCodec.MODELS.indices)]
-                settingsDialog?.dismiss()
-                setStatus("API key ready for the next request.")
-            }
-        }
-        val save = actionButton("Save key encrypted on this phone", false) {
-            val value = key.text.toString().trim()
-            if (!OpenAiPlanner.validKey(value)) {
-                message.text = "Enter a valid API key first."
-                return@actionButton
-            }
-            useOnce.isEnabled = false
-            job = scope.launch {
-                try {
-                    withContext(Dispatchers.IO) { vault.save(value) }
-                    oneShotKey = ""
-                    key.text.clear()
-                    message.text = "Key saved encrypted on this phone."
-                    selectedModel = PlanCodec.MODELS[model.selectedItemPosition.coerceIn(PlanCodec.MODELS.indices)]
-                    setStatus("Saved API key available.")
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (_: Exception) {
-                    message.text = "Key could not be saved securely. No plaintext fallback was used."
-                } finally {
-                    useOnce.isEnabled = true
-                }
-            }
-        }
-        val forget = textButton("Forget saved key") {
-            job = scope.launch {
-                try {
-                    withContext(Dispatchers.IO) { vault.forget() }
-                    oneShotKey = ""
-                    message.text = "Saved key deleted. This does not revoke it at OpenAI."
-                    setStatus("No saved API key.")
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (_: Exception) {
-                    message.text = "Could not finish deleting the saved key."
-                }
-            }
-        }
-        actions.addView(useOnce, matchWrap(top = 8))
-        actions.addView(save, matchWrap(top = 6))
-        actions.addView(forget, matchWrap(top = 2))
-        body.addView(actions)
-        body.addView(label("API requests may cost money. store=false is requested; provider retention rules still apply. Saving on a phone does not protect a key from a compromised device.", 11f, MUTED).apply { setPadding(0, dp(9), 0, 0) })
-
-        val d = AlertDialog.Builder(activity)
-            .setTitle("Settings")
-            .setView(ScrollView(activity).apply { addView(body) })
-            .setNegativeButton("CLOSE") { _, _ ->
-                selectedModel = PlanCodec.MODELS[model.selectedItemPosition.coerceIn(PlanCodec.MODELS.indices)]
-            }
-            .create()
-        settingsDialog = d
-        d.setCanceledOnTouchOutside(false)
-        d.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        d.setOnDismissListener {
-            key.text.clear()
-            settingsDialog = null
-            renderAll()
-        }
-        d.show()
+        hideForNavigation()
+        (activity as? MainActivity)?.navigateSettings() ?: AiSettingsPanel(activity).show()
     }
 
     private fun rememberGoal(value: String) {

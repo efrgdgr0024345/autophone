@@ -1,88 +1,195 @@
 package com.blackcat.remote
-import android.Manifest
+
 import android.app.Activity
+import android.app.Dialog
 import android.content.*
-import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.Typeface
 import android.os.*
 import android.view.*
+import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import kotlinx.coroutines.*
 
-class MainActivity:Activity(){
- private lateinit var hid:HidManager;private lateinit var status:TextView;private lateinit var log:TextView;private lateinit var diagnostics:Diagnostics
+/** Navigation wraps the original manual HID mappings; the assistant never owns the transport. */
+class MainActivity : Activity() {
+ private lateinit var hid: HidManager
+ private lateinit var diagnostics: Diagnostics
+ private lateinit var bluetoothSetup: BluetoothSetupController
+ private lateinit var contentHost: FrameLayout
+ private lateinit var homeScreen: View
+ private lateinit var keyboardScreen: View
+ private lateinit var bluetoothScreen: View
+ private lateinit var root: LinearLayout
+ private lateinit var bottom: View
+ private lateinit var log: TextView
+ private val diagnosticViews = mutableListOf<TextView>()
+ private val statusViews = mutableListOf<TextView>()
+ private var bluetoothStatus = "Bluetooth not set up. Tap Set up Bluetooth to connect."
+ private var cancelDictation: (() -> Unit)? = null
  private val scope=CoroutineScope(Dispatchers.Main+SupervisorJob())
- override fun onCreate(s:Bundle?){super.onCreate(s);buildUi();diagnostics=Diagnostics{runOnUiThread{log.text=it}};hid=HidManager(this){event(it)};permissionsOrInit()}
- private fun permissionsOrInit(){if(Build.VERSION.SDK_INT>=31){val n=mutableListOf<String>();if(checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT)!=PackageManager.PERMISSION_GRANTED)n+=Manifest.permission.BLUETOOTH_CONNECT;if(checkSelfPermission(Manifest.permission.BLUETOOTH_ADVERTISE)!=PackageManager.PERMISSION_GRANTED)n+=Manifest.permission.BLUETOOTH_ADVERTISE;if(n.isNotEmpty()){requestPermissions(n.toTypedArray(),10);return}};initHid()}
- private fun initHid(){status.text="HID REGISTERING";event("INFO APP_START");if(!hid.init())status.text="BLUETOOTH/HID ERROR"}
- override fun onRequestPermissionsResult(r:Int,p:Array<out String>,g:IntArray){super.onRequestPermissionsResult(r,p,g);if(r!=10)return;if(g.isNotEmpty()&&g.all{it==PackageManager.PERMISSION_GRANTED}){event("PASS BLUETOOTH_PERMISSIONS");initHid()}else event("FAIL Bluetooth permission denied")}
- @Suppress("DEPRECATION") private fun pair(){if(!hid.registered){event("WAIT HID not registered");return};event("PASS HID registered before discoverability");try{startActivityForResult(hid.discoverableIntent(300),20);event("INFO DISCOVERABILITY_REQUESTED")}catch(t:Throwable){event("FAIL discoverability: "+(t.message?:"unknown"))}}
- @Deprecated("Compatibility") override fun onActivityResult(r:Int,result:Int,data:Intent?){super.onActivityResult(r,result,data);if(r==20){if(result>0){status.text="DISCOVERABLE — ADD ON COMPUTER";event("PASS DISCOVERABLE seconds="+result)}else event("WARN discoverability declined")}}
- private fun buildUi(){
-  val stack=FrameLayout(this).apply{setBackgroundColor(android.graphics.Color.WHITE)}
-  val root=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;setBackgroundColor(android.graphics.Color.WHITE)}
+
+ override fun onCreate(s: Bundle?) {
+  super.onCreate(s)
+  buildUi()
+  diagnostics = Diagnostics { value -> runOnUiThread {
+   log.text = value
+   diagnosticViews.forEach { it.text = value }
+  } }
+  hid = HidManager(this) { event(it) }
+  bluetoothSetup = BluetoothSetupController(this, { hid }, { setBluetoothStatus(it) }, { event(it) })
+  if (intent?.action == BluetoothSessionService.ACTION_OPEN_SETTINGS) navigateSettings()
+ }
+
+ override fun onNewIntent(intent: Intent) {
+  super.onNewIntent(intent)
+  setIntent(intent)
+  if (intent.action == BluetoothSessionService.ACTION_OPEN_SETTINGS) navigateSettings()
+ }
+
+ override fun onRequestPermissionsResult(r: Int, p: Array<out String>, g: IntArray) {
+  super.onRequestPermissionsResult(r, p, g)
+  if (::bluetoothSetup.isInitialized) bluetoothSetup.onPermissionResult(r, g)
+ }
+
+ @Suppress("DEPRECATION") private fun pair() {
+  if (!bluetoothSetup.readyForDiscoverability()) return
+  if (!hid.registered) { event("WAIT HID not registered"); return }
+  event("PASS HID registered before discoverability")
+  try {
+   startActivityForResult(hid.discoverableIntent(300), 20)
+   event("INFO DISCOVERABILITY_REQUESTED")
+  } catch (_: Throwable) { event("FAIL discoverability: unavailable") }
+ }
+
+ @Deprecated("Compatibility") override fun onActivityResult(r: Int, result: Int, data: Intent?) {
+  super.onActivityResult(r, result, data)
+  if (bluetoothSetup.onActivityResult(r, result)) return
+  if (r == 20) {
+   if (result > 0) {
+    setBluetoothStatus("Discoverable — add this phone from your computer's Bluetooth settings.")
+    event("PASS DISCOVERABLE seconds=" + result)
+   } else {
+    setBluetoothStatus("Discoverability declined. Tap Make Discoverable to try again.")
+    event("WARN discoverability declined")
+   }
+  }
+ }
+
+ override fun onResume() {
+  super.onResume()
+  if (::bluetoothSetup.isInitialized) bluetoothSetup.onResume()
+ }
+
+ override fun onPause() { cancelManualDictation(); super.onPause() }
+
+ fun navigateHome() { showMainScreen(homeScreen, "Home") }
+ fun navigateKeyboard() { showMainScreen(keyboardScreen, "Keyboard") }
+ fun navigateAssistant() {
+  cancelManualDictation()
+  AiEntry.openAssistant(this@MainActivity){hid}
+ }
+ fun navigateSettings() { cancelManualDictation(); AiEntry.openSettings(this) }
+ fun openBluetoothSetup() { showMainScreen(bluetoothScreen, "Home") }
+ fun endBluetoothSession() {
+  cancelManualDictation()
+  hid.disconnect()
+  bluetoothSetup.endSession()
+ }
+
+ /** Changing destinations closes the caller's panel before opening the next; no typing occurs. */
+ fun createBottomNavigation(active: String, onBeforeNavigate: (() -> Unit)? = null): View {
+  val bar = LinearLayout(this).apply {
+   orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER
+   setPadding(dp(3), dp(3), dp(3), dp(3)); setBackgroundColor(0xff101714.toInt())
+  }
+  fun nav(icon: String, label: String, action: () -> Unit) = LinearLayout(this).apply {
+   orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
+   isClickable = true; isFocusable = true; contentDescription = label
+   setPadding(dp(3), dp(3), dp(3), dp(3))
+   val color = if (label == active) 0xff74f45b.toInt() else Color.WHITE
+   addView(BlackCatStyle.label(this@MainActivity, icon, 18f, color, true).apply { gravity = Gravity.CENTER })
+   addView(BlackCatStyle.label(this@MainActivity, label, 11f, color, true).apply { gravity = Gravity.CENTER })
+   setOnClickListener { if (label != active) { AiEntry.leaveAssistantForNavigation(this@MainActivity); onBeforeNavigate?.invoke(); action() } }
+  }
+  bar.addView(nav("⌂", "Home") { navigateHome() }, LinearLayout.LayoutParams(0, dp(56), 1f))
+  bar.addView(nav("⌨", "Keyboard") { navigateKeyboard() }, LinearLayout.LayoutParams(0, dp(56), 1f))
+  bar.addView(nav("✣", "AI") { navigateAssistant() }, LinearLayout.LayoutParams(0, dp(56), 1f))
+  bar.addView(nav("⚙", "Settings") { navigateSettings() }, LinearLayout.LayoutParams(0, dp(56), 1f))
+  return bar
+ }
+
+ private fun showMainScreen(screen: View, active: String) {
+  cancelManualDictation()
+  (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(contentHost.windowToken, 0)
+  contentHost.removeAllViews()
+  contentHost.addView(screen, FrameLayout.LayoutParams(-1, -1))
+  root.removeView(bottom)
+  bottom = createBottomNavigation(active)
+  root.addView(bottom, LinearLayout.LayoutParams(-1, -2))
+ }
+
+ private fun buildUi() {
+  val stack = FrameLayout(this).apply { setBackgroundColor(Color.WHITE) }
+  root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(Color.WHITE) }
   BlackCatStyle.applySystemBarInsets(root)
-  stack.addView(root,FrameLayout.LayoutParams(-1,-1))
+  stack.addView(root, FrameLayout.LayoutParams(-1, -1))
+  contentHost = FrameLayout(this).apply { setBackgroundColor(Color.WHITE) }
+  root.addView(contentHost, LinearLayout.LayoutParams(-1, 0, 1f))
+  log = TextView(this)
 
-  val contentHost=FrameLayout(this).apply{setBackgroundColor(android.graphics.Color.WHITE)}
-  root.addView(contentHost,LinearLayout.LayoutParams(-1,0,1f))
+  val home = page(); homeScreen = home.first; val homeBody = home.second
+  homeBody.addView(ImageView(this).apply {
+   setImageResource(R.drawable.black_cat_full); scaleType = ImageView.ScaleType.CENTER_INSIDE; contentDescription = "Black Cat"
+  }, LinearLayout.LayoutParams(-1, dp(190)))
+  homeBody.addView(BlackCatStyle.label(this, "Black Cat AI", 27f, Color.BLACK, true).apply { gravity = Gravity.CENTER })
+  homeBody.addView(BlackCatStyle.label(this, "Remote · Automate · Control", 13f, Color.DKGRAY).apply {
+   gravity = Gravity.CENTER; setPadding(0, dp(4), 0, dp(12))
+  })
+  homeBody.addView(statusPanel(), sectionLp())
+  homeBody.addView(greenButton("Set up Bluetooth") { bluetoothSetup.setup() }, buttonLp())
+  homeBody.addView(menuButton("Bluetooth", "Pair from your computer; see connection status") { openBluetoothSetup() }, buttonLp())
+  homeBody.addView(menuButton("Keyboard & mouse", "Phone typing, voice text and touchpad") { navigateKeyboard() }, buttonLp())
+  homeBody.addView(menuButton("AI Assistant", "Plan, review and explain Linux commands") { navigateAssistant() }, buttonLp())
 
-  fun darkPanel()=LinearLayout(this).apply{
-   orientation=LinearLayout.VERTICAL
-   setPadding(dp(12),dp(11),dp(12),dp(11))
-   background=BlackCatStyle.round(this@MainActivity,0xff101714.toInt(),18,0xff30423b.toInt(),1)
-  }
-  fun menuButton(title:String,sub:String,action:()->Unit)=Button(this).apply{
-   text="$title\n$sub"
-   isAllCaps=false
-   textSize=15f
-   gravity=Gravity.CENTER_VERTICAL
-   setTextColor(android.graphics.Color.WHITE)
-   typeface=android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT,android.graphics.Typeface.BOLD)
-   background=BlackCatStyle.round(this@MainActivity,0xff151d1a.toInt(),20,0xff30423b.toInt(),1)
-   setPadding(dp(18),dp(8),dp(16),dp(8))
-   setOnClickListener{action()}
-  }
-  fun greenButton(textValue:String,action:()->Unit)=Button(this).apply{
-   text=textValue
-   isAllCaps=false
-   textSize=15f
-   gravity=Gravity.CENTER
-   setTextColor(android.graphics.Color.BLACK)
-   typeface=android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT,android.graphics.Typeface.BOLD)
-   background=BlackCatStyle.round(this@MainActivity,0xff74f45b.toInt(),14)
-   setOnClickListener{action()}
-  }
-  fun screenHeader(title:String,imageRes:Int,back:(()->Unit)?=null)=LinearLayout(this).apply{
-   orientation=LinearLayout.VERTICAL
-   setBackgroundColor(android.graphics.Color.WHITE)
-   val top=LinearLayout(this@MainActivity).apply{orientation=LinearLayout.HORIZONTAL;gravity=Gravity.CENTER_VERTICAL;setPadding(dp(8),dp(3),dp(8),0)}
-   if(back!=null){
-    val b=TextView(this@MainActivity).apply{text="‹";textSize=34f;setTextColor(android.graphics.Color.BLACK);gravity=Gravity.CENTER;isClickable=true;isFocusable=true;contentDescription="Back";setOnClickListener{back()}}
-    top.addView(b,LinearLayout.LayoutParams(dp(42),dp(42)))
-   }else top.addView(View(this@MainActivity),LinearLayout.LayoutParams(dp(42),dp(42)))
-   top.addView(BlackCatStyle.label(this@MainActivity,title,18f,android.graphics.Color.BLACK,true).apply{gravity=Gravity.CENTER},LinearLayout.LayoutParams(0,dp(42),1f))
-   top.addView(TextView(this@MainActivity).apply{text="⋮";textSize=24f;setTextColor(android.graphics.Color.BLACK);gravity=Gravity.CENTER},LinearLayout.LayoutParams(dp(42),dp(42)))
-   addView(top)
-   addView(ImageView(this@MainActivity).apply{setImageResource(imageRes);scaleType=ImageView.ScaleType.CENTER_CROP;contentDescription="Black Cat"},LinearLayout.LayoutParams(-1,dp(148)))
-  }
-
-  lateinit var showHome:()->Unit
-  lateinit var showBluetooth:()->Unit
-
-  val sendPanel=darkPanel().apply{visibility=View.GONE}
-  sendPanel.addView(BlackCatStyle.label(this,"Send text",16f,android.graphics.Color.WHITE,true).apply{setPadding(0,0,0,dp(7))})
+  val remote = page(); keyboardScreen = remote.first; val remoteBody = remote.second
+  remoteBody.addView(pageTitle("Keyboard & mouse"), sectionLp())
+  remoteBody.addView(statusPanel(), sectionLp())
+  val sendPanel = darkPanel()
+  sendPanel.addView(BlackCatStyle.label(this, "Send text", 17f, Color.WHITE, true), sectionLp())
   val input=EditText(this).apply{hint="Text to type on the computer"};BlackCatStyle.styleInput(this,input)
+  input.contentDescription = "Manual text to send to the computer"
+  sendPanel.addView(input, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(7) })
+  val dictationStatus = BlackCatStyle.label(this, "Type with your phone keyboard, or dictate and review the text before sending.", 12f, 0xffc3d0ca.toInt())
+  sendPanel.addView(secondaryButton("Phone keyboard") {
+   input.requestFocus()
+   (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager).showSoftInput(input, InputMethodManager.SHOW_IMPLICIT)
+  }, buttonLp())
+  sendPanel.addView(secondaryButton("Speak text") {
+   cancelManualDictation()
+   cancelDictation = AiEntry.dictateManualText(this, { transcript ->
+    input.setText(transcript); input.setSelection(input.text.length)
+    dictationStatus.text = "Transcript ready. Review or edit it, then tap Send Text."
+   }, { message -> dictationStatus.text = message })
+  }, buttonLp())
+  sendPanel.addView(dictationStatus, sectionLp())
   val send=greenButton("Send Text"){sendText(input.text.toString());input.text.clear()}
-  sendPanel.addView(input,LinearLayout.LayoutParams(-1,dp(52)).apply{bottomMargin=dp(8)})
-  sendPanel.addView(send,LinearLayout.LayoutParams(-1,dp(48)))
+  sendPanel.addView(send, buttonLp())
+  remoteBody.addView(sendPanel, sectionLp())
 
-  val pointerPanel=darkPanel().apply{visibility=View.GONE}
-  pointerPanel.addView(BlackCatStyle.label(this,"Touchpad",16f,android.graphics.Color.WHITE,true).apply{setPadding(0,0,0,dp(7))})
-  val pad=TextView(this).apply{text="Drag here to move pointer";gravity=Gravity.CENTER;textSize=15f;setTextColor(0xffdff1e2.toInt());typeface=android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT,android.graphics.Typeface.BOLD);background=BlackCatStyle.round(this@MainActivity,0xff0b1411.toInt(),14,0xff30423b.toInt(),1)}
+  val pointerPanel = darkPanel()
+  pointerPanel.addView(BlackCatStyle.label(this, "Touchpad", 17f, Color.WHITE, true), sectionLp())
+  val pad=TextView(this).apply{text="Drag here to move pointer";gravity=Gravity.CENTER;textSize=15f;setTextColor(0xffdff1e2.toInt());typeface=Typeface.create(Typeface.DEFAULT,Typeface.BOLD);background=BlackCatStyle.round(this@MainActivity,0xff0b1411.toInt(),14,0xff30423b.toInt(),1)}
+  pad.contentDescription = "Mouse touchpad: drag to move the computer pointer"
   var x=0f;var y=0f
-  pad.setOnTouchListener{_,e->when(e.actionMasked){MotionEvent.ACTION_DOWN->{x=e.x;y=e.y;true};MotionEvent.ACTION_MOVE->{hid.sendMouse(0,(e.x-x).toInt(),(e.y-y).toInt());x=e.x;y=e.y;true};else->true}}
-  pointerPanel.addView(pad,LinearLayout.LayoutParams(-1,dp(210)).apply{bottomMargin=dp(8)})
-  val clicks=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
+  pad.setOnTouchListener{_,e->
+   // Prevent the surrounding scroll view from consuming pointer drags.
+   if (e.actionMasked == MotionEvent.ACTION_DOWN) pad.parent.requestDisallowInterceptTouchEvent(true)
+   if (e.actionMasked == MotionEvent.ACTION_UP || e.actionMasked == MotionEvent.ACTION_CANCEL) pad.parent.requestDisallowInterceptTouchEvent(false)
+   when(e.actionMasked){MotionEvent.ACTION_DOWN->{x=e.x;y=e.y;true};MotionEvent.ACTION_MOVE->{hid.sendMouse(0,(e.x-x).toInt(),(e.y-y).toInt());x=e.x;y=e.y;true};else->true}
+  }
+  pointerPanel.addView(pad, LinearLayout.LayoutParams(-1, dp(165)).apply { bottomMargin = dp(8) })
+  val clicks = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
   fun mb(label:String,mask:Int):Button {
    return Button(this).apply {
     text=label
@@ -92,10 +199,14 @@ class MainActivity:Activity(){
   }
   clicks.addView(mb("Left",HidReports.LEFT),weight());clicks.addView(mb("Middle",HidReports.MIDDLE),weight());clicks.addView(mb("Right",HidReports.RIGHT),weight())
   pointerPanel.addView(clicks)
+  remoteBody.addView(pointerPanel, sectionLp())
 
-  val keyboardPanel=darkPanel().apply{visibility=View.GONE}
-  keyboardPanel.addView(BlackCatStyle.label(this,"Keyboard",16f,android.graphics.Color.WHITE,true).apply{setPadding(0,0,0,dp(7))})
-  val kb=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL}
+  val keyboardPanel = darkPanel()
+  val kb = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; visibility = View.GONE }
+  keyboardPanel.addView(secondaryButton("Show special keys") {
+   val open = kb.visibility == View.GONE; kb.visibility = if (open) View.VISIBLE else View.GONE
+   (keyboardPanel.getChildAt(0) as Button).text = if (open) "Hide special keys" else "Show special keys"
+  }, buttonLp())
   fun k(label:String,key:Int,mod:Int=0):Button {
    return Button(this).apply{text=label;BlackCatStyle.styleButton(this@MainActivity,this,false,true);setOnClickListener{hid.sendKeyboard(mod,key)}}
   }
@@ -109,99 +220,132 @@ class MainActivity:Activity(){
   kb.addView(row(k("F1",58),k("F2",59),k("F3",60),k("F4",61),k("F5",62),k("F6",63)))
   kb.addView(row(k("F7",64),k("F8",65),k("F9",66),k("F10",67),k("F11",68),k("F12",69)))
   keyboardPanel.addView(kb)
+  remoteBody.addView(keyboardPanel, sectionLp())
+  remoteBody.addView(BlackCatStyle.label(this, "Special keys send only when you tap them. Manual Enter is available here; AI and library TYPE ONLY never sends Enter.", 12f, Color.DKGRAY), sectionLp())
 
-  fun hideRemotePanels(){sendPanel.visibility=View.GONE;pointerPanel.visibility=View.GONE;keyboardPanel.visibility=View.GONE}
-  fun showRemote(panel:View){hideRemotePanels();panel.visibility=View.VISIBLE}
+  val bt = page(); bluetoothScreen = bt.first; val btBody = bt.second
+  btBody.addView(pageTitle("Bluetooth"), sectionLp())
+  btBody.addView(statusPanel(), sectionLp())
+  btBody.addView(greenButton("Set up Bluetooth") { bluetoothSetup.setup() }, buttonLp())
+  btBody.addView(greenButton("Make Discoverable"){pair()}, buttonLp())
+  btBody.addView(BlackCatStyle.label(this, "Computer: Bluetooth → Add device → select this phone → Pair.\n\nIf Bluetooth is off, Android will ask you to turn it on. Return here and tap Make Discoverable when ready.", 14f, Color.DKGRAY), sectionLp())
+  btBody.addView(menuButton("Remote Controls", "Open the working keyboard and touchpad") { navigateKeyboard() }, buttonLp())
+  btBody.addView(secondaryButton("Settings and logs") { navigateSettings() }, buttonLp())
 
-  val homeScreen=ScrollView(this).apply{isFillViewport=true;setBackgroundColor(android.graphics.Color.WHITE)}
-  val homeBody=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;setPadding(dp(14),dp(2),dp(14),dp(18));setBackgroundColor(android.graphics.Color.WHITE)}
-  homeScreen.addView(homeBody,ViewGroup.LayoutParams(-1,-2))
-  val hero=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;gravity=Gravity.CENTER_HORIZONTAL;setBackgroundColor(android.graphics.Color.WHITE)}
-  hero.addView(ImageView(this).apply{setImageResource(R.drawable.black_cat_full);scaleType=ImageView.ScaleType.CENTER_INSIDE;contentDescription="Black Cat"},LinearLayout.LayoutParams(-1,dp(260)))
-  hero.addView(BlackCatStyle.label(this,"Black Cat AI",28f,android.graphics.Color.BLACK,true).apply{gravity=Gravity.CENTER})
-  hero.addView(BlackCatStyle.label(this,"Remote · Automate · Control",13f,android.graphics.Color.DKGRAY).apply{gravity=Gravity.CENTER;setPadding(0,dp(3),0,dp(12))})
-  homeBody.addView(hero)
-  homeBody.addView(menuButton("Bluetooth","Connect and manage devices"){showBluetooth()},LinearLayout.LayoutParams(-1,dp(72)).apply{bottomMargin=dp(7)})
-  homeBody.addView(menuButton("AI Assistant","Plan, create and review"){AiEntry.openAssistant(this@MainActivity){hid}},LinearLayout.LayoutParams(-1,dp(72)).apply{bottomMargin=dp(7)})
-  homeBody.addView(menuButton("Target System","Select your Linux system"){AiEntry.openTargetSystem(this@MainActivity)},LinearLayout.LayoutParams(-1,dp(72)).apply{bottomMargin=dp(7)})
-  homeBody.addView(menuButton("Settings","API key, model and preferences"){AiEntry.openSettings(this@MainActivity)},LinearLayout.LayoutParams(-1,dp(72)))
-
-  val bluetoothScreen=ScrollView(this).apply{isFillViewport=true;setBackgroundColor(android.graphics.Color.WHITE)}
-  val btBody=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;setPadding(dp(10),0,dp(10),dp(18));setBackgroundColor(android.graphics.Color.WHITE)}
-  bluetoothScreen.addView(btBody,ViewGroup.LayoutParams(-1,-2))
-  btBody.addView(screenHeader("Bluetooth",R.drawable.black_cat_peek){showHome()})
-
-  val statusCard=darkPanel()
-  val statusLine=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL;gravity=Gravity.CENTER_VERTICAL}
-  val btIcon=TextView(this).apply{text="✦";textSize=24f;gravity=Gravity.CENTER;setTextColor(android.graphics.Color.WHITE);background=BlackCatStyle.round(this@MainActivity,0xff1689ff.toInt(),28)}
-  statusLine.addView(btIcon,LinearLayout.LayoutParams(dp(50),dp(50)).apply{rightMargin=dp(10)})
-  val statusTextBox=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL}
-  status=TextView(this).apply{text="STARTING";textSize=15f;setTextColor(android.graphics.Color.WHITE);typeface=android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT,android.graphics.Typeface.BOLD)}
-  statusTextBox.addView(status)
-  statusTextBox.addView(BlackCatStyle.label(this,"Pair from the computer's Bluetooth settings",11f,0xffc3d0ca.toInt()))
-  statusLine.addView(statusTextBox,LinearLayout.LayoutParams(0,-2,1f))
-  statusCard.addView(statusLine)
-  btBody.addView(statusCard,LinearLayout.LayoutParams(-1,-2).apply{bottomMargin=dp(8)})
-  btBody.addView(greenButton("Make Discoverable"){pair()},LinearLayout.LayoutParams(-1,dp(50)).apply{bottomMargin=dp(10)})
-  btBody.addView(BlackCatStyle.label(this,"Computer: Bluetooth → Add device → select this phone → Pair",12f,android.graphics.Color.DKGRAY).apply{setPadding(dp(5),0,dp(5),dp(12))})
-
-  btBody.addView(BlackCatStyle.label(this,"Remote Controls",15f,0xff376b45.toInt(),true).apply{setPadding(dp(5),0,0,dp(6))})
-  val toolRow=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
-  toolRow.addView(menuButton("Send Text","Type on computer"){showRemote(sendPanel)},LinearLayout.LayoutParams(0,dp(84),1f).apply{rightMargin=dp(4)})
-  toolRow.addView(menuButton("Touchpad","Move and click"){showRemote(pointerPanel)},LinearLayout.LayoutParams(0,dp(84),1f).apply{leftMargin=dp(4)})
-  btBody.addView(toolRow,LinearLayout.LayoutParams(-1,-2).apply{bottomMargin=dp(8)})
-  btBody.addView(menuButton("Keyboard","Full HID keys"){showRemote(keyboardPanel)},LinearLayout.LayoutParams(-1,dp(70)).apply{bottomMargin=dp(8)})
-  btBody.addView(sendPanel,sectionLp());btBody.addView(pointerPanel,sectionLp());btBody.addView(keyboardPanel,sectionLp())
-
-  val diagnosticsCard=darkPanel()
-  val diagnosticsBody=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;visibility=View.GONE;setPadding(0,dp(7),0,0)}
-  val diagToggle=Button(this).apply{text="Diagnostics";setOnClickListener{val show=diagnosticsBody.visibility==View.GONE;diagnosticsBody.visibility=if(show)View.VISIBLE else View.GONE;text=if(show)"Hide diagnostics" else "Diagnostics"}}
-  BlackCatStyle.styleButton(this,diagToggle,false,true)
-  diagnosticsCard.addView(diagToggle,LinearLayout.LayoutParams(-1,dp(42)))
-  log=TextView(this).apply{textSize=10f;setTextColor(0xffb6c6bf.toInt());typeface=android.graphics.Typeface.MONOSPACE;setPadding(dp(5),dp(3),dp(5),dp(3))}
-  val ls=ScrollView(this).apply{addView(log);background=BlackCatStyle.round(this@MainActivity,0xff111916.toInt(),10,0xff30423b.toInt(),1)}
-  diagnosticsBody.addView(ls,LinearLayout.LayoutParams(-1,dp(120)))
-  val da=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL;setPadding(0,dp(6),0,0)}
-  val copy=Button(this).apply{text="Copy log";setOnClickListener{(getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager).setPrimaryClip(android.content.ClipData.newPlainText("Black Cat diagnostics",diagnostics.snapshot()))}}
-  BlackCatStyle.styleButton(this,copy,false,true);da.addView(copy,weight())
-  val clear=Button(this).apply{text="Clear";setOnClickListener{diagnostics.clear()}}
-  BlackCatStyle.styleButton(this,clear,false,true);da.addView(clear,weight())
-  diagnosticsBody.addView(da)
-  diagnosticsCard.addView(diagnosticsBody)
-  btBody.addView(diagnosticsCard,sectionLp())
-
-  showHome={contentHost.removeAllViews();contentHost.addView(homeScreen,FrameLayout.LayoutParams(-1,-1))}
-  showBluetooth={contentHost.removeAllViews();contentHost.addView(bluetoothScreen,FrameLayout.LayoutParams(-1,-1))}
-  showHome()
-
-  val bottom=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL;gravity=Gravity.CENTER;setPadding(dp(4),dp(4),dp(4),dp(4));setBackgroundColor(0xff101714.toInt())}
-  fun nav(icon:String,label:String,action:()->Unit)=LinearLayout(this).apply{
-   orientation=LinearLayout.VERTICAL;gravity=Gravity.CENTER;isClickable=true;isFocusable=true;contentDescription=label;setPadding(dp(3),dp(3),dp(3),dp(3))
-   addView(BlackCatStyle.label(this@MainActivity,icon,17f,0xff74f45b.toInt(),true).apply{gravity=Gravity.CENTER})
-   addView(BlackCatStyle.label(this@MainActivity,label,10f,android.graphics.Color.WHITE,true).apply{gravity=Gravity.CENTER})
-   setOnClickListener{action()}
-  }
-  bottom.addView(nav("⌂","Home"){showHome()},LinearLayout.LayoutParams(0,dp(58),1f))
-  bottom.addView(nav("✣","AI"){AiEntry.openAssistant(this){hid}},LinearLayout.LayoutParams(0,dp(58),1f))
-  bottom.addView(nav("▣","Target"){AiEntry.openTargetSystem(this)},LinearLayout.LayoutParams(0,dp(58),1f))
-  bottom.addView(nav("⚙","Settings"){AiEntry.openSettings(this)},LinearLayout.LayoutParams(0,dp(58),1f))
-  root.addView(bottom,LinearLayout.LayoutParams(-1,dp(58)))
-
+  contentHost.addView(homeScreen, FrameLayout.LayoutParams(-1, -1))
+  bottom = createBottomNavigation("Home")
+  root.addView(bottom, LinearLayout.LayoutParams(-1, -2))
   val splash=LinearLayout(this).apply{
-   orientation=LinearLayout.VERTICAL;gravity=Gravity.CENTER_HORIZONTAL;setPadding(dp(22),dp(30),dp(22),dp(24));setBackgroundColor(android.graphics.Color.WHITE)
+   orientation=LinearLayout.VERTICAL;gravity=Gravity.CENTER_HORIZONTAL;setPadding(dp(22),dp(30),dp(22),dp(24));setBackgroundColor(Color.WHITE)
    addView(ImageView(this@MainActivity).apply{setImageResource(R.drawable.black_cat_full);scaleType=ImageView.ScaleType.CENTER_INSIDE;contentDescription="Black Cat"},LinearLayout.LayoutParams(-1,0,1f))
-   addView(BlackCatStyle.label(this@MainActivity,"Black Cat AI",30f,android.graphics.Color.BLACK,true).apply{gravity=Gravity.CENTER})
-   addView(BlackCatStyle.label(this@MainActivity,"Remote · Automate · Control",13f,android.graphics.Color.DKGRAY).apply{gravity=Gravity.CENTER;setPadding(0,dp(4),0,dp(16))})
-   addView(ProgressBar(this@MainActivity,null,android.R.attr.progressBarStyleHorizontal).apply{isIndeterminate=false;max=100;progress=72;progressTintList=android.content.res.ColorStateList.valueOf(0xff74f45b.toInt());progressBackgroundTintList=android.content.res.ColorStateList.valueOf(0xff45515a.toInt())},LinearLayout.LayoutParams(-1,dp(8)).apply{leftMargin=dp(38);rightMargin=dp(38)})
+   addView(BlackCatStyle.label(this@MainActivity,"Black Cat AI",30f,Color.BLACK,true).apply{gravity=Gravity.CENTER})
+   addView(BlackCatStyle.label(this@MainActivity,"Remote · Automate · Control",13f,Color.DKGRAY).apply{gravity=Gravity.CENTER})
   }
   stack.addView(splash,FrameLayout.LayoutParams(-1,-1))
   setContentView(stack)
   Handler(Looper.getMainLooper()).postDelayed({if(splash.parent!=null)stack.removeView(splash)},700)
  }
- private fun sendText(v:String){scope.launch{var unsupported=0;for(c in v){val p=HidReports.char(c);if(p!=null){hid.sendKeyboard(p.second,p.first);delay(12)}else unsupported++};event("PASS text submitted chars="+v.length+" unsupported="+unsupported+" content-not-logged")}}
- private fun event(s:String){diagnostics.add(s);runOnUiThread{if(s.contains("HID_REGISTERED"))status.text="READY TO PAIR";if(s.contains("HID_CONNECTED"))status.text="READY";if(s.contains("Bluetooth off"))status.text="BLUETOOTH OFF"}}
+
+ /** Settings owns diagnostics; callers get a new collapsed view, never the transport object. */
+ fun createDiagnosticsView(): View {
+  val diagnosticsCard = darkPanel()
+  val diagnosticsBody=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;visibility=View.GONE;setPadding(0,dp(7),0,0)}
+  diagnosticsCard.addView(secondaryButton("Diagnostics") {
+   val show = diagnosticsBody.visibility == View.GONE
+   diagnosticsBody.visibility = if (show) View.VISIBLE else View.GONE
+   (diagnosticsCard.getChildAt(0) as Button).text = if (show) "Hide diagnostics" else "Diagnostics"
+  }, buttonLp())
+  val logView = TextView(this).apply {
+   text = if (::diagnostics.isInitialized) diagnostics.snapshot() else ""
+   textSize = 11f; setTextColor(0xffb6c6bf.toInt()); typeface = Typeface.MONOSPACE
+   setPadding(dp(5), dp(4), dp(5), dp(4))
+  }
+  logView.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+   override fun onViewAttachedToWindow(v: View) { diagnosticViews.add(logView); logView.text = diagnostics.snapshot() }
+   override fun onViewDetachedFromWindow(v: View) { diagnosticViews.remove(logView) }
+  })
+  diagnosticsBody.addView(ScrollView(this).apply { addView(logView) }, LinearLayout.LayoutParams(-1, dp(180)))
+  val da = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+  da.addView(secondaryButton("Copy log") {
+   (getSystemService(CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(ClipData.newPlainText("Black Cat diagnostics", diagnostics.snapshot()))
+  }, weight())
+  da.addView(Button(this).apply {
+   text = "Clear"; BlackCatStyle.styleButton(this@MainActivity, this, false, true)
+   setOnClickListener{diagnostics.clear()}
+  }, weight())
+  diagnosticsBody.addView(da)
+  diagnosticsCard.addView(diagnosticsBody)
+  return diagnosticsCard
+ }
+
+ fun showDiagnostics() {
+  val dialog = Dialog(this, android.R.style.Theme_Material_Light_NoActionBar)
+  val layout = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(12), dp(10), dp(12), dp(10)); setBackgroundColor(Color.WHITE) }
+  BlackCatStyle.applySystemBarInsets(layout)
+  layout.addView(pageTitle("Settings · Diagnostics"), sectionLp())
+  layout.addView(createDiagnosticsView(), LinearLayout.LayoutParams(-1, 0, 1f))
+  layout.addView(secondaryButton("Back to settings") { dialog.dismiss(); navigateSettings() }, buttonLp())
+  layout.addView(createBottomNavigation("Settings") { dialog.dismiss() }, LinearLayout.LayoutParams(-1, -2))
+  dialog.setContentView(layout); dialog.show(); dialog.window?.setLayout(-1, -1)
+ }
+
+ private fun setBluetoothStatus(value: String) {
+  runOnUiThread {
+   bluetoothStatus = value
+   val color = if (value.startsWith("Failed", ignoreCase = true)) 0xffffbdbd.toInt() else Color.WHITE
+   statusViews.forEach { it.text = value; it.setTextColor(color) }
+  }
+ }
+ private fun statusPanel() = darkPanel().apply {
+  addView(BlackCatStyle.label(this@MainActivity, "Bluetooth", 12f, 0xff74f45b.toInt(), true), sectionLp())
+  val view = BlackCatStyle.label(this@MainActivity, bluetoothStatus, 14f, Color.WHITE, true)
+  statusViews.add(view); addView(view)
+ }
+ private fun cancelManualDictation() { val cancel = cancelDictation; cancelDictation = null; cancel?.invoke() }
+ private fun event(s: String) {
+  runOnUiThread {
+   diagnostics.add(s)
+   if (::bluetoothSetup.isInitialized) bluetoothSetup.observeEvent(s)
+  }
+ }
+ private fun page(): Pair<ScrollView, LinearLayout> {
+  val scroll = ScrollView(this).apply { isFillViewport = true; setBackgroundColor(Color.WHITE) }
+  val body = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(12), dp(8), dp(12), dp(12)) }
+  scroll.addView(body, ViewGroup.LayoutParams(-1, -2))
+  return Pair(scroll, body)
+ }
+ private fun pageTitle(value: String) = BlackCatStyle.label(this, value, 23f, Color.BLACK, true).apply { setPadding(0, dp(5), 0, dp(5)) }
+ private fun darkPanel() = LinearLayout(this).apply {
+  orientation = LinearLayout.VERTICAL; setPadding(dp(12), dp(11), dp(12), dp(11))
+  background = BlackCatStyle.round(this@MainActivity, 0xff101714.toInt(), 16, 0xff30423b.toInt(), 1)
+ }
+ private fun menuButton(title: String, sub: String, action: () -> Unit) = Button(this).apply {
+  text = "$title\n$sub"; isAllCaps = false; textSize = 15f; gravity = Gravity.CENTER_VERTICAL
+  setTextColor(Color.WHITE); typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+  background = BlackCatStyle.round(this@MainActivity, 0xff151d1a.toInt(), 15, 0xff30423b.toInt(), 1)
+  setPadding(dp(14), dp(10), dp(14), dp(10)); minHeight = dp(58)
+  setOnClickListener { action() }
+ }
+ private fun greenButton(value: String, action: () -> Unit) = Button(this).apply {
+  text = value; isAllCaps = false; textSize = 15f; minHeight = dp(48); setTextColor(Color.BLACK)
+  typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+  background = BlackCatStyle.round(this@MainActivity, 0xff74f45b.toInt(), 12)
+  setOnClickListener { action() }
+ }
+ private fun secondaryButton(value: String, action: () -> Unit) = Button(this).apply {
+  text = value; BlackCatStyle.styleButton(this@MainActivity, this, false, true); minHeight = dp(48)
+  setOnClickListener { action() }
+ }
+ private fun buttonLp() = LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(7) }
  private fun sectionLp()=LinearLayout.LayoutParams(-1,-2).apply{bottomMargin=dp(8)}
- private fun weight()=LinearLayout.LayoutParams(0,dp(46),1f)
+ private fun weight()=LinearLayout.LayoutParams(0,dp(48),1f)
  private fun dp(n:Int)=(n*resources.displayMetrics.density).toInt()
- override fun onDestroy(){scope.cancel();hid.close();super.onDestroy()}
+ private fun sendText(v:String){scope.launch{var unsupported=0;for(c in v){val p=HidReports.char(c);if(p!=null){hid.sendKeyboard(p.second,p.first);delay(12)}else unsupported++};event("PASS text submitted chars="+v.length+" unsupported="+unsupported+" content-not-logged")}}
+ override fun onDestroy() {
+  cancelManualDictation()
+  scope.cancel()
+  if (::bluetoothSetup.isInitialized) bluetoothSetup.close()
+  hid.close()
+  super.onDestroy()
+ }
 }

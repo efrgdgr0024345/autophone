@@ -145,6 +145,16 @@ Test at phone widths equivalent to 320, 360, 390 and 412 dp, with large text, so
 
 # Priority 5 — change control
 
+## Reviewed UI11 continuation — 14 October 2026
+
+The user explicitly authorized compact Home / Keyboard / AI / Settings navigation, restored keyboard/mouse access and dictation, visible Bluetooth-off feedback and the Android enable flow, a real Black Cat icon, API-key verification, the latest verified model and structured-response corrections, and investigation of rapid Bluetooth disconnections.
+
+This continuation starts at `94ae00a36de4a9d1b6df3ad3302dabb14d0f2ad2` on `feature/ui11-compact-controls-bluetooth`. The four frozen HID/descriptor/report/diagnostics files remain byte-for-byte unchanged. MainActivity still owns HidManager and closes it only on final destruction; its exact manual text/key/mouse mappings are preserved. A separate, non-exported `connectedDevice` foreground service only maintains process importance after explicit setup, with a notification and no transport operations, restart, scanning or replay. Its two normal foreground-service permissions are reviewed exceptions in both flavors; offline still has no Internet/camera/microphone/scan/location capability.
+
+The authorized model/schema migration covers CommandPlan, OpenAiPlanner, PhotoAnalysis and OpenAiPhotoAnalyzer; AiTransportScope, ApiKeyVault, Camera2 capture and reviewed command safety remain protected. New contract tests enforce exclusive clarification/command decisions and strict parsing. Key checking is an explicit, cancellable model-metadata request; it does not establish billing or generation permission. Optional remembered keys use the existing encrypted vault; temporary keys are memory-only, consumed on an explicit request and cleared on background/destruction.
+
+See `docs/UI11-CONTROLS-TEST-PLAN.md` for exact scope, source evidence and hardware acceptance. This authorization does not promote the baseline, merge a PR or overwrite an existing release.
+
 Use a new feature branch from this handover branch for substantive work. Do not work directly on `main`, baseline branches or release tags.
 
 Before editing:

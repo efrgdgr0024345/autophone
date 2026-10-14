@@ -6,6 +6,8 @@ Android phone remote that preserves the proven Bluetooth HID keyboard/mouse core
 
 ## UI10 development — editable plans and feedback
 
+The next update is developed on `feature/ui11-compact-controls-bluetooth`: compact Home / Keyboard / AI / Settings controls, visible Bluetooth enable feedback and foreground session support, a Black Cat launcher icon, explicit API-key checking and exclusive structured clarification/command responses. See [UI11 acceptance and scope](docs/UI11-CONTROLS-TEST-PLAN.md). It remains a hardware-test candidate; physical connection stability and live user-key requests are still required.
+
 Branch `feature/ui10-feedback-tree-camera` adds command-tree selection into a plan, editable steps, reviewed text/voice feedback, and camera feedback that proposes an updated plan. The user explicitly applies or discards revisions; photos never confirm success or approve typing. Dictation is opt-in and requires microphone permission only in CatAI. CatBT remains Bluetooth-only and offline.
 
 This development work has not replaced the UI09 release below. See [UI10 acceptance and privacy notes](docs/UI10-FEEDBACK-TEST-PLAN.md). Physical Bluetooth, speech-service, camera and user-key/API acceptance are still required.
