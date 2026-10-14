@@ -27,7 +27,11 @@ import kotlinx.coroutines.*
 internal class PhotoFeedbackPanel(
     private val activity: Activity,
     private val manager: HidManager,
-    private val onClosed: () -> Unit
+    private val onClosed: () -> Unit,
+    private val initialGoal: String? = null,
+    private val initialTarget: String? = null,
+    private var requestKey: String = "",
+    private val onUseAnalysis: ((PhotoAnalysis) -> Unit)? = null
 ) {
     private enum class State { CAPTURE, REVIEW, ANALYZING, RESULT }
 
@@ -44,6 +48,8 @@ internal class PhotoFeedbackPanel(
     private var selectedCommand = 0
     private var state = State.CAPTURE
     private var busy = false
+    private var analysisJob: Job? = null
+    private var analysisGeneration = 0L
 
     private lateinit var root: LinearLayout
     private lateinit var body: LinearLayout
@@ -77,11 +83,14 @@ internal class PhotoFeedbackPanel(
             camera?.close()
             camera = null
             analyzer.cancel()
+            analysisGeneration++
+            analysisJob?.cancel()
             scope.cancel()
             if (targetStarted) target.close()
             jpeg?.fill(0)
             jpeg = null
             analysis = null
+            requestKey = ""
             onClosed()
         }
         dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
@@ -105,10 +114,10 @@ internal class PhotoFeedbackPanel(
         }
         val portrait = ImageView(activity).apply {
             setImageResource(R.drawable.black_cat_full)
-            scaleType = ImageView.ScaleType.CENTER_CROP
+            scaleType = ImageView.ScaleType.FIT_CENTER
             contentDescription = "Black Cat"
         }
-        hero.addView(portrait, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(126), Gravity.TOP))
+        hero.addView(portrait, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(80), Gravity.TOP))
 
         val title = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
@@ -143,7 +152,11 @@ internal class PhotoFeedbackPanel(
         val panel = panel()
         panel.addView(label("What are you trying to do?", 15f, Color.WHITE, Typeface.BOLD))
         goal = EditText(activity).apply {
-            setText("Understand this terminal screen and suggest the next safe step.")
+            setText(initialGoal ?: "Understand this terminal screen and suggest the next safe step.")
+            filters = arrayOf(android.text.InputFilter.LengthFilter(2000))
+            isSaveEnabled = false
+            importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+            imeOptions = android.view.inputmethod.EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING
             setTextColor(Color.WHITE)
             setHintTextColor(0xff9eaaa5.toInt())
             textSize = 14f
@@ -152,10 +165,13 @@ internal class PhotoFeedbackPanel(
             setPadding(dp(12), dp(10), dp(12), dp(10))
         }
         panel.addView(goal, matchWrap(top = 8, bottom = 10))
-        texture = TextureView(activity).apply {
+        texture = TextureView(activity)
+        val cameraFrame = FrameLayout(activity).apply {
             background = round(Color.BLACK, 14)
+            clipToOutline = true
+            addView(texture, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
         }
-        panel.addView(texture, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(300)).apply { bottomMargin = dp(10) })
+        panel.addView(cameraFrame, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(300)).apply { bottomMargin = dp(10) })
 
         val action = Button(activity).apply {
             text = if (activity.checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) "Start camera" else "Enable camera"
@@ -246,20 +262,26 @@ internal class PhotoFeedbackPanel(
         val requestedGoal = if (::goal.isInitialized) goal.text.toString().trim() else
             "Understand this terminal screen and suggest the next safe step."
         val prefs = activity.getSharedPreferences("blackcat_ai_ui", Activity.MODE_PRIVATE)
-        val targetSystem = prefs.getString("target_system", "Ubuntu Linux / Bash")?.trim().orEmpty().ifBlank { "Ubuntu Linux / Bash" }
+        val targetSystem = initialTarget ?: prefs.getString("target_system", "Ubuntu Linux / Bash")?.trim().orEmpty().ifBlank { "Ubuntu Linux / Bash" }
+        if (requestedGoal.isBlank()) return setStatus("Describe the task before sending the photo.")
+        val generation = ++analysisGeneration
+        val enteredKey = requestKey
+        requestKey = ""
         busy = true
         state = State.ANALYZING
         setStatus("Sending the reviewed photo to OpenAI. Nothing is being typed.")
         render()
-        scope.launch {
+        analysisJob = scope.launch {
             try {
-                val key = withContext(Dispatchers.IO) { vault.read().orEmpty() }
+                val key = withContext(Dispatchers.IO) { enteredKey.ifEmpty { vault.read().orEmpty() } }
                 if (!OpenAiPlanner.validKey(key)) throw PlanException("No saved OpenAI key. Open Linux Assistant → Settings and save your key first.")
                 val selectedModel = prefs.getString(AiSettingsPanel.MODEL_KEY, PlanCodec.DEFAULT_MODEL)
                     ?.takeIf { it in PlanCodec.MODELS } ?: PlanCodec.DEFAULT_MODEL
-                analysis = withTimeout(75000) {
+                val result = withTimeout(75000) {
                     analyzer.analyze(requestedGoal, targetSystem, selectedModel, key, bytes)
                 }
+                if (generation != analysisGeneration || !dialog.isShowing) return@launch
+                analysis = result
                 selectedCommand = 0
                 state = State.RESULT
                 setStatus("Photo analysis ready. Review it before typing anything.")
@@ -273,8 +295,7 @@ internal class PhotoFeedbackPanel(
                 state = State.REVIEW
                 setStatus(e.message ?: "Photo analysis failed.")
             } finally {
-                busy = false
-                render()
+                if (generation == analysisGeneration && dialog.isShowing) { busy = false; render() }
             }
         }
     }
@@ -291,7 +312,10 @@ internal class PhotoFeedbackPanel(
             text = "Cancel"
             BlackCatStyle.styleButton(activity, this, primary = false)
             setOnClickListener {
+                analysisGeneration++
                 analyzer.cancel()
+                analysisJob?.cancel()
+                analysisJob = null
                 busy = false
                 state = State.REVIEW
                 setStatus("Cancelled. Nothing was typed.")
@@ -344,6 +368,7 @@ internal class PhotoFeedbackPanel(
                 row.addView(label(cmd.explanation, 12f, PANEL_MUTED))
                 panel.addView(row, matchWrap(top = 6))
             }
+            if (onUseAnalysis == null) {
             val host = if (targetStarted) target.current() else null
             val type = Button(activity).apply {
                 text = if (host == null) "Connect Bluetooth to type" else "Review & TYPE ONLY"
@@ -355,6 +380,19 @@ internal class PhotoFeedbackPanel(
             panel.addView(label("TYPE ONLY never presses Enter. You inspect the computer and press Enter yourself.", 11f, PANEL_MUTED).apply {
                 setPadding(0, dp(7), 0, 0)
             })
+            }
+        }
+
+        onUseAnalysis?.let { use ->
+            panel.addView(label("The photo is evidence, not proof of success. Review its interpretation and any replacement commands in your plan.", 13f, PANEL_MUTED).apply {
+                setPadding(0, dp(12), 0, dp(8))
+            })
+            val apply = Button(activity).apply {
+                text = "Use photo feedback in plan"
+                BlackCatStyle.styleButton(activity, this, primary = true)
+                setOnClickListener { use(value); dismiss() }
+            }
+            panel.addView(apply, matchWrap(top = 8))
         }
 
         val retake = Button(activity).apply {

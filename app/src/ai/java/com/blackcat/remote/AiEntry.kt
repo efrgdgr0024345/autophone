@@ -1,8 +1,12 @@
 package com.blackcat.remote
 
 import android.app.Activity
+import android.app.Application
 import android.app.AlertDialog
 import android.app.Dialog
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.os.Bundle
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
@@ -52,7 +56,7 @@ object AiEntry {
 
     fun openPhotoFeedback(activity: Activity, manager: () -> HidManager) {
         try {
-            PhotoFeedbackPanel(activity, manager()) {}.show()
+            PhotoFeedbackPanel(activity, manager(), onClosed = {}).show()
         } catch (_: Exception) {
             Toast.makeText(activity, "Could not open Photo Feedback. Bluetooth controls are unchanged.", Toast.LENGTH_LONG).show()
         }
@@ -104,7 +108,8 @@ private class AiPanel(
 ) {
     private enum class Tab { PLAN, STEP, PREVIEW, FEEDBACK }
 
-    private val target = AiTransportScope(activity, manager) { dismiss() }
+    private var target = AiTransportScope(activity, manager) { suspendForBackground() }
+    private var transportPaused = false
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val planner = OpenAiPlanner()
     private val vault = ApiKeyVault(activity.applicationContext)
@@ -117,11 +122,18 @@ private class AiPanel(
     private var activeTab = Tab.PLAN
     private var selected = -1
     private var selectedModel = PlanCodec.DEFAULT_MODEL
-    private var commands = emptyList<SuggestedCommand>()
-    private var currentPlan: CommandPlan? = null
-    private var planRevision = 0L
+    private val workspace = PlanWorkspace()
+    private val commands get() = workspace.plan?.commands.orEmpty()
+    private val currentPlan get() = workspace.plan
+    private val planRevision get() = workspace.revision
+    private var operationToken = 0L
+    private var feedbackDraft = ""
+    private val voice = VoiceFeedbackController(activity)
+    private var photoPanel: PhotoFeedbackPanel? = null
+    private var libraryPanel: LinuxCommandLibraryPanel? = null
     private var oneShotKey = ""
     private var lastTypedCommand: String? = null
+    private var lastTypedIndex = -1
     private val recentGoals = ArrayDeque<String>()
     private val targetPrefs by lazy { activity.getSharedPreferences(TARGET_PREFS, Activity.MODE_PRIVATE) }
     private var selectedTarget = DEFAULT_TARGET
@@ -132,6 +144,7 @@ private class AiPanel(
     private lateinit var goal: EditText
     private lateinit var targetSpinner: Spinner
     private lateinit var buildButton: Button
+    private lateinit var cancelButton: Button
     private lateinit var statusPill: TextView
     private lateinit var statusText: TextView
     private lateinit var contentHost: FrameLayout
@@ -149,6 +162,24 @@ private class AiPanel(
     private lateinit var previewBody: LinearLayout
     private val tabButtons = linkedMapOf<Tab, LinearLayout>()
 
+    private val lifecycle = object : Application.ActivityLifecycleCallbacks {
+        override fun onActivityResumed(a: Activity) {
+            if (a === activity && transportPaused && dialog.isShowing) {
+                transportPaused = false
+                target = AiTransportScope(activity, manager) { suspendForBackground() }
+                target.start()
+                setStatus("Returned to your plan. Review again before any typing.")
+                renderAll()
+            }
+        }
+        override fun onActivityDestroyed(a: Activity) { if (a === activity) dismiss() }
+        override fun onActivityCreated(a: Activity, state: Bundle?) {}
+        override fun onActivityStarted(a: Activity) {}
+        override fun onActivityPaused(a: Activity) {}
+        override fun onActivityStopped(a: Activity) {}
+        override fun onActivitySaveInstanceState(a: Activity, state: Bundle) {}
+    }
+
     fun show() {
         selectedModel = targetPrefs.getString(AiSettingsPanel.MODEL_KEY, PlanCodec.DEFAULT_MODEL)
             ?.takeIf { it in PlanCodec.MODELS } ?: PlanCodec.DEFAULT_MODEL
@@ -158,13 +189,21 @@ private class AiPanel(
             confirmation?.dismiss()
             settingsDialog?.dismiss()
             target.close()
+            activity.application.unregisterActivityLifecycleCallbacks(lifecycle)
+            photoPanel?.dismiss()
+            photoPanel = null
+            libraryPanel?.dismiss()
+            libraryPanel = null
+            voice.cancel()
             onClosed()
             planner.cancel()
             job?.cancel()
             scope.cancel()
             oneShotKey = ""
-            commands = emptyList()
-            currentPlan = null
+            workspace.clear()
+            feedbackDraft = ""
+            recentGoals.clear()
+            lastTypedCommand = null
         }
         dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         dialog.window?.setBackgroundDrawable(ColorDrawable(BG))
@@ -182,6 +221,7 @@ private class AiPanel(
 
         // Observes only the already-existing V2 connection. No HID lifecycle call occurs here.
         target.start()
+        activity.application.registerActivityLifecycleCallbacks(lifecycle)
         scope.launch {
             while (isActive) {
                 refreshConnectionState()
@@ -189,6 +229,25 @@ private class AiPanel(
             }
         }
         renderAll()
+    }
+
+    private fun cancelWork() {
+        operationToken++
+        planner.cancel()
+        job?.cancel()
+        job = null
+        busy = false
+    }
+
+    private fun suspendForBackground() {
+        transportPaused = true
+        confirmation?.dismiss()
+        settingsDialog?.dismiss()
+        voice.cancel()
+        cancelWork()
+        workspace.touch()
+        target.close()
+        setStatus("Paused. Requests and typing were cancelled; no automatic resume.")
     }
 
     fun dismiss() {
@@ -230,10 +289,10 @@ private class AiPanel(
         }
         val portrait = ImageView(activity).apply {
             setImageResource(R.drawable.black_cat_full)
-            scaleType = ImageView.ScaleType.CENTER_CROP
+            scaleType = ImageView.ScaleType.FIT_CENTER
             contentDescription = "Black Cat"
         }
-        hero.addView(portrait, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(128)))
+        hero.addView(portrait, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(96)))
 
         val titleRow = LinearLayout(activity).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -241,6 +300,7 @@ private class AiPanel(
         }
         val titles = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
         titles.addView(label("Linux Assistant", 19f, Color.BLACK, Typeface.BOLD))
+        titles.addView(label("See it. Ask it. Solve it.", 11f, Color.DKGRAY))
         titles.addView(label("Plan → Step → Preview → Result", 11f, Color.DKGRAY))
         titleRow.addView(titles, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         val settings = actionButton("Settings", primary = false) { openSettings() }.apply {
@@ -270,7 +330,7 @@ private class AiPanel(
         row.addView(statusPill)
         statusText = label("Open Settings for API key", 11f, Color.rgb(205, 218, 212)).apply {
             setPadding(dp(10), 0, 0, 0)
-            maxLines = 2
+            maxLines = 4
         }
         row.addView(statusText, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
         return row
@@ -315,6 +375,7 @@ private class AiPanel(
             textSize = 17f
         }
         card.addView(goal, matchWrap())
+        card.addView(actionButton("Speak your goal", primary = false) { dictateGoal() }, matchWrap(top = 8))
 
         card.addView(label("Target system & shell", 13f, INK, Typeface.BOLD).apply { setPadding(0, dp(13), 0, dp(7)) })
         loadTargetState()
@@ -379,7 +440,7 @@ private class AiPanel(
             gravity = Gravity.CENTER_VERTICAL
         }
         val photoButton = actionButton("▣", primary = false) {
-            AiEntry.openPhotoFeedback(activity) { manager }
+            openPlanPhotoFeedback()
         }.apply {
             contentDescription = "Photo Feedback"
             textSize = 18f
@@ -392,9 +453,16 @@ private class AiPanel(
         actionRow.addView(photoButton, LinearLayout.LayoutParams(dp(58), dp(54)).apply { rightMargin = dp(8) })
         actionRow.addView(buildButton, LinearLayout.LayoutParams(0, dp(54), 1f))
         card.addView(actionRow, matchWrap(top = 12))
+        cancelButton = actionButton("Cancel request / typing", primary = false) {
+            cancelWork()
+            workspace.touch()
+            setStatus("Cancelled. Inspect any partial text on the computer; nothing will resume.")
+            renderAll()
+        }
+        card.addView(cancelButton, matchWrap(top = 8))
         card.addView(
             actionButton("Browse Offline Linux Library", primary = false) {
-                LinuxCommandLibraryPanel(activity, manager).show()
+                openCommandTree()
             },
             matchWrap(top = 8)
         )
@@ -450,7 +518,10 @@ private class AiPanel(
         options.add(EDIT_TARGET)
         targetOptions = options
         suppressTargetSelection = true
-        targetSpinner.adapter = ArrayAdapter(activity, android.R.layout.simple_spinner_dropdown_item, targetOptions)
+        targetSpinner.adapter = object : ArrayAdapter<String>(activity, android.R.layout.simple_spinner_dropdown_item, targetOptions) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View =
+                super.getView(position, convertView, parent).apply { (this as? TextView)?.setTextColor(INK) }
+        }
         val selectedLabel = when {
             selectedTarget in COMMON_TARGETS -> selectedTarget
             customTarget.isNotBlank() && selectedTarget == customTarget -> CUSTOM_PREFIX + customTarget
@@ -587,14 +658,12 @@ private class AiPanel(
     }
 
     private fun invalidatePlanForInputChange() {
-        if (commands.isEmpty() && currentPlan == null) {
-            renderAll()
-            return
-        }
-        planRevision++
+        cancelWork()
+        voice.cancel()
+        workspace.clear()
         selected = -1
-        commands = emptyList()
-        currentPlan = null
+        lastTypedCommand = null
+        lastTypedIndex = -1
         confirmation?.dismiss()
         renderAll()
     }
@@ -602,6 +671,7 @@ private class AiPanel(
     private fun renderAll() {
         if (!::goal.isInitialized) return
         buildButton.isEnabled = !busy && goal.text.isNotBlank() && selectedTarget.isNotBlank()
+        cancelButton.visibility = if (busy) View.VISIBLE else View.GONE
         val count = commands.size
         nextTitle.text = when {
             busy -> "Working"
@@ -625,8 +695,33 @@ private class AiPanel(
 
     private fun renderPlanResult() {
         planResult.removeAllViews()
+        workspace.proposal?.let { candidate ->
+            val token = planRevision
+            val proposal = card()
+            proposal.addView(label("Proposed updated plan", 18f, GREEN, Typeface.BOLD))
+            proposal.addView(label("Review this replacement before applying it. No step is executed or marked successful.", 13f, MUTED))
+            proposal.addView(label(candidate.explanation, 14f, INK).apply { setPadding(0, dp(8), 0, dp(8)) })
+            candidate.assumptions.forEach { proposal.addView(label("• $it", 13f, MUTED)) }
+            candidate.questions.forEach { proposal.addView(label("Question: $it", 14f, INK)) }
+            candidate.commands.forEachIndexed { index, command ->
+                proposal.addView(label("${index + 1}. ${command.title} · ${command.risk.uppercase()}", 14f, INK, Typeface.BOLD))
+                proposal.addView(commandBox(command.command), matchWrap(top = 5, bottom = 8))
+            }
+            proposal.addView(actionButton("Apply updated plan", true) {
+                if (!busy && workspace.accept(token)) {
+                    confirmation?.dismiss()
+                    selected = if (commands.isEmpty()) -1 else 0
+                    lastTypedCommand = null
+                    lastTypedIndex = -1
+                    setStatus("Updated plan applied. Every command needs fresh review.")
+                    renderAll()
+                } else setStatus("Feedback changed. Request a fresh update.", error = true)
+            }, matchWrap(top = 8))
+            proposal.addView(textButton("Keep current plan") { workspace.touch(); renderAll() }, matchWrap())
+            planResult.addView(proposal, matchWrap(bottom = 10))
+        }
         val plan = currentPlan ?: run {
-            planResult.visibility = View.GONE
+            planResult.visibility = if (workspace.proposal == null) View.GONE else View.VISIBLE
             return
         }
         planResult.visibility = View.VISIBLE
@@ -656,6 +751,9 @@ private class AiPanel(
                     isClickable = true
                     isFocusable = true
                     setOnClickListener {
+                        if (busy) return@setOnClickListener
+                        confirmation?.dismiss()
+                        workspace.touch()
                         selected = index
                         activeTab = Tab.STEP
                         applyActiveTab()
@@ -672,6 +770,7 @@ private class AiPanel(
                     setPadding(dp(10), 0, 0, 0)
                     addView(label(command.title, 14f, INK, Typeface.BOLD))
                     addView(label("${command.risk.uppercase()} · ${if (command.requiresAdmin) "admin may be required" else "no admin flag"}", 11f, MUTED))
+                    if (index in workspace.confirmedSteps) addView(label("✓ Result confirmed by you", 11f, GREEN))
                 }
                 row.addView(texts, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
                 row.addView(label("›", 19f, MUTED, Typeface.BOLD))
@@ -679,6 +778,8 @@ private class AiPanel(
             }
             card.addView(
                 actionButton("Start with step 1  →", true) {
+                    if (busy) return@actionButton
+                    workspace.touch()
                     selected = 0
                     switchTab(Tab.STEP)
                 },
@@ -724,6 +825,7 @@ private class AiPanel(
             return
         }
         val detail = card()
+        detail.addView(label("Step ${selected + 1} of ${commands.size}", 12f, GREEN, Typeface.BOLD))
         detail.addView(label(command.title, 19f, INK, Typeface.BOLD))
         detail.addView(label(command.explanation, 14f, MUTED).apply { setPadding(0, dp(8), 0, dp(4)) })
         detail.addView(commandBox(command.command), matchWrap(top = 8, bottom = 8))
@@ -732,6 +834,13 @@ private class AiPanel(
         if (command.warnings.isNotEmpty()) infoLine(detail, "Warnings", command.warnings.joinToString("\n• ", prefix = "• "))
         stepBody.addView(detail, matchWrap())
         stepBody.addView(actionButton("Preview destination  →", true) { switchTab(Tab.PREVIEW) }, matchWrap(top = 10))
+        stepBody.addView(actionButton("Edit this step", false) { editSelectedStep() }.apply { isEnabled = !busy }, matchWrap(top = 8))
+        if (selected > 0) stepBody.addView(textButton("← Previous step") {
+            if (!busy) { confirmation?.dismiss(); workspace.touch(); selected--; renderAll() }
+        }, matchWrap(top = 3))
+        if (selected + 1 < commands.size) stepBody.addView(textButton("Next step →") {
+            if (!busy) { confirmation?.dismiss(); workspace.touch(); selected++; renderAll() }
+        }, matchWrap(top = 3))
         stepBody.addView(textButton("Choose another step") { switchTab(Tab.PLAN) }, matchWrap(top = 3))
     }
 
@@ -739,48 +848,75 @@ private class AiPanel(
         if (!::feedbackBody.isInitialized) return
         feedbackBody.removeAllViews()
         pageHeading(feedbackBody, "Result", "What happens after the command reaches the computer.")
-        val questions = currentPlan?.questions.orEmpty()
-        if (questions.isNotEmpty()) {
-            val q = card()
-            q.addView(label("Clarification needed", 18f, INK, Typeface.BOLD))
-            questions.forEach { q.addView(label("• $it", 14f, INK).apply { setPadding(0, dp(7), 0, 0) }) }
-            q.addView(label("Add the missing detail to your goal, then build the plan again.", 13f, MUTED).apply { setPadding(0, dp(10), 0, 0) })
-            feedbackBody.addView(q, matchWrap())
-            feedbackBody.addView(actionButton("Edit goal", true) { switchTab(Tab.PLAN); goal.requestFocus() }, matchWrap(top = 10))
-            return
-        }
-
         val typed = lastTypedCommand
         if (typed == null) {
             feedbackBody.addView(emptyState(
-                "Nothing has been typed yet",
-                "Follow Plan → Step → Preview. This page becomes useful after TYPE ONLY sends the reviewed text."
+                "Tell Black Cat what you see",
+                "Type feedback, speak, or review a terminal photo. Feedback never approves a command."
             ), matchWrap())
-            if (commands.isNotEmpty()) {
-                feedbackBody.addView(actionButton("Go to Preview", true) { switchTab(Tab.PREVIEW) }, matchWrap(top = 10))
+        } else {
+            val next = card()
+            next.addView(label("Now check the computer", 18f, INK, Typeface.BOLD))
+            next.addView(label(
+                "Black Cat typed the reviewed text only. It did not press Enter.",
+                13f, MUTED
+            ).apply { setPadding(0, dp(7), 0, dp(8)) })
+            next.addView(commandBox(typed), matchWrap(bottom = 9))
+            next.addView(label("1. Confirm the text on the computer is exactly what you expected.", 13f, INK))
+            next.addView(label("2. Press Enter yourself only when you are satisfied.", 13f, INK).apply { setPadding(0, dp(6), 0, 0) })
+            next.addView(label("3. Read the terminal result before asking for the next command.", 13f, INK).apply { setPadding(0, dp(6), 0, 0) })
+            feedbackBody.addView(next, matchWrap())
+            if (commands.getOrNull(lastTypedIndex)?.command == typed) {
+                feedbackBody.addView(actionButton("I checked the computer: this step succeeded", true) {
+                    if (!busy && workspace.confirmResult(lastTypedIndex, planRevision)) {
+                        setStatus("Result recorded from your confirmation, not from AI.")
+                        renderAll()
+                    }
+                }.apply { isEnabled = !busy }, matchWrap(top = 8))
             }
-            return
         }
 
-        val next = card()
-        next.addView(label("Now check the computer", 18f, INK, Typeface.BOLD))
-        next.addView(label(
-            "Black Cat typed the reviewed text only. It did not press Enter.",
-            13f, MUTED
-        ).apply { setPadding(0, dp(7), 0, dp(8)) })
-        next.addView(commandBox(typed), matchWrap(bottom = 9))
-        next.addView(label("1. Confirm the text on the computer is exactly what you expected.", 13f, INK))
-        next.addView(label("2. Press Enter yourself only when you are satisfied.", 13f, INK).apply { setPadding(0, dp(6), 0, 0) })
-        next.addView(label("3. Read the terminal result before asking for the next command.", 13f, INK).apply { setPadding(0, dp(6), 0, 0) })
-        feedbackBody.addView(next, matchWrap())
+        currentPlan?.questions.orEmpty().forEach { question ->
+            feedbackBody.addView(label("Question: $question", 14f, INK).apply {
+                setPadding(dp(12), dp(8), dp(12), dp(8)); background = round(PAPER, 12)
+            }, matchWrap(top = 8))
+        }
 
         val note = card()
         note.addView(label("Result feedback", 15f, INK, Typeface.BOLD))
         note.addView(label(
-            "Photo/text result analysis is not enabled in this build yet. If you need a revised plan, return to Plan and include what the terminal showed.",
+            "Describe the output or error, answer a question, or explain what changed. Review transcripts and remove secrets before submitting.",
             12f, MUTED
         ).apply { setPadding(0, dp(6), 0, 0) })
+        val feedback = input("What did the terminal show?", 2000, multiline = true).apply {
+            setText(feedbackDraft)
+            minHeight = dp(100)
+        }
+        feedback.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun afterTextChanged(s: Editable?) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                feedbackDraft = s?.toString().orEmpty()
+                confirmation?.dismiss()
+                voice.cancel()
+                cancelWork()
+                workspace.touch()
+                cancelButton.visibility = View.GONE
+                buildButton.isEnabled = goal.text.isNotBlank() && selectedTarget.isNotBlank()
+                renderPlanResult()
+            }
+        })
+        note.addView(feedback, matchWrap(top = 8))
+        note.addView(actionButton("Speak feedback", false) { dictateFeedback() }.apply { isEnabled = !busy }, matchWrap(top = 8))
+        note.addView(textButton("Stop dictation") { voice.cancel(); setStatus("Dictation stopped. Review the text before submitting.") }, matchWrap())
+        note.addView(actionButton("Take a photo of the result / error", false) { openPlanPhotoFeedback() }.apply { isEnabled = !busy }, matchWrap(top = 8))
+        note.addView(actionButton("Request updated plan", true) { generateProposal(revise = true) }.apply { isEnabled = !busy }, matchWrap(top = 8))
         feedbackBody.addView(note, matchWrap(top = 8))
+        if (lastTypedIndex in workspace.confirmedSteps && lastTypedIndex + 1 < commands.size) {
+            feedbackBody.addView(actionButton("Review next step →", true) {
+                if (!busy) { workspace.touch(); selected = lastTypedIndex + 1; switchTab(Tab.STEP) }
+            }, matchWrap(top = 8))
+        }
         feedbackBody.addView(actionButton("Back to Plan", true) { switchTab(Tab.PLAN) }, matchWrap(top = 10))
     }
 
@@ -802,29 +938,40 @@ private class AiPanel(
         c.addView(commandBox(command.command), matchWrap(top = 6, bottom = 8))
         c.addView(label("TYPE ONLY · Enter is never appended", 11f, GREEN, Typeface.BOLD))
         previewBody.addView(c, matchWrap())
+        previewBody.addView(actionButton("Copy command", false) {
+            (activity.getSystemService(Activity.CLIPBOARD_SERVICE) as ClipboardManager)
+                .setPrimaryClip(ClipData.newPlainText("Linux command", command.command))
+            setStatus("Command copied. Nothing was typed.")
+        }, matchWrap(top = 8))
         val send = actionButton(if (host == null) "Connect Bluetooth first" else "Review & type", true) { confirmSelected() }
-        send.isEnabled = !busy && host != null
+        send.isEnabled = !busy && host != null && workspace.proposal == null
         previewBody.addView(send, matchWrap(top = 10))
         previewBody.addView(textButton("Back to step") { switchTab(Tab.STEP) }, matchWrap(top = 3))
     }
 
-    private fun generateProposal() {
+    private fun generateProposal(revise: Boolean = false) {
         if (busy) return
         if (goal.text.isBlank() || selectedTarget.isBlank()) {
             setStatus("Enter the goal and target system first.", error = true)
             return
         }
-        val requestedGoal = goal.text.toString().trim()
+        val originalGoal = goal.text.toString().trim()
+        val requestedGoal = try {
+            if (revise) PlanFeedbackRequest.goal(originalGoal, commands.getOrNull(selected),
+                workspace.confirmedSteps, feedbackDraft.trim(), commands) else originalGoal
+        } catch (e: PlanException) {
+            setStatus(e.message ?: "Check your feedback.", error = true)
+            return
+        }
         val requestedTarget = selectedTarget
         val requestedModel = selectedModel
         val enteredKey = oneShotKey
         oneShotKey = ""
         confirmation?.dismiss()
+        voice.cancel()
         busy = true
-        planRevision++
-        selected = -1
-        commands = emptyList()
-        currentPlan = null
+        val requestRevision = workspace.touch()
+        val operation = ++operationToken
         setStatus("Waiting for OpenAI · nothing is being typed")
         renderAll()
 
@@ -839,14 +986,18 @@ private class AiPanel(
                     return@launch
                 }
                 val plan = withTimeout(65000) { planner.propose(requestedGoal, requestedTarget, requestedModel, key) }
-                currentPlan = plan
-                commands = plan.commands
-                selected = if (commands.isNotEmpty()) 0 else -1
-                planRevision++
-                rememberGoal(requestedGoal)
+                if (operation != operationToken || planRevision != requestRevision) return@launch
+                if (revise) workspace.stage(requestRevision, plan) else {
+                    workspace.replace(plan)
+                    selected = if (commands.isNotEmpty()) 0 else -1
+                    lastTypedCommand = null
+                    lastTypedIndex = -1
+                }
+                rememberGoal(originalGoal)
                 activeTab = Tab.PLAN
                 applyActiveTab()
-                setStatus(if (commands.isEmpty()) "OpenAI needs clarification." else "Plan ready · choose one step")
+                setStatus(if (revise) "Proposed update ready. Review and apply it on Plan."
+                    else if (commands.isEmpty()) "OpenAI needs clarification." else "Plan ready · choose one step")
             } catch (_: TimeoutCancellationException) {
                 planner.cancel()
                 setStatus("OpenAI request timed out. Nothing was typed.", error = true)
@@ -857,14 +1008,14 @@ private class AiPanel(
             } catch (_: Exception) {
                 setStatus("Request or key retrieval failed. Nothing was typed.", error = true)
             } finally {
-                busy = false
-                renderAll()
+                if (operation == operationToken) { busy = false; renderAll() }
             }
         }
     }
 
     private fun confirmSelected() {
         if (busy || confirmation?.isShowing == true) return
+        if (workspace.proposal != null) return setStatus("Apply or discard the proposed update before typing.", error = true)
         val index = selected
         val selectedCommand = commands.getOrNull(index) ?: return
         val host = target.current() ?: run {
@@ -909,6 +1060,7 @@ private class AiPanel(
                 }
                 confirm.dismiss()
                 busy = true
+                val operation = ++operationToken
                 setStatus("Typing selected text only · Enter excluded")
                 renderAll()
                 val approval = CommandApproval(command, host)
@@ -923,6 +1075,7 @@ private class AiPanel(
                         )
                         if (outcome == SendOutcome.REPORTS_ACCEPTED) {
                             lastTypedCommand = command
+                            lastTypedIndex = index
                             activeTab = Tab.FEEDBACK
                             applyActiveTab()
                         }
@@ -931,14 +1084,156 @@ private class AiPanel(
                     } catch (_: Exception) {
                         setStatus("Typing stopped. Inspect any partial text manually.", error = true)
                     } finally {
-                        busy = false
-                        renderAll()
+                        if (operation == operationToken) { busy = false; renderAll() }
                     }
                 }
             }
         }
         confirm.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         confirm.show()
+    }
+
+    private fun editSelectedStep() {
+        if (busy) return
+        val index = selected
+        val command = commands.getOrNull(index) ?: return
+        val token = planRevision
+        confirmation?.dismiss()
+        val body = card()
+        val title = input("Step title", 160, false).apply { setText(command.title) }
+        val text = input("One printable ASCII command", 512, false).apply { setText(command.command) }
+        val explanation = input("What will this do?", 1500, true).apply { setText(command.explanation) }
+        val expected = input("What should you see?", 1000, true).apply { setText(command.expectedResult) }
+        body.addView(label("Edits require fresh review and are labelled HIGH risk until you check their effects.", 13f, MUTED))
+        for (field in listOf(title, text, explanation, expected)) body.addView(field, matchWrap(top = 8))
+        val edit = AlertDialog.Builder(activity).setTitle("Edit plan step")
+            .setView(ScrollView(activity).apply { addView(body) })
+            .setNegativeButton("Cancel", null).setNeutralButton("Remove step", null)
+            .setPositiveButton("Save changes", null).create()
+        confirmation = edit
+        edit.setOnShowListener {
+            edit.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
+                if (!busy && token == planRevision) {
+                    workspace.remove(index)
+                    selected = index.coerceAtMost(commands.lastIndex)
+                    lastTypedCommand = null
+                    lastTypedIndex = -1
+                    edit.dismiss()
+                    setStatus("Step removed. Review the remaining plan before continuing.")
+                    renderAll()
+                } else edit.dismiss()
+            }
+            edit.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                if (busy || token != planRevision) {
+                    edit.dismiss()
+                    setStatus("The plan changed. Open the editor again.", error = true)
+                    return@setOnClickListener
+                }
+                try {
+                    workspace.edit(index, title.text.toString().trim(), text.text.toString(),
+                        explanation.text.toString(), expected.text.toString())
+                    lastTypedCommand = null
+                    lastTypedIndex = -1
+                    edit.dismiss()
+                    setStatus("Step edited. Review its text and destination before typing.")
+                    renderAll()
+                } catch (e: PlanException) { text.error = e.message }
+            }
+        }
+        edit.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        edit.show()
+    }
+
+    private fun openCommandTree() {
+        if (busy) return
+        confirmation?.dismiss()
+        val token = planRevision
+        libraryPanel = LinuxCommandLibraryPanel(activity, manager, onClosed = { libraryPanel = null }, onSelectForPlan = { item ->
+            if (!dialog.isShowing || transportPaused || busy || token != planRevision) return@LinuxCommandLibraryPanel
+            try {
+                // A tree-first workflow gets an editable goal from the user's selected task.
+                if (goal.text.isBlank()) goal.setText(item.title)
+                workspace.append(SuggestedCommand(item.title, item.command, item.explanation,
+                    item.risk.name.lowercase(), item.requiresAdmin, item.expectedResult,
+                    listOf("Check compatibility: ${item.compatibility}")))
+                selected = commands.lastIndex
+                lastTypedCommand = null
+                lastTypedIndex = -1
+                activeTab = Tab.STEP
+                applyActiveTab()
+                setStatus("Library command added to your plan. Nothing was typed.")
+                renderAll()
+            } catch (e: PlanException) { setStatus(e.message ?: "Could not add this command.", error = true) }
+        }).also { it.show() }
+    }
+
+    private fun dictateGoal() = dictate { transcript ->
+        goal.setText(transcript)
+        goal.setSelection(goal.text.length)
+        switchTab(Tab.PLAN)
+    }
+
+    private fun dictateFeedback() = dictate { transcript ->
+        feedbackDraft = transcript
+        workspace.touch()
+        switchTab(Tab.FEEDBACK)
+    }
+
+    private fun dictate(useTranscript: (String) -> Unit) {
+        if (busy) return
+        if (voice.listening) { voice.cancel(); setStatus("Dictation cancelled."); return }
+        confirmation?.dismiss()
+        val token = workspace.touch()
+        val explanation = if (voice.onDeviceAvailable())
+            "On-device speech recognition is available. Review and edit the transcript before sending it to OpenAI. The app saves no audio."
+        else "Your Android speech service may send audio to its provider. Offline recognition is preferred but cannot be guaranteed. Review the transcript before submitting it; the app saves no audio."
+        val consent = AlertDialog.Builder(activity).setTitle("Speak your feedback")
+            .setMessage(explanation).setNegativeButton("Cancel", null)
+            .setPositiveButton("Start dictation") { _, _ ->
+                if (dialog.isShowing && planRevision == token && !busy) voice.start({ transcript ->
+                    if (dialog.isShowing && !transportPaused && planRevision == token && !busy) {
+                        useTranscript(transcript)
+                        setStatus("Transcript ready. Review it; no AI request or typing has occurred.")
+                    }
+                }, { message -> if (dialog.isShowing) setStatus(message) })
+            }.create()
+        confirmation = consent
+        consent.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        consent.show()
+    }
+
+    private fun openPlanPhotoFeedback() {
+        if (busy) return
+        confirmation?.dismiss()
+        voice.cancel()
+        val originalGoal = goal.text.toString().trim()
+            .ifBlank { "Understand this terminal screen and suggest the next safe step." }
+        val snapshotPlan = currentPlan
+        val snapshotTarget = selectedTarget
+        val snapshotIndex = selected
+        val contextGoal = originalGoal + (commands.getOrNull(selected)?.let {
+            "\nCurrent step to investigate (untrusted context): ${it.command}"
+        } ?: "")
+        if (contextGoal.length > 2000) return setStatus("Shorten the goal before adding photo context.", error = true)
+        val key = oneShotKey
+        oneShotKey = ""
+        photoPanel = PhotoFeedbackPanel(activity, manager, { photoPanel = null },
+            initialGoal = contextGoal, initialTarget = snapshotTarget, requestKey = key,
+            onUseAnalysis = { value ->
+                if (!dialog.isShowing || currentPlan !== snapshotPlan || selectedTarget != snapshotTarget ||
+                    selected != snapshotIndex || goal.text.toString().trim().ifBlank {
+                        "Understand this terminal screen and suggest the next safe step."
+                    } != originalGoal) {
+                    setStatus("Plan or target changed. Review a new photo in the current context.", error = true)
+                } else {
+                    val token = workspace.touch()
+                    workspace.stage(token, PlanFeedbackRequest.fromPhoto(value))
+                    activeTab = Tab.PLAN
+                    applyActiveTab()
+                    setStatus("Photo feedback returned. Review and apply the proposed update; success is not assumed.")
+                    renderAll()
+                }
+            }).also { it.show() }
     }
 
     private fun openSettings() {
@@ -1061,7 +1356,7 @@ private class AiPanel(
     private fun setStatus(value: String, error: Boolean = false) {
         if (!::statusText.isInitialized) return
         statusText.text = value
-        statusText.setTextColor(if (error) RED else Color.DKGRAY)
+        statusText.setTextColor(if (error) Color.rgb(255, 177, 185) else Color.rgb(205, 218, 212))
     }
 
     private fun pageHeading(parent: LinearLayout, title: String, subtitle: String) {

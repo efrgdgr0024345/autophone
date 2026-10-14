@@ -8,7 +8,7 @@ info = subprocess.check_output([aapt, 'dump', 'permissions', apk], text=True)
 perms = set(re.findall(r"uses-permission(?:-sdk-\d+)?: name='([^']+)'", info))
 expected = {'android.permission.' + x for x in ('BLUETOOTH','BLUETOOTH_ADMIN','BLUETOOTH_CONNECT','BLUETOOTH_ADVERTISE')}
 if variant == 'ai':
-    expected.update({'android.permission.INTERNET', 'android.permission.CAMERA'})
+    expected.update({'android.permission.INTERNET', 'android.permission.CAMERA', 'android.permission.RECORD_AUDIO'})
 assert perms == expected, f'Unexpected permissions: {perms ^ expected}'
 badging = subprocess.check_output([aapt, 'dump', 'badging', apk], text=True)
 assert "package: name='com.blackcat.remote'" in badging

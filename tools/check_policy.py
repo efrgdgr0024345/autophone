@@ -81,7 +81,8 @@ def verify() -> None:
 
     expected = {'android.permission.' + x for x in ('BLUETOOTH','BLUETOOTH_ADMIN','BLUETOOTH_CONNECT','BLUETOOTH_ADVERTISE')}
     assert permissions('app/src/main/AndroidManifest.xml') == expected
-    assert permissions('app/src/ai/AndroidManifest.xml') == {'android.permission.INTERNET', 'android.permission.CAMERA'}
+    # User-approved spoken goals/feedback: microphone is lazy and AI-only, never part of HID.
+    assert permissions('app/src/ai/AndroidManifest.xml') == {'android.permission.INTERNET', 'android.permission.CAMERA', 'android.permission.RECORD_AUDIO'}
     app = ET.parse(ROOT / 'app/src/main/AndroidManifest.xml').getroot().find('application')
     assert app.attrib[android + 'allowBackup'] == 'false'
     assert app.attrib[android + 'usesCleartextTraffic'] == 'false'

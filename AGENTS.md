@@ -109,7 +109,7 @@ Do not log or persist:
 - Bluetooth MAC addresses beyond the bounded UI session information already reviewed;
 - derived key identities.
 
-The offline flavor has no AI networking. The AI flavor may have only the reviewed `INTERNET` and `CAMERA` additions required for AI/photo functions, in addition to the shared minimum Bluetooth permissions. Do not add microphone, Accessibility Service, broad storage/gallery permissions, analytics, advertising, telemetry or crash-reporting SDKs.
+The offline flavor has no AI networking. The AI flavor has the reviewed `INTERNET` and `CAMERA` additions required for AI/photo functions, in addition to the shared minimum Bluetooth permissions. The user's UI10 request authorizes `RECORD_AUDIO` in the AI flavor only for explicit, foreground spoken goals/feedback. Request it only after a dictation action; do not save audio, start recording when a screen opens, or submit a transcript automatically. Prefer on-device recognition and disclose when the Android speech provider may process audio online. Do not add microphone capability to the offline flavor, Accessibility Service, broad storage/gallery permissions, analytics, advertising, telemetry or crash-reporting SDKs.
 
 `android:allowBackup` remains false. Cleartext traffic remains disabled.
 

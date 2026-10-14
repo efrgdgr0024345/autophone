@@ -159,7 +159,8 @@ def verify() -> None:
         ROOT / "app/src/ai/java/com/blackcat/remote/AiEntry.kt"
     ).read_text(encoding="utf-8")
     assert "Browse Offline Linux Library" in online_entry, "AI build needs a visible offline-mode entry"
-    assert online_entry.count("LinuxCommandLibraryPanel(activity, manager).show()") == 1, "Offline library entry changed"
+    assert online_entry.count("LinuxCommandLibraryPanel(activity, manager, onClosed = { libraryPanel = null }, onSelectForPlan") == 1, "Offline library selection entry changed"
+    assert "workspace.append(SuggestedCommand(item.title, item.command" in online_entry, "Library selection must update local plan data only"
 
     print(
         f"PASS: {len(rows)} offline commands, {len(categories)} categories, "
