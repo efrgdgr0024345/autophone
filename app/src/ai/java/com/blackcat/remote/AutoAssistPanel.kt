@@ -205,6 +205,7 @@ internal class AutoAssistPanel(
                 if (!OpenAiPlanner.validKey(value)) { status.text = "Add/check your API key in Settings before starting Auto."; return@launch }
                 key = value
                 session = AutoRunSession(plan.commands.toList(), host, snapshotRevision, mode == 1, startIndex, runAllReviewed = mode == 0)
+                dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 val current = session!!
                 status.text = "Checking the camera view for an idle terminal before sending any command…"
                 var preflightBytes: ByteArray? = null
@@ -372,6 +373,7 @@ internal class AutoAssistPanel(
     }
 
     private fun stopWork(finished: Boolean = false) {
+        dialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if (!finished) session?.stop()
         observer.cancel()
         planner.cancel()

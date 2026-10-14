@@ -175,7 +175,7 @@ internal object AutoReadOnlySender {
         if (outcome != SendOutcome.REPORTS_ACCEPTED || !approval.enter) return outcome
         currentCoroutineContext().ensureActive()
         if (!session.accepts(approval, target.current(), revision())) return SendOutcome.HOST_CHANGED
-        // Only an explicitly consented, exact allowlisted read-only step can reach Enter here.
+        // Only an explicitly consented, supported reviewed step can reach Enter here.
         try {
             return if (target.sendKey(session.host, 0, 40)) SendOutcome.REPORTS_ACCEPTED else SendOutcome.REJECTED
         } finally { if (target.current() == session.host) target.sendKey(session.host, 0, 0) }

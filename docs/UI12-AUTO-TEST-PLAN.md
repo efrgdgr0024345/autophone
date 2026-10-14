@@ -39,6 +39,8 @@ is the rollback point. Work is isolated on `feature/ui12-detailed-plans-auto-ass
   plan change stop typing/capture/network/playback and clear session key/audio/photo references.
   Nothing resumes automatically. An already issued network request or command cannot be undone
   by Stop; inspect partial text/output before a fresh session.
+  The display stays awake only while the explicitly approved session is active; Stop, finish
+  and close clear that window flag. No background wake lock or additional permission is used.
 - OpenAI speech uses the official `/v1/audio/speech` API, `gpt-4o-mini-tts`, `marin`, and bounded
   in-memory 24 kHz mono 16-bit PCM playback. It speaks the model's friendly explanation and what
   to expect, rather than reading command syntax. The voice is disclosed as AI-generated.

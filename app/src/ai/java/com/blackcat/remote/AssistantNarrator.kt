@@ -19,7 +19,7 @@ internal enum class NarrationVoice(val label: String) {
 internal object NarrationText {
     fun step(step: SuggestedCommand): String = buildString {
         append(step.explanation.ifBlank { "Let's work through ${step.title.lowercase()} together." })
-        if (step.requiresAdmin) append(" This needs extra privileges, so I'll pause for your review.")
+        if (step.requiresAdmin) append(" This step needs administrator privileges. We'll check the result carefully.")
         if (step.expectedResult.isNotBlank()) append(" Here's what to look for: ${step.expectedResult}.")
         append(" You can stop me at any time.")
     }.take(1800)

@@ -409,6 +409,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         await("Auto idle-terminal preflight and typing countdown") {
             fakeObserver.calls == 1 && (field(auto!!, "session") as AutoRunSession?)?.stage == AutoStage.TYPING
         }
+        onMain { check(autoDialog!!.window!!.attributes.flags and WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON != 0) }
         screenshot("auto-countdown", autoDialog)
         await("first automatic Enter and its actual photo-check request") {
             (field(auto!!, "session") as AutoRunSession?)?.stage == AutoStage.ANALYZING &&
@@ -423,6 +424,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
             check(fakeTarget.reports.count { it.second == 40 } == 2)
             check(fakeObserver.calls == 3 && fakeObserver.jpegCaptures == 3)
             check(field(auto!!, "key") == "" && field(auto!!, "camera") == null)
+            check(autoDialog!!.window!!.attributes.flags and WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON == 0)
             pass("Full Auto performs preflight, two fake-target commands with one Enter each and real Camera2 photos between steps, then clears the session")
         }
         screenshot("auto-plan-finished", autoDialog)
