@@ -10,6 +10,8 @@ internal class AutoObservation(
 ) {
     fun allowsNext(command: String) = observedCommand == command && terminalState == "shell_prompt" &&
         outcome == "appears_complete" && evidence.any { it.isNotBlank() } && !revisionNeeded
+    fun canAutoRevise(command: String) = observedCommand == command && terminalState == "shell_prompt" &&
+        evidence.any { it.isNotBlank() }
 }
 
 internal object AutoObservationCodec {

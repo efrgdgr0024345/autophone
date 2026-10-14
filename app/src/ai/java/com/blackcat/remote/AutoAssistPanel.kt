@@ -333,6 +333,10 @@ internal class AutoAssistPanel(
     }
 
     private suspend fun proposeRevision(current: AutoRunSession, value: AutoObservation) {
+        if (!value.canAutoRevise(current.current!!.command)) {
+            pause("The terminal needs manual attention. Auto stopped before any plan request or revised command.", keepObservation = true)
+            return
+        }
         if (revisionRequests >= 3) { pause("Plan-revision budget reached. Review the current result before a fresh session.", keepObservation = true); return }
         revisionRequests++
         status.text = "The output needs attention. Preparing a plan update within your approved scope."

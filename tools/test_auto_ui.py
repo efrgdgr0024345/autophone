@@ -51,6 +51,9 @@ class AutoBoundaryTests(unittest.TestCase):
         self.mutate('app/src/ai/java/com/blackcat/remote/AiEntry.kt',
                     'CommandPolicy.problem(command)?.let { setStatus(it, error = true); return }',
                     'AlertDialog.Builder(activity)\n        CommandPolicy.problem(command)?.let { setStatus(it, error = true); return }')
+    def test_error_revision_requires_a_fresh_terminal_prompt(self):
+        self.mutate('app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt',
+                    'if (!value.canAutoRevise(current.current!!.command))', 'if (false)')
 
 
 if __name__ == '__main__': unittest.main()

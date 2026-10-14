@@ -23,6 +23,16 @@ class AutoObservationTest {
         for (outcome in listOf("error", "unclear"))
             assertFalse(AutoObservationCodec.parse(fixture(outcome = outcome).toString()).allowsNext("id"))
     }
+    @Test fun errorCannotAuthorizeARevisionFromPasswordBusyOrUnclearInput() {
+        for (terminal in listOf("password_prompt", "busy", "unclear"))
+            assertFalse(AutoObservationCodec.parse(fixture(terminal = terminal, outcome = "error")
+                .put("revision_needed", true).toString()).canAutoRevise("id"))
+    }
+    @Test fun revisionRequiresTheActualCommandAndAFreshPromptWithEvidence() {
+        assertTrue(AutoObservationCodec.parse(fixture(outcome = "error").toString()).canAutoRevise("id"))
+        assertFalse(AutoObservationCodec.parse(fixture("whoami", outcome = "error").toString()).canAutoRevise("id"))
+        assertFalse(AutoObservationCodec.parse(fixture(outcome = "error").put("visible_evidence", JSONArray()).toString()).canAutoRevise("id"))
+    }
     @Test(expected = PlanException::class) fun unknownStateRejected() { AutoObservationCodec.parse(fixture(terminal = "execute").toString()) }
     @Test(expected = PlanException::class) fun executionFieldsRejected() { AutoObservationCodec.parse(fixture().put("press_enter", true).toString()) }
     @Test(expected = PlanException::class) fun coercibleBooleanRejected() { AutoObservationCodec.parse(fixture().put("revision_needed", "true").toString()) }

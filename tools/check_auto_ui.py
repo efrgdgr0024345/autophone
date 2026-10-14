@@ -48,6 +48,8 @@ def verify(root=ROOT):
         assert forbidden not in show, f'Opening Auto triggers work: {forbidden}'
     start = panel.split('private fun startSession(', 1)[1].split('private fun renderSession()', 1)[0]
     assert start.index('if (!consent)') < start.index('PendingApiKey.take(activity)')
+    revise = panel.split('private suspend fun proposeRevision(', 1)[1].split('private fun explainStep()', 1)[0]
+    assert revise.index('if (!value.canAutoRevise(current.current!!.command))') < revise.index('planner.propose('), 'Error feedback must establish a fresh prompt before any automatic revision'
     for forbidden in ('manager.init(', 'manager.close(', 'manager.sendKeyboard(', 'registerApp(', 'startDiscovery(',
                       'Runtime.getRuntime', 'ProcessBuilder(', 'FileOutputStream', 'android.util.Log'):
         assert forbidden not in panel, f'Auto crossed frozen core/privacy boundary: {forbidden}'
