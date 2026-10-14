@@ -149,6 +149,7 @@ private class AiPanel(
     private var busy = false
     private var activeTab = Tab.PLAN
     private var selected = -1
+    private var roadmapExpanded = false
     private var selectedModel = PlanCodec.DEFAULT_MODEL
     private val workspace = PlanWorkspace()
     private val commands get() = workspace.plan?.commands.orEmpty()
@@ -158,6 +159,7 @@ private class AiPanel(
     private var feedbackDraft = ""
     private val voice = VoiceFeedbackController(activity)
     private var photoPanel: PhotoFeedbackPanel? = null
+    private var autoPanel: AutoAssistPanel? = null
     private var libraryPanel: LinuxCommandLibraryPanel? = null
     private var oneShotKey = ""
     private var lastTypedCommand: String? = null
@@ -222,6 +224,8 @@ private class AiPanel(
             activity.application.unregisterActivityLifecycleCallbacks(lifecycle)
             photoPanel?.dismiss()
             photoPanel = null
+            autoPanel?.dismiss()
+            autoPanel = null
             libraryPanel?.dismiss()
             libraryPanel = null
             voice.cancel()
@@ -267,6 +271,7 @@ private class AiPanel(
         cancelWork()
         confirmation?.dismiss()
         voice.cancel()
+        autoPanel?.dismiss()
         photoPanel?.dismiss()
         libraryPanel?.dismiss()
         workspace.touch()
@@ -308,6 +313,7 @@ private class AiPanel(
 
     private fun suspendForBackground() {
         transportPaused = true
+        autoPanel?.dismiss()
         confirmation?.dismiss()
         voice.cancel()
         cancelWork()
@@ -605,6 +611,11 @@ private class AiPanel(
             proposal.addView(label("Proposed updated plan", 18f, GREEN, Typeface.BOLD))
             proposal.addView(label("Review this replacement before applying it. No step is executed or marked successful.", 13f, MUTED))
             proposal.addView(label(candidate.explanation, 14f, INK).apply { setPadding(0, dp(8), 0, dp(8)) })
+            candidate.roadmap.forEach { phase ->
+                proposal.addView(label(phase.title, 15f, INK, Typeface.BOLD))
+                proposal.addView(label(phase.purpose, 13f, MUTED))
+                phase.checks.forEach { proposal.addView(label("• $it", 12f, MUTED)) }
+            }
             candidate.assumptions.forEach { proposal.addView(label("• $it", 13f, MUTED)) }
             candidate.questions.forEach { proposal.addView(label("Question: $it", 14f, INK)) }
             candidate.commands.forEachIndexed { index, command ->
@@ -631,6 +642,11 @@ private class AiPanel(
         planResult.visibility = View.VISIBLE
         val card = card()
         card.addView(label("Plan", 18f, INK, Typeface.BOLD))
+        if (commands.isNotEmpty()) {
+            card.addView(actionButton("Auto · explain, run and check", true) { openAutoAssist() }.apply {
+                isEnabled = !busy && workspace.proposal == null
+            }, matchWrap(top = 8))
+        }
         if (plan.explanation.isNotBlank()) card.addView(label(plan.explanation, 13f, MUTED).apply { setPadding(0, dp(6), 0, dp(8)) })
         if (plan.questions.isNotEmpty()) {
             val box = LinearLayout(activity).apply {
@@ -642,7 +658,21 @@ private class AiPanel(
             plan.questions.forEach { box.addView(label("• $it", 13f, INK).apply { setPadding(0, dp(4), 0, 0) }) }
             card.addView(box, matchWrap(top = 4, bottom = 8))
         }
-        plan.assumptions.take(4).forEach { card.addView(label("• $it", 12f, MUTED).apply { setPadding(0, dp(2), 0, 0) }) }
+        if (plan.roadmap.isNotEmpty()) {
+            card.addView(label("Full roadmap", 17f, INK, Typeface.BOLD).apply { setPadding(0, dp(12), 0, dp(6)) })
+            card.addView(textButton(if (roadmapExpanded) "Hide phase details" else "Show all phase details") {
+                roadmapExpanded = !roadmapExpanded
+                renderAll()
+            }, matchWrap())
+            plan.roadmap.forEachIndexed { index, phase ->
+                card.addView(label("${index + 1}. ${phase.title}", 15f, INK, Typeface.BOLD).apply { setPadding(0, dp(8), 0, dp(3)) })
+                if (roadmapExpanded) {
+                    card.addView(label(phase.purpose, 13f, MUTED))
+                    phase.checks.forEach { card.addView(label("• $it", 13f, MUTED).apply { setPadding(dp(6), dp(3), 0, 0) }) }
+                }
+            }
+        }
+        plan.assumptions.forEach { card.addView(label("• $it", 12f, MUTED).apply { setPadding(0, dp(2), 0, 0) }) }
 
         if (commands.isNotEmpty()) {
             card.addView(label("Steps", 13f, MUTED, Typeface.BOLD).apply { setPadding(0, dp(10), 0, dp(4)) })
@@ -673,6 +703,8 @@ private class AiPanel(
                     orientation = LinearLayout.VERTICAL
                     setPadding(dp(10), 0, 0, 0)
                     addView(label(command.title, 14f, INK, Typeface.BOLD))
+                    addView(label(command.explanation, 12f, MUTED).apply { maxLines = 3 })
+                    addView(label("Check: ${command.expectedResult}", 11f, MUTED).apply { maxLines = 2 })
                     addView(label("${command.risk.uppercase()} · ${if (command.requiresAdmin) "admin may be required" else "no admin flag"}", 11f, MUTED))
                     if (index in workspace.confirmedSteps) addView(label("✓ Result confirmed by you", 11f, GREEN))
                 }
@@ -719,7 +751,7 @@ private class AiPanel(
     private fun renderStep() {
         if (!::stepBody.isInitialized) return
         stepBody.removeAllViews()
-        pageHeading(stepBody, "Step", "Inspect one command before it can be typed.")
+        pageHeading(stepBody, "Step", "Review, then approve once on this screen.")
         val command = commands.getOrNull(selected)
         if (command == null) {
             stepBody.addView(emptyState("No step selected", if (commands.isEmpty()) "Build a plan first." else "Choose a step from Plan."), matchWrap())
@@ -737,7 +769,11 @@ private class AiPanel(
         infoLine(detail, "Risk", "${command.risk.uppercase()}${if (command.requiresAdmin) " · administrative access may be required" else ""}")
         if (command.warnings.isNotEmpty()) infoLine(detail, "Warnings", command.warnings.joinToString("\n• ", prefix = "• "))
         stepBody.addView(detail, matchWrap())
-        stepBody.addView(actionButton("Preview destination  →", true) { switchTab(Tab.PREVIEW) }, matchWrap(top = 10))
+        detail.addView(label("Destination", 12f, MUTED, Typeface.BOLD).apply { setPadding(0, dp(8), 0, 0) })
+        detail.addView(label(target.current()?.label ?: "No ready Bluetooth HID connection", 14f, INK, Typeface.BOLD))
+        detail.addView(label("Your approval types this exact command once. Press Enter yourself after checking it.", 12f, MUTED))
+        stepBody.addView(approvalButton(), matchWrap(top = 10))
+        stepBody.addView(textButton("Optional full preview") { switchTab(Tab.PREVIEW) }, matchWrap(top = 3))
         stepBody.addView(actionButton("Edit this step", false) { editSelectedStep() }.apply { isEnabled = !busy }, matchWrap(top = 8))
         if (selected > 0) stepBody.addView(textButton("← Previous step") {
             if (!busy) { confirmation?.dismiss(); workspace.touch(); selected--; renderAll() }
@@ -847,9 +883,7 @@ private class AiPanel(
                 .setPrimaryClip(ClipData.newPlainText("Linux command", command.command))
             setStatus("Command copied. Nothing was typed.")
         }, matchWrap(top = 8))
-        val send = actionButton(if (host == null) "Connect Bluetooth first" else "Review & type", true) { confirmSelected() }
-        send.isEnabled = !busy && host != null && workspace.proposal == null
-        previewBody.addView(send, matchWrap(top = 10))
+        previewBody.addView(approvalButton(), matchWrap(top = 10))
         previewBody.addView(textButton("Back to step") { switchTab(Tab.STEP) }, matchWrap(top = 3))
     }
 
@@ -917,84 +951,50 @@ private class AiPanel(
         }
     }
 
-    private fun confirmSelected() {
-        if (busy || confirmation?.isShowing == true) return
-        if (workspace.proposal != null) return setStatus("Apply or discard the proposed update before typing.", error = true)
+    /** This visible button is the only command approval; there is no second modal. */
+    private fun approvalButton(): Button {
         val index = selected
-        val selectedCommand = commands.getOrNull(index) ?: return
-        val host = target.current() ?: run {
-            setStatus("No ready Bluetooth HID connection.", error = true)
+        val command = commands.getOrNull(index)?.command
+        val host = target.current()
+        val revision = planRevision
+        return actionButton(if (host == null) "Connect Bluetooth first" else "Approve & type once", true) {
+            if (command != null && host != null) confirmSelected(command, host, index, revision)
+        }.apply { isEnabled = !busy && host != null && command != null && workspace.proposal == null }
+    }
+
+    private fun confirmSelected(command: String, host: HostSession, index: Int, snapshotRevision: Long) {
+        if (busy || transportPaused || !panelVisible || workspace.proposal != null) return
+        if (planRevision != snapshotRevision || selected != index ||
+            commands.getOrNull(index)?.command != command || target.current() != host) {
+            setStatus("Plan or connection changed. Review the current command and destination.", error = true)
             renderAll()
             return
         }
-        val problem = CommandPolicy.problem(selectedCommand.command)
-        if (problem != null) {
-            setStatus(problem, error = true)
-            return
-        }
-        val snapshotRevision = planRevision
-        val command = selectedCommand.command
-        val content = LinearLayout(activity).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(18), dp(12), dp(18), dp(12))
-            background = round(PAPER, 16, LINE, 1)
-            addView(label("Destination", 11f, MUTED, Typeface.BOLD))
-            addView(label(host.label, 15f, INK, Typeface.BOLD).apply { setPadding(0, dp(4), 0, dp(10)) })
-            addView(label("Risk: ${selectedCommand.risk.uppercase()}${if (selectedCommand.requiresAdmin) " · admin may be required" else ""}", 12f, MUTED))
-            addView(label(selectedCommand.explanation, 13f, MUTED).apply { setPadding(0, dp(7), 0, dp(3)) })
-            addView(commandBox(command), matchWrap(top = 7, bottom = 6))
-            addView(label("Pressing TYPE ONLY is your one-use approval for this exact command and destination. Enter will not be sent.", 12f, GREEN, Typeface.BOLD))
-        }
-        val confirm = AlertDialog.Builder(activity)
-            .setTitle("Review before typing")
-            .setView(ScrollView(activity).apply { addView(content) })
-            .setNegativeButton("CANCEL", null)
-            .setPositiveButton("TYPE ONLY", null)
-            .create()
-        confirmation = confirm
-        confirm.setOnShowListener {
-            confirm.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                val unchanged = planRevision == snapshotRevision && selected == index &&
-                    commands.getOrNull(index)?.command == command && target.current() == host
-                if (!unchanged || busy) {
-                    setStatus("Plan or connection changed. Review again.", error = true)
-                    confirm.dismiss()
-                    renderAll()
-                    return@setOnClickListener
+        CommandPolicy.problem(command)?.let { setStatus(it, error = true); return }
+        busy = true
+        val operation = ++operationToken
+        setStatus("Typing selected text only · Enter excluded")
+        renderAll()
+        val approval = CommandApproval(command, host)
+        job = scope.launch {
+            try {
+                val outcome = ApprovedCommandSender.send(approval, target)
+                setStatus(
+                    if (outcome == SendOutcome.REPORTS_ACCEPTED)
+                        "Text typed. Check the computer before pressing Enter."
+                    else "Typing stopped ($outcome). Inspect any partial text manually.",
+                    error = outcome != SendOutcome.REPORTS_ACCEPTED
+                )
+                if (outcome == SendOutcome.REPORTS_ACCEPTED) {
+                    lastTypedCommand = command
+                    lastTypedIndex = index
+                    activeTab = Tab.FEEDBACK
+                    applyActiveTab()
                 }
-                confirm.dismiss()
-                busy = true
-                val operation = ++operationToken
-                setStatus("Typing selected text only · Enter excluded")
-                renderAll()
-                val approval = CommandApproval(command, host)
-                job = scope.launch {
-                    try {
-                        val outcome = ApprovedCommandSender.send(approval, target)
-                        setStatus(
-                            if (outcome == SendOutcome.REPORTS_ACCEPTED)
-                                "Text typed. Check the computer before pressing Enter."
-                            else "Typing stopped ($outcome). Inspect any partial text manually.",
-                            error = outcome != SendOutcome.REPORTS_ACCEPTED
-                        )
-                        if (outcome == SendOutcome.REPORTS_ACCEPTED) {
-                            lastTypedCommand = command
-                            lastTypedIndex = index
-                            activeTab = Tab.FEEDBACK
-                            applyActiveTab()
-                        }
-                    } catch (e: CancellationException) {
-                        throw e
-                    } catch (_: Exception) {
-                        setStatus("Typing stopped. Inspect any partial text manually.", error = true)
-                    } finally {
-                        if (operation == operationToken) { busy = false; renderAll() }
-                    }
-                }
-            }
+            } catch (e: CancellationException) { throw e }
+              catch (_: Exception) { setStatus("Typing stopped. Inspect any partial text manually.", error = true) }
+              finally { if (operation == operationToken) { busy = false; renderAll() } }
         }
-        confirm.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        confirm.show()
     }
 
     private fun editSelectedStep() {
@@ -1071,6 +1071,33 @@ private class AiPanel(
         }).also { it.show() }
     }
 
+    private fun openAutoAssist() {
+        if (busy || transportPaused || workspace.proposal != null || commands.isEmpty()) return
+        if (activity.checkSelfPermission(android.Manifest.permission.CAMERA) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            activity.requestPermissions(arrayOf(android.Manifest.permission.CAMERA), 918)
+            setStatus("Grant camera permission, then tap Auto again. No session has started.")
+            return
+        }
+        val plan = currentPlan ?: return
+        confirmation?.dismiss()
+        voice.cancel()
+        autoPanel = AutoAssistPanel(activity, manager, plan, goal.text.toString().trim(), selectedTarget,
+            selectedModel, selected.coerceAtLeast(0), { planRevision },
+            onProposal = { candidate ->
+                val token = workspace.touch()
+                workspace.stage(token, candidate)
+                activeTab = Tab.PLAN
+                applyActiveTab()
+                renderAll()
+            }, onAutomaticPlan = { updated ->
+                workspace.replace(updated)
+                lastTypedCommand = null
+                lastTypedIndex = -1
+                renderAll()
+                planRevision
+            }, onClosed = { autoPanel = null; renderAll() }).also { it.show() }
+    }
+
     private fun dictateGoal() = dictate { transcript ->
         goal.setText(transcript)
         goal.setSelection(goal.text.length)
@@ -1132,7 +1159,12 @@ private class AiPanel(
                     setStatus("Plan or target changed. Review a new photo in the current context.", error = true)
                 } else {
                     val token = workspace.touch()
-                    workspace.stage(token, PlanFeedbackRequest.fromPhoto(value))
+                    try {
+                        workspace.stage(token, PlanFeedbackRequest.fromPhoto(value, snapshotPlan, snapshotIndex))
+                    } catch (e: PlanException) {
+                        setStatus(e.message ?: "Photo update could not be applied; your plan was kept.", error = true)
+                        return@PhotoFeedbackPanel
+                    }
                     activeTab = Tab.PLAN
                     applyActiveTab()
                     setStatus("Photo feedback returned. Review and apply the proposed update; success is not assumed.")

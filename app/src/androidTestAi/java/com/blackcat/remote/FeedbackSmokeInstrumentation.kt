@@ -26,6 +26,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.ScrollView
+import kotlinx.coroutines.delay
 import android.view.inputmethod.InputMethodManager
 import java.io.File
 import java.util.concurrent.CountDownLatch
@@ -38,6 +39,7 @@ import kotlinx.coroutines.withContext
 class FeedbackSmokeInstrumentation : Instrumentation() {
     private lateinit var activity: Activity
     private lateinit var startupMonitor: ActivityMonitor
+    private var startupSettled = false
     private lateinit var panel: Any
     private lateinit var dialog: Dialog
     private val checks = mutableListOf<String>()
@@ -48,8 +50,8 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         val result = Bundle()
         var commandFixture: CommandPlan? = null
         check(android.os.Build.HARDWARE in setOf("ranchu", "goldfish")) { "Run screenshot fixtures only on a disposable emulator" }
-        File(targetContext.filesDir, "ui11-rendered").listFiles()?.filter { it.extension == "png" }?.forEach { it.delete() }
-        sendStatus(0, Bundle().apply { putString("stream", "UI11_SMOKE_START\n") })
+        File(targetContext.filesDir, "ui12-rendered").listFiles()?.filter { it.extension == "png" }?.forEach { it.delete() }
+        sendStatus(0, Bundle().apply { putString("stream", "UI12_SMOKE_START\n") })
         try {
             startupMonitor = addMonitor("com.blackcat.remote.MainActivity", null, false)
             activity = startActivitySync(Intent().setClassName(targetContext,
@@ -61,6 +63,20 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                     it.isShown && it.text.startsWith("Bluetooth")
                 }
             }
+            var stableActivity: Activity? = null
+            var stableConfiguration = ""
+            var stableSince = SystemClock.uptimeMillis()
+            await("stable attached Activity and display configuration") {
+                val decor = activity.window.decorView
+                val signature = "${decor.width}:${decor.height}:${activity.resources.configuration}"
+                if (stableActivity !== activity || signature != stableConfiguration || !decor.isAttachedToWindow || !decor.isLaidOut) {
+                    stableActivity = activity
+                    stableConfiguration = signature
+                    stableSince = SystemClock.uptimeMillis()
+                }
+                decor.isShown && decor.isAttachedToWindow && decor.isLaidOut && SystemClock.uptimeMillis() - stableSince >= 2000
+            }
+            startupSettled = true
             captureRemoteScreens()
             captureStandaloneScreens()
             onMain {
@@ -79,7 +95,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                 val goal = field(panel, "goal") as EditText
                 goal.setText("Diagnose a Linux service error")
                 val parsed = PlanCodec.parsePlan("""{
-                    "explanation":"Inspect before changing the system.", "assumptions":[],
+                    "explanation":"Inspect before changing the system.", "assumptions":[],"roadmap":[],
                     "decision":{"mode":"commands","questions":[],"commands":[
                         {"title":"List failed services","command":"systemctl --failed",
                          "explanation":"Read-only synthetic test step.","risk":"low","requires_admin":false,
@@ -89,12 +105,12 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                          "expected_result":"Inspect the result yourself.","warnings":[]}]}}
                 """)
                 check(parsed.commands.map { it.command } == listOf("systemctl --failed", "journalctl -n 20"))
-                val clarify = PlanCodec.parsePlan("""{"explanation":"More context is needed.","assumptions":[],
+                val clarify = PlanCodec.parsePlan("""{"explanation":"More context is needed.","assumptions":[],"roadmap":[],
                     "decision":{"mode":"clarify","questions":["Which service failed?"],"commands":[]}}""")
                 check(clarify.commands.isEmpty() && clarify.questions.size == 1)
                 var mixedRejected = false
                 try {
-                    PlanCodec.parsePlan("""{"explanation":"Mixed fixture.","assumptions":[],
+                    PlanCodec.parsePlan("""{"explanation":"Mixed fixture.","assumptions":[],"roadmap":[],
                         "decision":{"mode":"commands","questions":["Which service?"],"commands":[]}}""")
                 } catch (_: PlanException) { mixedRejected = true }
                 check(mixedRejected)
@@ -292,10 +308,11 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                 pass("Suspension invalidates pending work while retaining only the in-memory plan")
                 invoke(panel, "dismiss")
             }
-            result.putString("stream", "\nUI11_SMOKE_PASS ${checks.size}\n" + checks.joinToString("\n"))
+            captureDetailedAndAuto()
+            result.putString("stream", "\nUI12_SMOKE_PASS ${checks.size}\n" + checks.joinToString("\n"))
             finish(Activity.RESULT_OK, result)
         } catch (error: Throwable) {
-            result.putString("stream", "\nUI11_SMOKE_FAIL\n" + error.stackTraceToString())
+            result.putString("stream", "\nUI12_SMOKE_FAIL\n" + error.stackTraceToString())
             finish(Activity.RESULT_CANCELED, result)
         }
     }
@@ -307,7 +324,10 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                 // A newly booted emulator may recreate the Activity as its display settles.
                 // Follow startup only; a recreation during the planner workflow must still fail.
                 if (!::panel.isInitialized && ::startupMonitor.isInitialized) {
-                    startupMonitor.lastActivity?.takeUnless { it.isDestroyed }?.let { activity = it }
+                    startupMonitor.lastActivity?.takeUnless { it.isDestroyed }?.let {
+                        if (startupSettled) check(it === activity) { "Activity recreated after startup settled" }
+                        else activity = it
+                    }
                 }
                 action()
             } catch (error: Throwable) { failure = error }
@@ -317,6 +337,144 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
 
     private fun command(title: String, text: String) = SuggestedCommand(title, text,
         "Read-only synthetic test step.", "low", false, "Inspect the result yourself.", emptyList())
+
+    private fun captureDetailedAndAuto() {
+        onMain {
+            val manager = field(activity, "hid") as HidManager
+            val type = Class.forName("com.blackcat.remote.AiPanel")
+            panel = type.declaredConstructors.single().apply { isAccessible = true }.newInstance(activity, manager, {})
+            invoke(panel, "show")
+            dialog = field(panel, "dialog") as Dialog
+            dialog.window!!.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            (field(panel, "goal") as EditText).setText("Lock down my Ubuntu system while preserving local access and recovery")
+            val roadmap = listOf("Inventory and threat model", "Backups and recovery", "OS support and patches",
+                "Accounts and privileges", "Authentication and SSH", "Services and firewall", "Logs and monitoring", "Verification and maintenance")
+                .map { PlanPhase(it, "Explain the purpose, safe order and stopping conditions for this phase.",
+                    listOf("Check current state before changing it", "Verify the expected result and preserve recovery access")) }
+            val detailed = CommandPlan("A comprehensive hardening roadmap, beginning with read-only checks. Changes require verified facts and a recovery path.",
+                listOf("Synthetic UI fixture; no real model, HID or shell execution."), emptyList(),
+                (1..18).map { command("Security check $it", if (it % 2 == 0) "whoami" else "id") }, roadmap)
+            workspace().replace(detailed)
+            setField(panel, "selected", 0)
+            invoke(panel, "renderAll")
+            check(texts(dialog).contains("Full roadmap"))
+            check(findButton(dialog, "Auto ·").isEnabled)
+            scrollBottom(dialog)
+        }
+        screenshot("detailed-plan-18-steps")
+        onMain {
+            findButton(dialog, "Show all phase details").performClick()
+            check(texts(dialog).any { it.contains("preserve recovery access") })
+            scrollToView(dialog.window!!.decorView, findButton(dialog, "Hide phase details"))
+        }
+        screenshot("detailed-roadmap-expanded")
+        onMain {
+            findButton(dialog, "Start with step 1").performClick()
+            check(field(panel, "confirmation") == null)
+            check(texts(dialog).contains("Step 1 of 18"))
+            check(findButton(dialog, "Connect Bluetooth first").isEnabled.not())
+            pass("A detailed 18-step roadmap remains visible; selection opens one approval screen without a second modal or HID input")
+        }
+        screenshot("single-approval-step")
+        onMain { invoke(panel, "dismiss") }
+
+        val steps = listOf(command("Check identity", "id"), command("Check account name", "whoami"))
+        val autoPlan = CommandPlan("Two synthetic terminal checks.", emptyList(), emptyList(), steps)
+        var auto: AutoAssistPanel? = null
+        var autoDialog: Dialog? = null
+        val host = HostSession("synthetic-fixture", 1, "Synthetic fixture computer")
+        val fakeTarget = FixtureCommandTarget(host)
+        val fakeObserver = FixtureAutoObserver()
+        onMain {
+            activity.getSharedPreferences(TargetSystemPanel.PREFS, Activity.MODE_PRIVATE).edit()
+                .putString(AssistantNarrator.VOICE_KEY, NarrationVoice.TEXT.name).apply()
+            PendingApiKey.put(activity, "sk-ui12-synthetic-fixture-not-a-real-key")
+            auto = AutoAssistPanel(activity, field(activity, "hid") as HidManager, autoPlan,
+                "Inspect this disposable fixture", "Ubuntu Linux / Bash", PlanCodec.DEFAULT_MODEL, 0,
+                { 1L }, {}, { 2L }, {}, fakeObserver, fakeTarget)
+            auto!!.show()
+            autoDialog = field(auto!!, "dialog") as Dialog
+            autoDialog!!.window!!.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            check(fakeTarget.reports.isEmpty() && fakeObserver.calls == 0)
+            findButton(autoDialog!!, "Start reviewed session").performClick()
+            check(fakeTarget.reports.isEmpty() && fakeObserver.calls == 0)
+            check((field(auto!!, "session") as AutoRunSession?) == null)
+            pass("Opening Auto and Start without session consent cause no API/HID requests")
+            (field(auto!!, "consentChoice") as android.widget.CheckBox).isChecked = true
+            findButton(autoDialog!!, "Start live camera preview").performClick()
+        }
+        await("real Auto camera preview frames") { field(auto!!, "cameraStarted") == true && (field(auto!!, "previewFrames") as Int) >= 3 }
+        screenshot("auto-reviewed-session", autoDialog)
+        onMain { findButton(autoDialog!!, "Start reviewed session").performClick() }
+        await("Auto idle-terminal preflight and typing countdown") {
+            fakeObserver.calls == 1 && (field(auto!!, "session") as AutoRunSession?)?.stage == AutoStage.TYPING
+        }
+        screenshot("auto-countdown", autoDialog)
+        await("first automatic Enter and output wait") {
+            (field(auto!!, "session") as AutoRunSession?)?.stage == AutoStage.WAITING && fakeTarget.reports.count { it.second == 40 } == 1
+        }
+        screenshot("auto-waiting-for-output", autoDialog)
+        await("two steps plus three real camera captures checked by the synthetic observer") {
+            (field(auto!!, "session") as AutoRunSession?)?.stage == AutoStage.FINISHED
+        }
+        onMain {
+            check(fakeTarget.reports.count { it.second == 40 } == 2)
+            check(fakeObserver.calls == 3 && fakeObserver.jpegCaptures == 3)
+            check(field(auto!!, "key") == "" && field(auto!!, "camera") == null)
+            pass("Full Auto performs preflight, two fake-target commands with one Enter each and real Camera2 photos between steps, then clears the session")
+        }
+        screenshot("auto-plan-finished", autoDialog)
+        onMain { auto!!.dismiss() }
+
+        val stoppedTarget = FixtureCommandTarget(host)
+        val stoppedObserver = FixtureAutoObserver()
+        onMain {
+            PendingApiKey.put(activity, "sk-ui12-synthetic-stop-not-a-real-key")
+            auto = AutoAssistPanel(activity, field(activity, "hid") as HidManager, autoPlan,
+                "Inspect this disposable fixture", "Ubuntu Linux / Bash", PlanCodec.DEFAULT_MODEL, 0,
+                { 1L }, {}, { 2L }, {}, stoppedObserver, stoppedTarget)
+            auto!!.show()
+            autoDialog = field(auto!!, "dialog") as Dialog
+            (field(auto!!, "consentChoice") as android.widget.CheckBox).isChecked = true
+            findButton(autoDialog!!, "Start live camera preview").performClick()
+        }
+        await("second Auto preview") { field(auto!!, "cameraStarted") == true && (field(auto!!, "previewFrames") as Int) >= 3 }
+        onMain { findButton(autoDialog!!, "Start reviewed session").performClick() }
+        await("second preflight before countdown") { (field(auto!!, "session") as AutoRunSession?)?.stage == AutoStage.TYPING }
+        onMain { findButton(autoDialog!!, "Stop / close").performClick() }
+        Thread.sleep(3500)
+        onMain {
+            check(stoppedTarget.reports.isEmpty())
+            check((field(auto!!, "session") as AutoRunSession).stage == AutoStage.STOPPED)
+            check(field(auto!!, "key") == "" && field(auto!!, "camera") == null)
+            pass("Stopping during the Auto countdown sends no fake-target keys or Enter and clears camera/key state without replay")
+        }
+    }
+
+    private class FixtureCommandTarget(private val host: HostSession) : CommandTarget {
+        val reports = mutableListOf<Pair<Int, Int>>()
+        override fun current() = host
+        override fun sendKey(session: HostSession, modifier: Int, usage: Int): Boolean {
+            check(session == host && host.id == "synthetic-fixture")
+            reports.add(modifier to usage)
+            return true
+        }
+    }
+
+    private class FixtureAutoObserver : AutoObservationClient {
+        var calls = 0
+        var jpegCaptures = 0
+        override fun cancel() {}
+        override suspend fun observe(goal: String, step: SuggestedCommand, target: String, model: String,
+                                     key: String, jpeg: ByteArray, preflight: Boolean): AutoObservation {
+            check(key.startsWith("sk-ui12-synthetic") && jpeg.size > 100 && jpeg[0] == 0xff.toByte() && jpeg[1] == 0xd8.toByte())
+            calls++
+            jpegCaptures++
+            delay(300)
+            return AutoObservation(if (preflight) "" else step.command, "shell_prompt", "appears_complete",
+                "Synthetic observation: the fixture terminal appears ready.", listOf("Synthetic visible evidence fixture."), false)
+        }
+    }
     private fun workspace() = field(panel, "workspace") as PlanWorkspace
     private fun pass(name: String) {
         checks.add("PASS: $name")
@@ -616,7 +774,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
             check(copied.await(5, TimeUnit.SECONDS)) { "App-window capture callback timed out: $name" }
             val captured = bitmap
             if (status == PixelCopy.SUCCESS && captured != null) {
-                val output = File(targetContext.filesDir, "ui11-rendered").apply { mkdirs() }
+                val output = File(targetContext.filesDir, "ui12-rendered").apply { mkdirs() }
                 File(output, "$name.png").outputStream().use {
                     check(captured.compress(Bitmap.CompressFormat.PNG, 100, it)) { "PNG capture failed: $name" }
                 }

@@ -113,7 +113,7 @@ def verify() -> None:
         "Offline Linux Library",
         "no API · no network",
         "Browse by task",
-        "Preview & type only",
+        "Approve & type once",
         "TYPE ONLY",
         "CommandPolicy.problem",
         "CommandApproval",
