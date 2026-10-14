@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+    <!-- Explicit exception for the OPTIONAL AI build only. Main/offline remain network-free. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <application android:label="Black Cat AI" tools:replace="android:label" />
+</manifest>
