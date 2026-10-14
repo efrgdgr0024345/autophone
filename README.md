@@ -4,7 +4,19 @@ Android phone remote that preserves the proven Bluetooth HID keyboard/mouse core
 
 > **UI09 is a physical-test prerelease.** All automated build, policy, unit, lint, APK inspection, CodeQL and provenance gates passed. Real Android-to-computer Bluetooth testing is still required before this version becomes the protected baseline.
 
-## UI12 development — detailed plans and Auto
+## UI12.1 test download — detailed plans and Auto
+
+Full direct APK download URL:
+
+https://raw.githubusercontent.com/efrgdgr0024345/autophone/409b3c536627108ceda9826971474abedb9c1f2b/docs/ui12.1/install/CatAI-12.1.apk
+
+The exact checked APK can update UI10/UI11 directly. Source: `437e98e45812703077e10d86b8c4d7fea11b136b`.
+SHA-256: `6da0a22851da44b1a2be4221a2452360ccdbd7497aa6bfcca42741ba4bf1f298`.
+Local verification passed: 135 Android tests, 79 policy/mutation checks, both builds/APK inspection,
+20 real-window emulator checks, zero Lint errors and CodeQL over 44/44 files. Live phone,
+vision, speech/API and Keystore acceptance remain required. [Install details](docs/ui12.1/install/README.md)
+and [all 36 rendered screens](docs/ui12.1/screens/README.md). This is a development test build;
+the existing releases below remain unchanged.
 
 `feature/ui12-detailed-plans-auto-assist` adds phased roadmaps with up to 40 command steps,
 one-screen command approval and an explicitly approved foreground Auto session with terminal

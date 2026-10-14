@@ -56,8 +56,8 @@ jobs:
             python3 tools/check_apk.py "$apk" "$flavor" "$AAPT"
             "$SIGNER" verify --verbose --print-certs "$apk" > "preview/$flavor-signature.txt"
           done
-          cp app/build/outputs/apk/ai/debug/app-ai-debug.apk preview/CatAI-12.apk
-          cp app/build/outputs/apk/offline/debug/app-offline-debug.apk preview/CatBT-12.apk
+          cp app/build/outputs/apk/ai/debug/app-ai-debug.apk preview/CatAI-12.1.apk
+          cp app/build/outputs/apk/offline/debug/app-offline-debug.apk preview/CatBT-12.1.apk
           git rev-parse HEAD > preview/SOURCE.txt
           cp docs/UI12-AUTO-TEST-PLAN.md preview/ACCEPTANCE.md
           (cd preview && sha256sum *.apk > SHA256SUMS)
