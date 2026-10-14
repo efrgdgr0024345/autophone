@@ -384,7 +384,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         var autoDialog: Dialog? = null
         val host = HostSession("synthetic-fixture", 1, "Synthetic fixture computer")
         val fakeTarget = FixtureCommandTarget(host)
-        val fakeObserver = FixtureAutoObserver()
+        val fakeObserver = FixtureAutoObserver().apply { firstResultGate = CompletableDeferred() }
         onMain {
             activity.getSharedPreferences(TargetSystemPanel.PREFS, Activity.MODE_PRIVATE).edit()
                 .putString(AssistantNarrator.VOICE_KEY, NarrationVoice.TEXT.name).apply()
@@ -410,10 +410,12 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
             fakeObserver.calls == 1 && (field(auto!!, "session") as AutoRunSession?)?.stage == AutoStage.TYPING
         }
         screenshot("auto-countdown", autoDialog)
-        await("first automatic Enter and output wait") {
-            (field(auto!!, "session") as AutoRunSession?)?.stage == AutoStage.WAITING && fakeTarget.reports.count { it.second == 40 } == 1
+        await("first automatic Enter and its actual photo-check request") {
+            (field(auto!!, "session") as AutoRunSession?)?.stage == AutoStage.ANALYZING &&
+                fakeObserver.calls == 2 && fakeTarget.reports.count { it.second == 40 } == 1
         }
-        screenshot("auto-waiting-for-output", autoDialog)
+        screenshot("auto-checking-output", autoDialog)
+        onMain { fakeObserver.firstResultGate!!.complete(Unit) }
         await("two steps plus three real camera captures checked by the synthetic observer") {
             (field(auto!!, "session") as AutoRunSession?)?.stage == AutoStage.FINISHED
         }
@@ -464,12 +466,14 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
     private class FixtureAutoObserver : AutoObservationClient {
         var calls = 0
         var jpegCaptures = 0
+        var firstResultGate: CompletableDeferred<Unit>? = null
         override fun cancel() {}
         override suspend fun observe(goal: String, step: SuggestedCommand, target: String, model: String,
                                      key: String, jpeg: ByteArray, preflight: Boolean): AutoObservation {
             check(key.startsWith("sk-ui12-synthetic") && jpeg.size > 100 && jpeg[0] == 0xff.toByte() && jpeg[1] == 0xd8.toByte())
             calls++
             jpegCaptures++
+            if (!preflight && calls == 2) firstResultGate?.await()
             delay(300)
             return AutoObservation(if (preflight) "" else step.command, "shell_prompt", "appears_complete",
                 "Synthetic observation: the fixture terminal appears ready.", listOf("Synthetic visible evidence fixture."), false)
