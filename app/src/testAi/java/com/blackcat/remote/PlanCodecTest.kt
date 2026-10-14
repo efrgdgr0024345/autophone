@@ -8,7 +8,7 @@ import org.junit.Test
 class PlanCodecTest {
     private fun plan(command:String="id") = JSONObject()
         .put("explanation","Check account.")
-        .put("assumptions",JSONArray())
+        .put("assumptions",JSONArray()).put("roadmap",JSONArray())
         .put("decision",JSONObject().put("mode","commands").put("questions",JSONArray())
         .put("commands",JSONArray().put(JSONObject()
             .put("title","Check identity")
@@ -43,7 +43,7 @@ class PlanCodecTest {
         assertTrue(r.getJSONObject("text").getJSONObject("format").getBoolean("strict"))
         assertEquals("gpt-6.1-sol",r.getString("model"))
         assertEquals("low",r.getJSONObject("reasoning").getString("effort"))
-        assertEquals(8192,r.getInt("max_output_tokens"))
+        assertEquals(16384,r.getInt("max_output_tokens"))
     }
     @Test fun endpointIsFixedHttps() { assertEquals("https://api.openai.com/v1/responses",OpenAiPlanner.ENDPOINT) }
     @Test fun keyCannotInjectHeader() { assertFalse(OpenAiPlanner.validKey("sk-"+"x".repeat(30)+"\r\nX:y")) }
@@ -56,6 +56,36 @@ class PlanCodecTest {
         val result=PlanCodec.parsePlan(proposal.toString())
         assertTrue(result.commands.isEmpty())
         assertEquals(1,result.questions.size)
+    }
+
+    @Test fun detailedRoadmapSurvivesClarificationWithoutInventingExecutableChanges() {
+        val proposal = plan().put("roadmap", JSONArray().put(JSONObject()
+            .put("title", "Protect remote access").put("purpose", "Avoid lockout while strengthening SSH.")
+            .put("checks", JSONArray().put("Back up configuration and verify a second session before changing access."))))
+        proposal.put("decision", JSONObject().put("mode", "clarify")
+            .put("questions", JSONArray().put("Which SSH port and recovery path must remain available?"))
+            .put("commands", JSONArray()))
+        val result = PlanCodec.parsePlan(proposal.toString())
+        assertEquals("Protect remote access", result.roadmap.single().title)
+        assertTrue(result.roadmap.single().checks.single().contains("second session"))
+        assertTrue(result.commands.isEmpty())
+    }
+
+    @Test fun largePlanKeepsEveryOrderedStepAndDetailedInstructions() {
+        val proposal = plan()
+        val array = proposal.getJSONObject("decision").getJSONArray("commands")
+        val item = array.getJSONObject(0)
+        repeat(39) { array.put(JSONObject(item.toString()).put("title", "Check ${it + 2}")) }
+        assertEquals(40, PlanCodec.parsePlan(proposal.toString()).commands.size)
+        val instructions = PlanCodec.request("Lock down the system from hackers", "Ubuntu Linux / Bash", PlanCodec.DEFAULT_MODEL).getString("instructions")
+        for (expected in listOf("backups", "rollback", "firewall", "logging", "lockout", "12-30", "complete roadmap"))
+            assertTrue(expected, instructions.contains(expected))
+    }
+
+    @Test(expected = PlanException::class) fun roadmapCannotInjectExecutionFields() {
+        val proposal = plan().put("roadmap", JSONArray().put(JSONObject()
+            .put("title", "Check").put("purpose", "Read-only").put("checks", JSONArray()).put("run", true)))
+        PlanCodec.parsePlan(proposal.toString())
     }
 
     @Test(expected=PlanException::class) fun emptyClarificationBranchRejected() {
@@ -71,11 +101,11 @@ class PlanCodecTest {
         PlanCodec.parsePlan(proposal.toString())
     }
 
-    @Test(expected=PlanException::class) fun commandsBeyondTwelveRejected() {
+    @Test(expected=PlanException::class) fun commandsBeyondFortyRejected() {
         val proposal=plan()
         val commands=proposal.getJSONObject("decision").getJSONArray("commands")
         val item=commands.getJSONObject(0)
-        repeat(12) { commands.put(item) }
+        repeat(40) { commands.put(item) }
         PlanCodec.parsePlan(proposal.toString())
     }
 
@@ -118,7 +148,7 @@ class PlanCodecTest {
         assertEquals(0,clarification.getJSONObject("commands").getInt("maxItems"))
         val commands=branches.getJSONObject(1).getJSONObject("properties")
         assertEquals(0,commands.getJSONObject("questions").getInt("maxItems"))
-        assertEquals(12,commands.getJSONObject("commands").getInt("maxItems"))
+        assertEquals(40,commands.getJSONObject("commands").getInt("maxItems"))
     }
 
     @Test(expected=IllegalArgumentException::class) fun unsupportedModelCannotReachRequest() {

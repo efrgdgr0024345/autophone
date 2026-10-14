@@ -78,9 +78,9 @@ class PlanWorkspaceTest {
         assertNull(state.proposal)
     }
 
-    @Test(expected = PlanException::class) fun localPlanHasSameTwelveStepLimit() {
+    @Test(expected = PlanException::class) fun localPlanHasSameFortyStepLimit() {
         val state = PlanWorkspace()
-        repeat(13) { state.append(command()) }
+        repeat(41) { state.append(command()) }
     }
 
     @Test fun confirmationRequiresAnExistingStepAndCurrentRevision() {
@@ -122,8 +122,25 @@ class PlanWorkspaceTest {
         assertEquals(0, api.getJSONArray("tools").length())
     }
 
+    @Test fun largePlanRevisionKeepsAllFortyCommandsWithoutTruncation() {
+        val commands = (1..40).map { command("printf 'check-${it}-" + "x".repeat(80) + "'") }
+        val request = PlanFeedbackRequest.goal("Review system security", commands.first(), emptySet(), "A service failed", commands)
+        assertTrue(request.length > 2000)
+        assertEquals(40, org.json.JSONObject(request.substringAfter('\n')).getJSONArray("remaining_plan_commands").length())
+        assertNotNull(PlanCodec.request(request, "Ubuntu Linux / Bash", PlanCodec.DEFAULT_MODEL))
+    }
+
+    @Test fun editingAndRemovingCommandsRetainTheRoadmap() {
+        val roadmap = listOf(PlanPhase("Recovery", "Avoid lockout", listOf("Verify a second session")))
+        val state = PlanWorkspace().apply { replace(CommandPlan("Checks", emptyList(), emptyList(), listOf(command(), command("whoami")), roadmap)) }
+        state.edit(0, "Identity", "id", "Check identity", "Account information")
+        assertSame(roadmap, state.plan!!.roadmap)
+        state.remove(0)
+        assertSame(roadmap, state.plan!!.roadmap)
+    }
+
     @Test(expected = PlanException::class) fun oversizedFeedbackIsNotSilentlyTruncated() {
-        PlanFeedbackRequest.goal("Inspect services", command(), emptySet(), "x".repeat(2000))
+        PlanFeedbackRequest.goal("Inspect services", command(), emptySet(), "x".repeat(8001))
     }
 
     @Test fun unclearPhotoCanOnlyStageQuestionsAndNeverConfirmsAnOutcome() {
