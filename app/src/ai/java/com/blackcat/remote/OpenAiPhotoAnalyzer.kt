@@ -2,6 +2,7 @@ package com.blackcat.remote
 
 import java.net.SocketTimeoutException
 import java.net.URL
+import java.io.IOException
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLException
 import kotlinx.coroutines.Dispatchers
@@ -42,14 +43,7 @@ class OpenAiPhotoAnalyzer {
             currentCoroutineContext().ensureActive()
             http.outputStream.use { it.write(body) }
             val code = http.responseCode
-            if (code != 200) throw PlanException(when (code) {
-                401 -> "OpenAI rejected the key. Check or replace it in Settings."
-                403 -> "This API key or account is not permitted to use the selected model."
-                429 -> "OpenAI quota or rate limit reached. No automatic retry."
-                400, 404 -> "OpenAI rejected the photo request or selected model."
-                in 300..399 -> "Unexpected redirect blocked to protect the API key."
-                else -> "OpenAI photo request failed (HTTP $code)."
-            })
+            if (code != 200) throw PlanException(OpenAiPlanner.failureMessage(code, OpenAiPlanner.providerErrorCode(http)))
             val response = http.inputStream.use { input ->
                 val buffer = ByteArray(4096)
                 val out = java.io.ByteArrayOutputStream()
@@ -65,9 +59,14 @@ class OpenAiPhotoAnalyzer {
             currentCoroutineContext().ensureActive()
             PhotoAnalysisCodec.parseResponse(response)
         } catch (_: SocketTimeoutException) {
+            currentCoroutineContext().ensureActive()
             throw PlanException("Photo request timed out. Nothing was typed.")
         } catch (_: SSLException) {
+            currentCoroutineContext().ensureActive()
             throw PlanException("Secure connection failed. TLS verification was not bypassed.")
+        } catch (_: IOException) {
+            currentCoroutineContext().ensureActive()
+            throw PlanException("Could not reach OpenAI. Check your internet connection; your current plan was kept and nothing was typed.")
         } finally {
             body.fill(0)
             http.disconnect()
