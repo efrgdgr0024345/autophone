@@ -28,7 +28,8 @@ camera/transport/key-vault/ordinary sender and four frozen HID files are unchang
 A supported command is wrapped by app code, not model-authored scripts. A 96-bit random
 private /tmp/bc-* directory on the Linux target holds stdout/stderr and the actual exit
 code. umask 077 protects the directory/files. Execution is noninteractive (stdin closed,
-sudo normalized to -n, pagers disabled), with a 1 MiB output-file limit. Linux /bin/sh,
+sudo normalized to -n, pagers disabled), with a 1 MiB saved-output stream limit. Remaining output is drained without closing the pipe
+early; command file writes are not limited and SIGPIPE is not induced by the capture cap. Linux /bin/sh,
 standard coreutils/awk/sed and a US-compatible HID keyboard layout are required. The
 working directory of the original command is preserved. An unavailable credential fails;
 the app never types a password or assumes privilege.

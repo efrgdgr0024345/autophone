@@ -27,8 +27,8 @@ internal class AutoOutputCollection {
         // No interactive pager or stdin. sudo is noninteractive: a missing credential fails visibly.
         val input = AutoRunPolicy.nonInteractive(step.command)
         val command = "(umask 077; b=${ticket.path}; mkdir \"\$b\" && { " +
-            "(ulimit -f 2048; env TERM=dumb PAGER=cat SYSTEMD_PAGER=cat $input </dev/null >\"\$b/r\" 2>&1); " +
-            "echo \$? >\"\$b/s\"; LC_ALL=C cat -v \"\$b/r\" | fold -w 64 >\"\$b/o\"; " +
+            "{ env TERM=dumb PAGER=cat SYSTEMD_PAGER=cat $input </dev/null; echo \$? >\"\$b/s\"; } 2>&1 | " +
+            "{ head -c 1048576 >\"\$b/r\"; cat >/dev/null; }; LC_ALL=C cat -v \"\$b/r\" | fold -w 64 >\"\$b/o\"; " +
             "printf '\\nBC${token}_CAP_'; cat \"\$b/s\"; })"
         if (CommandPolicy.problem(command) != null) return step
         operations[command] = Operation(ticket, 0, command)

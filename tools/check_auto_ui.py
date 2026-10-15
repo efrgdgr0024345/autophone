@@ -83,7 +83,8 @@ def verify(root=ROOT):
     require(approval, ('planRevision != snapshotRevision', 'selected != index', 'target.current() != host',
                        'CommandApproval(command, host)', 'ApprovedCommandSender.send'), 'single approval')
     collector = (ai / 'AutoOutputCollection.kt').read_text()
-    require(collector, ('SecureRandom()', 'umask 077', 'ulimit -f 2048', 'LC_ALL=C cat -v',
+    assert 'ulimit' not in collector, 'Output capture must not limit files written by the command'
+    require(collector, ('SecureRandom()', 'umask 077', 'head -c 1048576', 'cat >/dev/null', 'LC_ALL=C cat -v',
                         'fold -w 64', 'const val LINES = 8', 'const val MAX_PAGES = 16',
                         'CommandPolicy.problem(command)', 'operations[command]', 'ticket.pages.add(value.pageText)',
                         'if (page > MAX_PAGES) return null', 'Never repeat a transmitted change',

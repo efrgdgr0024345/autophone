@@ -128,6 +128,29 @@ class AutoOutputCollectionTest {
             assertFalse(Files.exists(java.nio.file.Path.of(first.ticket.path)))
         } finally { Files.deleteIfExists(input); cleanup(first.ticket.path) }
     }
+    @Test fun outputLimitDoesNotLimitCommandFileWritesOrCauseSigpipe() {
+        val source = Files.createTempFile("bc-large-source", ".bin")
+        val destination = Files.createTempFile("bc-large-destination", ".bin")
+        val bytes = ByteArray(3 * 1024 * 1024) { 'x'.code.toByte() }
+        Files.write(source, bytes)
+        val collector = AutoOutputCollection()
+        val copy = collector.prepare(step("cp $source $destination"))
+        val copyOp = collector.operation(copy.command)!!
+        try {
+            assertFalse(copy.command.contains("ulimit"))
+            assertTrue(shell(copy.command).contains("${copyOp.marker}_0"))
+            assertEquals(bytes.size.toLong(), Files.size(destination))
+            assertArrayEquals(bytes, Files.readAllBytes(destination))
+            shell(collector.cleanup(copyOp).command)
+            val capture = collector.prepare(step("cat $source"))
+            val op = collector.operation(capture.command)!!
+            try {
+                assertTrue(shell(capture.command).contains("${op.marker}_0"))
+                assertEquals(1048576L, Files.size(java.nio.file.Path.of(op.ticket.path, "r")))
+                shell(collector.cleanup(op).command)
+            } finally { cleanup(op.ticket.path) }
+        } finally { Files.deleteIfExists(source); Files.deleteIfExists(destination); cleanup(copyOp.ticket.path) }
+    }
     @Test fun partiallyVisiblePageCanBeRedisplayedInSmallerSlicesWithoutLosingLines() {
         val input = Files.createTempFile("bc-resize", ".txt")
         input.toFile().writeText((1..10).joinToString("\n") { "Row $it" })
