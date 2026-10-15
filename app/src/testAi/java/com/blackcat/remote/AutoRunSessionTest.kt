@@ -211,4 +211,24 @@ class AutoRunSessionTest {
         assertEquals(AutoStage.FINISHED, value.stage)
     }
 
+    @Test fun stoppingAndReopeningCannotAuthorizeOldCollectionShell() {
+        val old = session(full = true, steps = listOf(step(), step("whoami")))
+        var revision = 7L
+        var published = old.steps
+        old.prepareCurrent { published = it; ++revision }
+        val oldCapture = old.current!!
+        assertTrue(old.canRun(oldCapture))
+        old.stop()
+        old.collection.clear()
+
+        // AiPanel retains the last published command list when Auto closes. A new
+        // session deliberately has no ownership of that old generated shell.
+        val reopened = AutoRunSession(published, host, revision, false, 0, true)
+        reopened.prepareCurrent { error("Old helper scripts must never be rewrapped or replayed") }
+        assertEquals(oldCapture.command, reopened.current!!.command)
+        assertFalse(reopened.canRun(reopened.current!!))
+        assertNull(reopened.approve(host, revision, human = false))
+        assertEquals(AutoStage.REVIEW_STEP, reopened.stage)
+    }
+
 }

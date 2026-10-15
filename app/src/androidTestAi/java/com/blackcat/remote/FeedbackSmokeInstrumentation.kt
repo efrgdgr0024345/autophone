@@ -44,10 +44,12 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
     private lateinit var dialog: Dialog
     private val checks = mutableListOf<String>()
     private var autoOnly = false
+    private var imageAuto = false
 
     override fun onCreate(arguments: Bundle?) {
         super.onCreate(arguments)
         autoOnly = arguments?.getString("scenario") == "auto"
+        imageAuto = arguments?.getString("scenario") == "image-auto"
         start()
     }
 
@@ -64,7 +66,8 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
             waitForIdleSync()
             Thread.sleep(900)
             await("visible Home screen") {
-                descendants(activity.window.decorView).filterIsInstance<Button>().any {
+                if (imageAuto) activity.window.decorView.isShown && activity.window.decorView.isLaidOut
+                else descendants(activity.window.decorView).filterIsInstance<Button>().any {
                     it.isShown && it.text.startsWith("Bluetooth")
                 }
             }
@@ -82,6 +85,12 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                 decor.isShown && decor.isAttachedToWindow && decor.isLaidOut && SystemClock.uptimeMillis() - stableSince >= 2000
             }
             startupSettled = true
+            if (imageAuto) {
+                AutoImageDemo(this, activity).run()
+                result.putString("stream", "\nIMAGE_AUTO_DEMO_PASS\n")
+                finish(Activity.RESULT_OK, result)
+                return
+            }
             if (!autoOnly) {
             captureRemoteScreens()
             captureStandaloneScreens()
