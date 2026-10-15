@@ -25,7 +25,8 @@ internal class AutoAssistPanel(
     private val onProposal: (CommandPlan) -> Unit, private val onAutomaticPlan: (CommandPlan) -> Long, private val onClosed: () -> Unit,
     private val observer: AutoObservationClient = OpenAiAutoObserver(),
     commandTargetOverride: CommandTarget? = null,
-    planClientOverride: AutoPlanClient? = null
+    planClientOverride: AutoPlanClient? = null,
+    private val onTaskHandoff: (AutoTaskHandoff) -> Unit = {}
 ) {
     private val dialog = Dialog(activity, android.R.style.Theme_Material_Light_NoActionBar)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -48,6 +49,8 @@ internal class AutoAssistPanel(
     private var revisionRequests = 0
     private var repeatPhotos = 0
     private var activePlan = plan
+    private var handedOff = false
+    private var sessionKeyInput: EditText? = null
     private lateinit var body: LinearLayout
     private lateinit var texture: TextureView
     private lateinit var status: TextView
@@ -60,7 +63,11 @@ internal class AutoAssistPanel(
     fun show() {
         val root = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(Color.WHITE) }
         BlackCatStyle.applySystemBarInsets(root)
-        val bar = LinearLayout(activity).apply { orientation = LinearLayout.HORIZONTAL; setPadding(dp(12), dp(6), dp(12), dp(6)) }
+        val bar = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            isBaselineAligned = false // Measure wrapped, weighted controls at their actual phone width.
+            setPadding(dp(12), dp(6), dp(12), dp(6))
+        }
         autoToggle = button("Auto Play · OFF", true) {
             if (session?.active == true) dismiss()
             else {
@@ -92,7 +99,7 @@ internal class AutoAssistPanel(
             setBackgroundColor(Color.BLACK)
             addView(texture, FrameLayout.LayoutParams(-1, -1))
         }
-        root.addView(frame, LinearLayout.LayoutParams(-1, dp(175)).apply { leftMargin = dp(12); rightMargin = dp(12) })
+        root.addView(frame, LinearLayout.LayoutParams(-1, dp(112)).apply { leftMargin = dp(12); rightMargin = dp(12) })
         voiceStatus = label("Explanations stay visible. Voice is optional in Settings.", 11f).apply {
             setTextColor(BlackCatStyle.MUTED); setPadding(dp(12), dp(5), dp(12), dp(5))
         }
@@ -139,7 +146,7 @@ internal class AutoAssistPanel(
         body.removeAllViews()
         body.addView(label("From step ${startIndex + 1} of ${plan.commands.size}", 16f, true))
         body.addView(label("Destination: ${target.current()?.label ?: "No Bluetooth host"}", 13f, true))
-        body.addView(label("Auto explains each step, types it, photographs the terminal reply and checks that photo with OpenAI. Keep the phone pointed at the terminal and keep that terminal focused. A photo is advisory evidence; it cannot prove an exit code or that the whole system is secure.", 13f))
+        body.addView(label("Keep the terminal focused and the phone pointed at it. Auto runs a command, checks a photo, then updates your plan when needed.", 14f))
         val run = RadioGroup(activity).apply { orientation = RadioGroup.VERTICAL }
         val choiceIds = List(3) { View.generateViewId() }
         listOf("Auto Play · run and adapt this plan", "Auto read-only checks", "Guided · approve and press Enter yourself").forEachIndexed { index, title ->
@@ -147,9 +154,32 @@ internal class AutoAssistPanel(
         }
         run.check(choiceIds[0])
         runChoice = run
+        run.visibility = View.GONE
+        val modeButton = button("Mode · Auto Play", false) {
+            run.visibility = if (run.visibility == View.GONE) View.VISIBLE else View.GONE
+        }
+        run.setOnCheckedChangeListener { _, checked ->
+            modeButton.text = "Mode · " + when (choiceIds.indexOf(checked)) { 1 -> "Read-only"; 2 -> "Guided"; else -> "Auto Play" }
+        }
+        body.addView(modeButton, lp())
         body.addView(run)
-        body.addView(label("Full Auto types and presses Enter for supported commands you approve here, including system changes. It collects paged output and may add diagnostics or change remaining commands to meet your original goal. It stops for destructive/unsupported commands, password prompts, unusable camera views or lost connection. Authenticate on the computer first if needed; the app never handles passwords. Read-only Auto pauses before changes. Guided mode uses manual Enter.", 12f))
         body.addView(button(if (cameraStarted) "Restart camera preview" else "Start live camera preview", false) { startCamera() }, lp())
+        val keyField = EditText(activity).apply {
+            hint = "API key for this Auto session"
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+            isSingleLine = true; isSaveEnabled = false
+            importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+            imeOptions = android.view.inputmethod.EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING
+            filters = arrayOf(android.text.InputFilter.LengthFilter(512))
+            BlackCatStyle.styleInput(activity, this)
+            visibility = View.GONE
+        }
+        sessionKeyInput = keyField
+        body.addView(button("Use a temporary API key here", false) {
+            keyField.visibility = View.VISIBLE; keyField.requestFocus()
+            status.text = "Enter a key for this session, or leave empty to use your remembered key. It is checked with the first photo request."
+        }, lp())
+        body.addView(keyField, lp())
         val consent = CheckBox(activity).apply {
             text = "I approve this goal and destination, automatic Enter, new diagnostic commands and plan changes for this goal, and automatic photos to OpenAI. The terminal is focused and the camera frame contains no secrets."
             isChecked = false; minHeight = dp(56); setTextColor(Color.WHITE)
@@ -157,9 +187,11 @@ internal class AutoAssistPanel(
         consentChoice = consent
         body.addView(consent)
         val voice = selectedVoice()
-        body.addView(label("This session permits up to ${AutoRunSession.MAX_CAPTURES} photo checks and up to ${AutoRunSession.MAX_REVISIONS} bounded plan revisions. These use your OpenAI API account and may incur charges. Voice: ${voice.label}. OpenAI voice sends explanation text to OpenAI for paid AI-generated speech. Output is stored temporarily in a private /tmp/bc-* folder on Linux and removed after the last page. Stopping early can leave that folder on Linux. Stop/close or leaving the app ends consent and clears phone session key/audio/photos.", 12f))
-        body.addView(button("Stop / close", false) { dismiss() }, lp())
         body.addView(button("Start reviewed session", true) { startSession(choiceIds.indexOf(run.checkedRadioButtonId), consent.isChecked) }, lp())
+        val limits = label("Full Auto presses Enter, may change the system and can add diagnostics for this goal. It stops on passwords, unsupported commands, uncertain photos or disconnection. Authenticate on the computer first; passwords are never typed by the app. Read-only mode pauses before changes; Guided uses manual Enter.\n\nUp to ${AutoRunSession.MAX_CAPTURES} paid photo checks and ${AutoRunSession.MAX_REVISIONS} plan revisions. Voice: ${voice.label}; OpenAI speech uses paid audio requests. Photos are advisory, not a security guarantee. Linux output is held in a private /tmp/bc-* folder and cleaned after collection. Stopping early can leave it there. Leaving the app ends consent and clears the session key/audio/photos.", 13f).apply { visibility = View.GONE }
+        body.addView(button("Session details and limits", false) { limits.visibility = if (limits.visibility == View.GONE) View.VISIBLE else View.GONE }, lp())
+        body.addView(limits)
+        body.addView(button("Stop / close", false) { dismiss() }, lp())
         plan.commands.drop(startIndex).forEachIndexed { offset, step ->
             body.addView(label("${startIndex + offset + 1}. ${step.title}", 14f, true), lp())
             body.addView(label(step.command, 12f).apply { typeface = Typeface.MONOSPACE; setTextIsSelectable(true) })
@@ -222,12 +254,22 @@ internal class AutoAssistPanel(
         runChoice?.isEnabled = false
         consentChoice?.isEnabled = false
         // A temporary key is consumed only after this explicit session approval.
-        val enteredKey = PendingApiKey.take(activity)
+        val explicitKey = sessionKeyInput?.text?.toString()?.trim().orEmpty()
+        sessionKeyInput?.text?.clear()
+        val enteredKey = if (explicitKey.isNotBlank()) {
+            PendingApiKey.clear(activity)
+            explicitKey
+        } else PendingApiKey.take(activity)
         work = scope.launch {
             try {
                 val value = if (enteredKey.isNotBlank()) enteredKey else withContext(Dispatchers.IO) { vault.read().orEmpty() }
                 if (closed || target.current() != host || revision() != snapshotRevision) return@launch
-                if (!OpenAiPlanner.validKey(value)) { status.text = "Add/check your API key in Settings before starting Auto."; return@launch }
+                if (!OpenAiPlanner.validKey(value)) {
+                    sessionKeyInput?.visibility = View.VISIBLE
+                    sessionKeyInput?.requestFocus()
+                    status.text = "Enter an API key above and start again. A temporary key used to generate the plan has already been consumed."
+                    return@launch
+                }
                 key = value
                 session = AutoRunSession(plan.commands.toList(), host, snapshotRevision, mode == 1, startIndex, runAllReviewed = mode == 0)
                 dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -245,7 +287,9 @@ internal class AutoAssistPanel(
                 if (!preflight.allowsNext("")) { pause("Camera cannot clearly see an idle terminal prompt. No command was sent."); return@launch }
                 observation = null
                 advance(current)
-            } catch (e: CancellationException) { throw e }
+            } catch (e: TimeoutCancellationException) { pause("Initial camera check timed out. No command was sent. Check the connection and try a fresh session.") }
+              catch (e: CancellationException) { throw e }
+              catch (e: PlanException) { pause(e.message ?: "Initial camera check failed. No command was sent.") }
               catch (_: Exception) { pause("Could not prepare Auto securely. No command was sent.") }
         }
     }
@@ -262,10 +306,12 @@ internal class AutoAssistPanel(
         body.addView(label(if (current.stage == AutoStage.FINISHED) "${current.steps.size} operations observed" else "Step ${current.index + 1} of ${current.steps.size} · ${current.stage.name.replace('_', ' ').lowercase()}", 14f, true))
         body.addView(label("Destination: ${current.host.label}", 12f))
         if (step != null) {
-            body.addView(label(step.title, 18f, true), lp())
-            body.addView(label(step.explanation, 14f), lp())
-            body.addView(label(step.command, 13f).apply { typeface = Typeface.MONOSPACE; setTextIsSelectable(true) }, lp())
-            body.addView(label("Expected: ${step.expectedResult}", 12f))
+            val operation = current.collection.operation(step.command)
+            val task = operation?.ticket?.original ?: step
+            body.addView(label(task.title, 18f, true), lp())
+            body.addView(label(task.command, 15f).apply { typeface = Typeface.MONOSPACE; setTextIsSelectable(true) }, lp())
+            body.addView(label(if (operation == null) task.explanation else step.explanation, 14f), lp())
+            body.addView(label("Expected: ${task.expectedResult}", 13f))
             body.addView(label("Risk: ${step.risk} · ${if (step.requiresAdmin) "admin" else "no admin flag"}", 12f))
             step.warnings.forEach { body.addView(label(it, 12f)) }
         }
@@ -507,6 +553,7 @@ internal class AutoAssistPanel(
     }
 
     private fun stopWork(finished: Boolean = false) {
+        val handoff = if (!handedOff) session?.handoff() else null
         dialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if (!finished) session?.stop()
         observer.cancel()
@@ -517,19 +564,23 @@ internal class AutoAssistPanel(
         photoWaiter = null
         narrator.stop()
         key = ""
+        sessionKeyInput?.text?.clear()
         session?.collection?.clear()
         cameraGeneration++
         camera?.close()
         camera = null
         cameraStarted = false
+        if (handoff != null) { handedOff = true; onTaskHandoff(handoff) }
     }
 
-    private suspend fun capturePhoto(): ByteArray = withTimeout(12000) {
+    private suspend fun capturePhoto(): ByteArray = try { withTimeout(12000) {
         suspendCancellableCoroutine { waiter ->
             photoWaiter = waiter
             waiter.invokeOnCancellation { activity.runOnUiThread { if (photoWaiter === waiter) photoWaiter = null } }
             camera?.capture() ?: waiter.resumeWithException(PlanException("Camera unavailable."))
         }
+    } } catch (_: TimeoutCancellationException) {
+        throw PlanException("The camera did not deliver a photo in time. Auto stopped; no next command was sent. Restart the preview before a fresh session.")
     }
 
     private fun selectedVoice(): NarrationVoice {

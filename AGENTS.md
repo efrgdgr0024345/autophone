@@ -145,6 +145,21 @@ Test at phone widths equivalent to 320, 360, 390 and 412 dp, with large text, so
 
 # Priority 5 — change control
 
+## Reviewed UI14 continuation — 15 October 2026
+
+The user authorizes fixing the reviewed Auto lifecycle/feedback gaps, improving command and
+screen flow against mobile usability guidance, a black-cat-on-white launcher icon, and stronger
+simulator/emulator verification before physical testing. Start/rollback:
+`5a6968d4ffe8e8b28e4bdb021bbb9ffda17489f7`; branch `feature/ui14-command-flow-validation`.
+Keep all frozen transport/manual/camera/vault files, ordinary TYPE ONLY behavior, permission
+sets, dependencies/toolchain and model pins. Auto may hand off only canonical remaining task
+commands on stop; capture/page helpers are session-only. A possibly transmitted task must never
+be requeued automatically. An explicit temporary key field in Auto is memory-only, cleared on
+start/stop; it does not change PendingApiKey's one-use policy or encrypted Settings storage.
+Test-only emulator runtimes, synthetic Linux/image/network fixtures and UI geometry checks are
+authorized; distinguish simulated providers from live OpenAI and physical Bluetooth evidence.
+No baseline promotion, merge, overwrite of prior APKs or widening of command permissions.
+
 ## Reviewed UI13 continuation — 15 October 2026
 
 The user explicitly requests visible exact-command lists, tap-to-expand explanations, a prominent

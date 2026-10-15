@@ -79,6 +79,10 @@ internal object AutoRunPolicy {
 
 internal enum class AutoStage { REVIEW_STEP, TYPING, MANUAL_ENTER, WAITING, ANALYZING, REVIEW_RESULT, BLOCKED, FINISHED, STOPPED }
 
+/** Task-level handoff only: generated collection shell never survives as a runnable plan. */
+internal class AutoTaskHandoff(val remaining: List<SuggestedCommand>, val lastAttempted: SuggestedCommand?,
+                               val attemptedCount: Int, val finished: Boolean)
+
 /** Foreground, in-memory scope. No approval survives a stop, host change or plan revision. */
 internal class AutoRunSession(
     steps: List<SuggestedCommand>, val host: HostSession, revision: Long,
@@ -93,6 +97,9 @@ internal class AutoRunSession(
     val collection = AutoOutputCollection()
     val transmitted: List<String> get() = executed.toList()
     private val executed = mutableSetOf<String>()
+    private val startedIndexes = mutableSetOf<Int>()
+    private val startedTickets = mutableSetOf<String>()
+    private val attemptedTasks = mutableListOf<SuggestedCommand>()
     var revisions = 0
         private set
     var index = startIndex
@@ -132,9 +139,34 @@ internal class AutoRunSession(
 
     fun typed(approval: AutoStepApproval): Boolean {
         if (stage != AutoStage.TYPING || approval.generation != generation || approval.index != index) return false
+        transmissionStarting()
         executed.add(collection.original(approval.text.command))
         stage = if (approval.enter) AutoStage.WAITING else AutoStage.MANUAL_ENTER
         return true
+    }
+
+    /** Called at the final send boundary, including transmissions interrupted halfway. */
+    fun transmissionStarting() {
+        check(stage == AutoStage.TYPING)
+        if (!startedIndexes.add(index)) return
+        val step = current!!
+        val operation = collection.operation(step.command)
+        if (operation == null) attemptedTasks.add(step)
+        else if (startedTickets.add(operation.ticket.token)) attemptedTasks.add(operation.ticket.original)
+    }
+
+    fun handoff(): AutoTaskHandoff {
+        val seenTickets = mutableSetOf<String>()
+        val pending = steps.drop(index).mapIndexedNotNull { offset, step ->
+            val operation = collection.operation(step.command)
+            if (operation != null) {
+                if (operation.ticket.token in startedTickets || !seenTickets.add(operation.ticket.token)) null
+                else operation.ticket.original
+            } else if (index + offset in startedIndexes ||
+                (!AutoRunPolicy.isReadOnly(step) && attemptedTasks.any { AutoRunPolicy.identity(it.command) == AutoRunPolicy.identity(step.command) })) null
+            else step
+        }
+        return AutoTaskHandoff(pending, attemptedTasks.lastOrNull(), attemptedTasks.size, stage == AutoStage.FINISHED)
     }
 
     fun userRanCommand(): Boolean {
@@ -232,6 +264,7 @@ internal object AutoReadOnlySender {
     suspend fun send(approval: AutoStepApproval, session: AutoRunSession, target: CommandTarget,
                      revision: () -> Long): SendOutcome {
         if (!session.accepts(approval, target.current(), revision())) return SendOutcome.REJECTED
+        session.transmissionStarting()
         val outcome = ApprovedCommandSender.send(approval.text, target)
         if (outcome != SendOutcome.REPORTS_ACCEPTED || !approval.enter) return outcome
         currentCoroutineContext().ensureActive()

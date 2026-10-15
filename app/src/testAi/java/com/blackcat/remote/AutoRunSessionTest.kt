@@ -231,4 +231,58 @@ class AutoRunSessionTest {
         assertEquals(AutoStage.REVIEW_STEP, reopened.stage)
     }
 
+    @Test fun countdownStopHandsOffCanonicalCommandsForAFreshReviewedSession() {
+        val old = session(full = true, steps = listOf(step(), step("whoami")))
+        old.prepareCurrent { 8 }
+        old.approve(host, 8, human = false)!! // No send boundary reached during the countdown.
+        old.stop()
+        val pending = old.handoff()
+        assertEquals(listOf("id", "whoami"), pending.remaining.map { it.command })
+        assertEquals(0, pending.attemptedCount)
+        val fresh = AutoRunSession(pending.remaining, host, 9, false, 0, true)
+        fresh.prepareCurrent { 10 }
+        assertTrue(fresh.canRun(fresh.current!!))
+        assertNotNull(fresh.approve(host, 10, human = false))
+    }
+
+    @Test fun interruptedTransmissionIsExcludedFromHandoffEvenBeforeTypedCompletes() = runBlocking {
+        val old = session(full = true, steps = listOf(step(), step("whoami")))
+        old.prepareCurrent { 8 }
+        val target = Target(host).apply { callback = { if (reports.size == 1) old.stop() } }
+        val approval = old.approve(host, 8, false)!!
+        assertEquals(SendOutcome.HOST_CHANGED, AutoReadOnlySender.send(approval, old, target) { 8 })
+        val pending = old.handoff()
+        assertEquals(listOf("whoami"), pending.remaining.map { it.command })
+        assertEquals("id", pending.lastAttempted!!.command)
+        assertEquals(1, pending.attemptedCount)
+        assertTrue(target.reports.none { it.second == 40 })
+    }
+
+    @Test fun stoppingDuringPagesDropsHelpersButPreservesLaterReadOnlyVerification() {
+        val old = session(full = true, steps = listOf(step(), step("whoami"), step()))
+        old.prepareCurrent { 8 }
+        old.typed(old.approve(host, 8, false)!!)
+        old.observed(old.captured()!!)
+        val capture = old.collection.operation(old.current!!.command)!!
+        old.insertCollection(old.collection.nextPage(capture)!!, 9)
+        old.stop()
+        val pending = old.handoff()
+        assertEquals(listOf("whoami", "id"), pending.remaining.map { it.command })
+        assertEquals(1, pending.attemptedCount)
+        assertFalse(pending.finished)
+        assertTrue(pending.remaining.none { it.command.contains("/tmp/bc-") })
+    }
+
+    @Test fun finishedHandoffHasNoRunnableCommandsAndDoesNotClaimHumanConfirmation() {
+        val value = session(auto = true)
+        value.typed(value.approve(host, 7, false)!!)
+        value.observed(value.captured()!!)
+        value.next(true, false)
+        val result = value.handoff()
+        assertTrue(result.finished)
+        assertTrue(result.remaining.isEmpty())
+        assertEquals(1, result.attemptedCount)
+        assertEquals("id", result.lastAttempted!!.command)
+    }
+
 }
