@@ -43,8 +43,13 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
     private lateinit var panel: Any
     private lateinit var dialog: Dialog
     private val checks = mutableListOf<String>()
+    private var autoOnly = false
 
-    override fun onCreate(arguments: Bundle?) { super.onCreate(arguments); start() }
+    override fun onCreate(arguments: Bundle?) {
+        super.onCreate(arguments)
+        autoOnly = arguments?.getString("scenario") == "auto"
+        start()
+    }
 
     override fun onStart() {
         val result = Bundle()
@@ -77,6 +82,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                 decor.isShown && decor.isAttachedToWindow && decor.isLaidOut && SystemClock.uptimeMillis() - stableSince >= 2000
             }
             startupSettled = true
+            if (!autoOnly) {
             captureRemoteScreens()
             captureStandaloneScreens()
             onMain {
@@ -308,6 +314,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                 pass("Suspension invalidates pending work while retaining only the in-memory plan")
                 invoke(panel, "dismiss")
             }
+            }
             captureDetailedAndAuto()
             result.putString("stream", "\nUI12_SMOKE_PASS ${checks.size}\n" + checks.joinToString("\n"))
             finish(Activity.RESULT_OK, result)
@@ -467,11 +474,12 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
 
         val stoppedTarget = FixtureCommandTarget(host)
         val stoppedObserver = FixtureAutoObserver()
+        var stoppedRevision = 1L
         onMain {
             PendingApiKey.put(activity, "sk-ui12-synthetic-stop-not-a-real-key")
             auto = AutoAssistPanel(activity, field(activity, "hid") as HidManager, autoPlan,
                 "Inspect this disposable fixture", "Ubuntu Linux / Bash", PlanCodec.DEFAULT_MODEL, 0,
-                { 1L }, {}, { 2L }, {}, stoppedObserver, stoppedTarget)
+                { stoppedRevision }, {}, { ++stoppedRevision }, {}, stoppedObserver, stoppedTarget)
             auto!!.show()
             autoDialog = field(auto!!, "dialog") as Dialog
             (field(auto!!, "consentChoice") as android.widget.CheckBox).isChecked = true
