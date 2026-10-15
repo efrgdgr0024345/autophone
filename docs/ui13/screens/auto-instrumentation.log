@@ -1,0 +1,11 @@
+UI12_SMOKE_START
+PASS: A detailed 18-step roadmap remains visible; selection opens one approval screen without a second modal or HID input
+PASS: Opening Auto and Start without session consent cause no API/HID requests
+PASS: Auto captures two numbered pages, reconciles their evidence, replaces the remaining plan with a new diagnostic and finishes without manual approval; real Camera2 photos, synthetic vision/planner/HID
+PASS: Stopping during the Auto countdown sends no fake-target keys or Enter and clears camera/key state without replay
+
+UI12_SMOKE_PASS 4
+PASS: A detailed 18-step roadmap remains visible; selection opens one approval screen without a second modal or HID input
+PASS: Opening Auto and Start without session consent cause no API/HID requests
+PASS: Auto captures two numbered pages, reconciles their evidence, replaces the remaining plan with a new diagnostic and finishes without manual approval; real Camera2 photos, synthetic vision/planner/HID
+PASS: Stopping during the Auto countdown sends no fake-target keys or Enter and clears camera/key state without replay

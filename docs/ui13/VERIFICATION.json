@@ -1,0 +1,15 @@
+{
+  "source": "7db3aed5607687236fb49bf493daf38a38ce357e",
+  "unit_tests": 148,
+  "policy_mutation_tests": 83,
+  "native_core_passed": 16,
+  "native_auto_passed": 4,
+  "native_full_run": "Auto deadline exceeded; focused rerun passed",
+  "screens": 36,
+  "codeql_files": 46,
+  "codeql_security_findings": 0,
+  "codeql_quality_notes": 17,
+  "lint_errors": 0,
+  "ai_sha256": "e87bc0c24f3514a45dbea88cfddd05fb8d4d5f1c83cd7eaed0880e1c2f0a4ea6",
+  "offline_sha256": "600d7d12dc42222ac0fec4db7638d161210d8f5b707fb256df5c3e8706e0c3a9"
+}
