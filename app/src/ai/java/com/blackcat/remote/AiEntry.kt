@@ -764,7 +764,7 @@ private class AiPanel(
                     addView(label(command.title, 14f, INK, Typeface.BOLD))
                     addView(label(command.command, 13f, INK).apply {
                         typeface = Typeface.MONOSPACE
-                        breakStrategy = android.text.Layout.BREAK_STRATEGY_SIMPLE
+                        breakStrategy = android.graphics.text.LineBreaker.BREAK_STRATEGY_SIMPLE
                         hyphenationFrequency = android.text.Layout.HYPHENATION_FREQUENCY_NONE
                     })
                     addView(label("Tap for explanation and details", 11f, MUTED))
@@ -1342,7 +1342,7 @@ private class AiPanel(
         background = round(COMMAND_BG, 13)
         addView(label(command, 14f, COMMAND_TEXT, Typeface.NORMAL).apply {
             typeface = Typeface.MONOSPACE
-            breakStrategy = android.text.Layout.BREAK_STRATEGY_SIMPLE
+            breakStrategy = android.graphics.text.LineBreaker.BREAK_STRATEGY_SIMPLE
             hyphenationFrequency = android.text.Layout.HYPHENATION_FREQUENCY_NONE
             setTextIsSelectable(true)
         })
