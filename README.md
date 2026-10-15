@@ -24,6 +24,10 @@ verification of 16 core plus four Auto cases (focused rerun after a software-emu
 and [physical acceptance](docs/UI13-ADAPTIVE-AUTO-TEST-PLAN.md). Real phone, vision/voice/API
 and Linux execution testing remain required. This is a test candidate; old releases are unchanged.
 
+[15 October Auto review and actual camera images](docs/ui13/auto-review/README.md) records
+the confirmed off/on restart problem, preflight feedback gaps and the limits of the attempted
+image-driven demo. A full real-phone/OpenAI Auto demonstration has not been completed.
+
 ## UI12.1 test download — detailed plans and Auto
 
 Full direct APK download URL:

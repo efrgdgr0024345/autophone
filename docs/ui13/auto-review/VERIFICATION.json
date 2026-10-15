@@ -1,0 +1,35 @@
+{
+  "reviewed_commit": "fe98274ba4d300b7dabdc82021cbdc9536fe9a74",
+  "production_source": "7db3aed5607687236fb49bf493daf38a38ce357e",
+  "apk_sha256": "e87bc0c24f3514a45dbea88cfddd05fb8d4d5f1c83cd7eaed0880e1c2f0a4ea6",
+  "production_changed": false,
+  "native_positive_image_loop_completed": false,
+  "camera_terminal_image_captured": true,
+  "live_openai_tested": false,
+  "physical_bluetooth_tested": false,
+  "unit_tests": {
+    "ai": {
+      "tests": 122,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0
+    },
+    "offline": {
+      "tests": 27,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0
+    }
+  },
+  "mutation_tests": {
+    "policy": 23,
+    "mobile": 24,
+    "feedback": 18,
+    "auto": 18
+  },
+  "confirmed_findings": [
+    "Off/on cannot reuse published collection helpers in a fresh session",
+    "Initial preflight hides redacted cause",
+    "Temporary plan key consumed before Auto (privacy/UX tradeoff)"
+  ]
+}
