@@ -29,7 +29,8 @@ import java.util.concurrent.TimeUnit
  * renders stdout into the emulator video camera, and exchanges reviewed model responses.
  * This deliberately does NOT claim to verify the production OpenAI network/model boundary.
  */
-internal class AutoImageDemo(private val instrumentation: Instrumentation, private val activity: Activity) {
+internal class AutoImageDemo(private val instrumentation: Instrumentation, private val activity: Activity,
+                             private val injectedFrames: Boolean = false, private val runId: String = "") {
     private val folder = File(activity.filesDir, "image-auto-demo")
     private lateinit var auto: AutoAssistPanel
     private lateinit var dialog: Dialog
@@ -97,6 +98,7 @@ internal class AutoImageDemo(private val instrumentation: Instrumentation, priva
         check(android.os.Build.HARDWARE in setOf("ranchu", "goldfish"))
         folder.deleteRecursively()
         check(folder.mkdirs())
+        if (runId.isNotBlank()) File(folder, "run-id").writeText(runId)
         val observer = object : AutoObservationClient {
             override fun cancel() {}
             override suspend fun observe(goal: String, step: SuggestedCommand, target: String, model: String,
@@ -104,13 +106,20 @@ internal class AutoImageDemo(private val instrumentation: Instrumentation, priva
                 check(key == "sk-image-demo-not-a-real-key")
                 check(jpeg.size > 100 && jpeg[0] == 0xff.toByte() && jpeg[1] == 0xd8.toByte())
                 observations++
+                val image = if (!injectedFrames) jpeg else withContext(Dispatchers.IO) {
+                    val expected = if (preflight) "" else step.command
+                    val ready = File(folder, "frame-ready.json")
+                    while (!ready.exists() || JSONObject(ready.readText()).getString("command") != expected) delay(150)
+                    File(folder, "frame.jpg").readBytes()
+                }
                 // Build the REAL production request, excluding credentials, to check the image/wire contract too.
-                val body = AutoObservationCodec.request(goal, step, target, model, jpeg, preflight, collectionContext)
+                val body = AutoObservationCodec.request(goal, step, target, model, image, preflight, collectionContext)
                 val data = JSONObject().put("preflight", preflight).put("command", step.command)
                     .put("collection_context", collectionContext).put("goal", goal)
                     .put("production_instructions", body.getString("instructions"))
                     .put("production_schema", body.getJSONObject("text").getJSONObject("format").getJSONObject("schema"))
-                return AutoObservationCodec.parseResponse(exchange("observation", data, jpeg))
+                return try { AutoObservationCodec.parseResponse(exchange("observation", data, image)) }
+                    finally { if (injectedFrames) image.fill(0) }
             }
         }
         val planner = object : AutoPlanClient {
@@ -186,6 +195,7 @@ internal class AutoImageDemo(private val instrumentation: Instrumentation, priva
                 check(field(auto, "camera") == null && field(auto, "key") == "")
                 write("result.json", JSONObject().put("passed", true).put("observations", observations)
                     .put("commands_executed", commandNumber).put("plan_revisions", revisions)
+                    .put("injected_vision_frames", injectedFrames)
                     .put("app_openai_network_tested", false).put("physical_bluetooth_tested", false).toString(2))
             }
         } finally {

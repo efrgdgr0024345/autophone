@@ -45,11 +45,17 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
     private val checks = mutableListOf<String>()
     private var autoOnly = false
     private var imageAuto = false
+    private var layoutOnly = false
+    private var injectedImages = false
+    private var imageRunId = ""
 
     override fun onCreate(arguments: Bundle?) {
         super.onCreate(arguments)
         autoOnly = arguments?.getString("scenario") == "auto"
-        imageAuto = arguments?.getString("scenario") == "image-auto"
+        injectedImages = arguments?.getString("scenario") == "image-injected"
+        imageRunId = arguments?.getString("demoRunId").orEmpty()
+        imageAuto = arguments?.getString("scenario") == "image-auto" || injectedImages
+        layoutOnly = arguments?.getString("scenario") == "layout"
         start()
     }
 
@@ -86,8 +92,14 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
             }
             startupSettled = true
             if (imageAuto) {
-                AutoImageDemo(this, activity).run()
+                AutoImageDemo(this, activity, injectedImages, imageRunId).run()
                 result.putString("stream", "\nIMAGE_AUTO_DEMO_PASS\n")
+                finish(Activity.RESULT_OK, result)
+                return
+            }
+            if (layoutOnly) {
+                captureFlowMatrix()
+                result.putString("stream", "\nUI14_LAYOUT_PASS ${checks.size}\n" + checks.joinToString("\n"))
                 finish(Activity.RESULT_OK, result)
                 return
             }
@@ -354,6 +366,117 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
     private fun command(title: String, text: String) = SuggestedCommand(title, text,
         "Read-only synthetic test step.", "low", false, "Inspect the result yourself.", emptyList())
 
+    @Suppress("DEPRECATION")
+    private fun captureFlowMatrix() {
+        val original = android.content.res.Configuration(activity.resources.configuration)
+        val metrics = android.util.DisplayMetrics().apply { setTo(activity.resources.displayMetrics) }
+        val long = "journalctl --no-pager -n 40 -u demo-service-" + "a".repeat(180)
+        val plan = CommandPlan("A synthetic detailed service diagnosis. All command selection is passive.", emptyList(), emptyList(),
+            listOf(command("Read the service log", long)) + (2..18).map { command("Diagnostic $it", "id") },
+            listOf(PlanPhase("Inspect service state", "Collect evidence before changing the system.", listOf("Preserve access."))))
+        try {
+            for (scale in listOf(1f, 1.3f, 2f)) for (width in listOf(320, 360, 390, 412)) {
+                onMain {
+                    val config = android.content.res.Configuration(original).apply { fontScale = scale }
+                    val display = android.util.DisplayMetrics().apply { setTo(metrics); scaledDensity = density * scale }
+                    activity.resources.updateConfiguration(config, display)
+                    panel = Class.forName("com.blackcat.remote.AiPanel").declaredConstructors.single().apply { isAccessible = true }
+                        .newInstance(activity, field(activity, "hid") as HidManager, {})
+                    invoke(panel, "show")
+                    dialog = field(panel, "dialog") as Dialog
+                    dialog.window!!.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    dialog.window!!.setLayout((width * display.density).toInt(), ((if (width == 320) 640 else 780) * display.density).toInt())
+                    (field(panel, "goal") as EditText).setText("Diagnose this Linux service while preserving access and collecting all relevant evidence")
+                    workspace().replace(plan)
+                    setField(panel, "selected", 0)
+                    invoke(panel, "renderAll")
+                }
+                await("matrix window layout $width/$scale") { dialog.window!!.decorView.isLaidOut }
+                onMain {
+                    check((field(panel, "goalStage") as View).visibility == View.GONE) { "Goal form buried the ready command list" }
+                    fullyVisible(findButton(dialog, "▶ Auto Play"), 48)
+                    fullyVisible(findButton(dialog, "Voice ·"), 48)
+                    check(texts(dialog).contains(long)) { "Exact long command missing from plan" }
+                    findButton(dialog, "Start with step 1").performClick()
+                }
+                screenshot("matrix-$width-${(scale * 100).toInt()}-step")
+                onMain {
+                    val footer = field(panel, "manualActionBar") as View
+                    fullyVisible(footer, 48)
+                    fullyVisible(findButton(dialog, "Connect Bluetooth first"), 48)
+                    fullyVisible(findButton(dialog, "▶ Auto Play"), 48)
+                    val commandView = descendants(dialog.window!!.decorView).filterIsInstance<TextView>()
+                        .first { it.isShown && it.text.toString() == long }
+                    val available = commandView.width - commandView.totalPaddingLeft - commandView.totalPaddingRight
+                    check(available > 0)
+                    for (line in 0 until commandView.layout.lineCount) {
+                        check(commandView.layout.getLineMax(line) <= available + 1) { "Visible command overflows at width $width / font $scale: ${commandView.layout.getLineMax(line)} > $available" }
+                        check(commandView.layout.getEllipsisCount(line) == 0) { "Command was silently truncated" }
+                    }
+                    check((field(panel, "contentHost") as View).height >= (80 * metrics.density).toInt()) { "Pinned controls leave no readable task space" }
+                    pass("$width dp / font $scale: exact command wraps, goal collapses, Auto/Voice and single send action remain visible")
+                    switchTab("PLAN")
+                }
+                screenshot("matrix-$width-${(scale * 100).toInt()}-plan")
+                if (scale == 1f && width == 320) onMain {
+                    findButton(dialog, "Start with step 1").performClick()
+                    dialog.onBackPressed()
+                    check((field(panel, "planView") as View).visibility == View.VISIBLE)
+                    dialog.onBackPressed()
+                    check(field(panel, "panelVisible") == false && workspace().plan === plan)
+                    invoke(panel, "show")
+                    check(workspace().plan === plan)
+                    pass("System Back returns Step to Plan, then Home, while preserving the draft without input or replay")
+                }
+                onMain { invoke(panel, "dismiss") }
+                var setup: AutoAssistPanel? = null
+                onMain {
+                    setup = AutoAssistPanel(activity, field(activity, "hid") as HidManager, plan,
+                        "Diagnose the synthetic service", "Linux", PlanCodec.DEFAULT_MODEL, 0, { 1L }, {}, { 2L }, {})
+                    setup!!.show()
+                    dialog = field(setup!!, "dialog") as Dialog
+                    dialog.window!!.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    dialog.window!!.setLayout((width * displayDensity()).toInt(), ((if (width == 320) 640 else 780) * displayDensity()).toInt())
+                }
+                screenshot("matrix-$width-${(scale * 100).toInt()}-auto")
+                onMain {
+                    fullyVisible(field(setup!!, "autoToggle") as View, 48)
+                    fullyVisible(field(setup!!, "voiceToggle") as View, 48)
+                    check(((field(setup!!, "body") as View).parent as ScrollView).height >= (80 * displayDensity()).toInt())
+                    check(field(setup!!, "session") == null && field(setup!!, "key") == "")
+                    pass("$width dp / font $scale: Auto controls stay visible and opening setup sends no request/input")
+                    setup!!.dismiss()
+                }
+            }
+            onMain {
+                val icon = activity.packageManager.getApplicationIcon(activity.packageName)
+                val bitmap = Bitmap.createBitmap(432, 432, Bitmap.Config.ARGB_8888)
+                val canvas = android.graphics.Canvas(bitmap)
+                canvas.drawColor(android.graphics.Color.WHITE)
+                icon.setBounds(0, 0, 432, 432); icon.draw(canvas)
+                val top = bitmap.getPixel(216, 65)
+                val output = File(targetContext.filesDir, "ui12-rendered").apply { mkdirs() }
+                File(output, "launcher-icon.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+                check(android.graphics.Color.red(top) >= 235 && android.graphics.Color.green(top) >= 235 && android.graphics.Color.blue(top) >= 235) {
+                    "Launcher background must be white, including inside its adaptive mask: $top"
+                }
+                bitmap.recycle()
+                pass("Packaged adaptive launcher icon is drawn by Android; no reference mock substituted")
+            }
+        } finally {
+            onMain { activity.resources.updateConfiguration(original, metrics) }
+        }
+    }
+
+    private fun fullyVisible(view: View, minimumDp: Int) {
+        val rect = Rect()
+        check(view.isShown && view.getGlobalVisibleRect(rect) && rect.height() >= view.height - 1 && rect.width() >= view.width - 1) {
+            "Control clipped: ${view.contentDescription ?: (view as? TextView)?.text}"
+        }
+        check(view.height >= minimumDp * activity.resources.displayMetrics.density - 1) { "Touch target below $minimumDp dp" }
+    }
+    private fun displayDensity() = activity.resources.displayMetrics.density
+
     private fun captureDetailedAndAuto() {
         onMain {
             val manager = field(activity, "hid") as HidManager
@@ -505,6 +628,45 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
             check(field(auto!!, "key") == "" && field(auto!!, "camera") == null)
             pass("Stopping during the Auto countdown sends no fake-target keys or Enter and clears camera/key state without replay")
         }
+
+        val failedTarget = FixtureCommandTarget(host)
+        var handoff: AutoTaskHandoff? = null
+        val failedObserver = object : AutoObservationClient {
+            override fun cancel() {}
+            override suspend fun observe(goal: String, step: SuggestedCommand, target: String, model: String,
+                key: String, jpeg: ByteArray, preflight: Boolean, collectionContext: String): AutoObservation {
+                check(preflight && jpeg.size > 100 && key == "sk-ui14-inline-fixture-not-a-real-key")
+                throw PlanException("Synthetic quota failure: check API billing before starting again.")
+            }
+        }
+        onMain {
+            auto!!.dismiss()
+            auto = AutoAssistPanel(activity, field(activity, "hid") as HidManager, autoPlan,
+                "Inspect this disposable fixture", "Linux", PlanCodec.DEFAULT_MODEL, 0, { 1L }, {}, { 2L }, {},
+                failedObserver, failedTarget, onTaskHandoff = { handoff = it })
+            auto!!.show()
+            autoDialog = field(auto!!, "dialog") as Dialog
+            autoDialog!!.window!!.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            findButton(autoDialog!!, "Use a temporary API key here").performClick()
+            (field(auto!!, "sessionKeyInput") as EditText).setText("sk-ui14-inline-fixture-not-a-real-key")
+            (field(auto!!, "consentChoice") as android.widget.CheckBox).isChecked = true
+            findButton(autoDialog!!, "Start live camera preview").performClick()
+        }
+        await("error fixture preview") { field(auto!!, "cameraStarted") == true && (field(auto!!, "previewFrames") as Int) >= 3 }
+        onMain { findButton(autoDialog!!, "Start reviewed session").performClick() }
+        await("useful preflight error without a command") {
+            (field(auto!!, "session") as AutoRunSession?)?.stage == AutoStage.STOPPED
+        }
+        onMain {
+            check((field(auto!!, "status") as TextView).text.contains("Synthetic quota failure"))
+            check((field(auto!!, "sessionKeyInput") as EditText).text.isEmpty())
+            check(field(auto!!, "key") == "" && field(auto!!, "camera") == null)
+            check(failedTarget.reports.isEmpty())
+            check(handoff!!.remaining.map { it.command } == listOf("id", "whoami") && handoff!!.attemptedCount == 0)
+            pass("Inline session key clears after approval; preflight provider failure stays visible, sends no keys, and hands off the canonical plan")
+        }
+        screenshot("auto-initial-error", autoDialog)
+        onMain { auto!!.dismiss() }
     }
 
     private class FixtureCommandTarget(private val host: HostSession) : CommandTarget {
