@@ -9,8 +9,8 @@ android {
         applicationId 'com.blackcat.remote'
         minSdk 28
         targetSdk 35
-        versionCode 17
-        versionName '14.1-timeout-recovery'
+        versionCode 18
+        versionName '14.2-live-api-validation'
     }
     flavorDimensions 'capability'
     productFlavors {

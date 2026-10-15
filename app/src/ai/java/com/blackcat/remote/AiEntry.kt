@@ -661,7 +661,7 @@ private class AiPanel(
             else -> "Next step"
         }
         nextCopy.text = when {
-            busy -> "Waiting for OpenAI. Nothing is being typed."
+            busy -> "Building the detailed plan can take up to 3 minutes. You can cancel; nothing is being typed."
             count > 0 -> "Choose one step. Selection alone sends nothing."
             currentPlan?.questions?.isNotEmpty() == true -> "Update the goal with the missing detail and build again."
             else -> "Ask OpenAI for a reviewable command plan."
@@ -1008,7 +1008,7 @@ private class AiPanel(
                     openSettings()
                     return@launch
                 }
-                val plan = withTimeout(75000) { planner.propose(requestedGoal, requestedTarget, requestedModel, key) }
+                val plan = withTimeout(OpenAiPlanner.REQUEST_TIMEOUT_MS) { planner.propose(requestedGoal, requestedTarget, requestedModel, key) }
                 if (operation != operationToken || planRevision != requestRevision) return@launch
                 if (revise) workspace.stage(requestRevision, plan) else {
                     workspace.replace(plan)

@@ -486,7 +486,7 @@ internal class AutoAssistPanel(
         }
         if (revisionRequests >= AutoRunSession.MAX_REVISIONS) { pause("Plan-revision budget reached. Review the current result before a fresh session.", keepObservation = true); return }
         revisionRequests++
-        status.text = "The output needs attention. Preparing a plan update for your original goal."
+        status.text = "The output needs attention. Updating the plan for your goal; this can take up to 3 minutes. Stop remains available."
         val feedback = "Automatic photo observation, NOT human-confirmed success: " + value.explanation +
             "\nVisible evidence: " + value.evidence.joinToString("\n").take(1000)
         val source = operation?.ticket?.original ?: current.current!!
@@ -494,7 +494,7 @@ internal class AutoAssistPanel(
             feedback + "\n" + collected, current.transmitted)
         narrator.awaitExplanation()
         if (!current.valid(target.current(), revision()) || current.index != originIndex || current.stage != AutoStage.REVIEW_RESULT || closed) return
-        val candidate = withTimeout(75000) { planner.propose(context, targetSystem, model, key) }
+        val candidate = withTimeout(OpenAiPlanner.REQUEST_TIMEOUT_MS) { planner.propose(context, targetSystem, model, key) }
         if (!current.valid(target.current(), revision()) || current.index != originIndex ||
             current.stage != AutoStage.REVIEW_RESULT || closed) return
         if (current.canAdopt(candidate)) {

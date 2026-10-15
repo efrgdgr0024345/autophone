@@ -89,9 +89,11 @@ class OpenAiTransportTest {
         assertEquals(10000, connection.connectTimeout)
         assertTrue(connection.disconnected)
         if (post) {
-            assertEquals(60000, connection.readTimeout)
             assertTrue(connection.originalBuffer!!.all { it == 0.toByte() })
             val body = JSONObject(connection.sent.toString("UTF-8"))
+            val isPlanner = body.getJSONObject("text").getJSONObject("format").getString("name") == "command_proposal"
+            assertEquals(if (isPlanner) 180000 else 60000, connection.readTimeout)
+            if (isPlanner) assertTrue(OpenAiPlanner.REQUEST_TIMEOUT_MS >= connection.connectTimeout + connection.readTimeout)
             assertFalse(body.getBoolean("store"))
             assertFalse(body.getBoolean("stream"))
             assertTrue(body.getJSONObject("text").getJSONObject("format").getBoolean("strict"))
