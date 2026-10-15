@@ -56,8 +56,8 @@ A genuine human decision/credential or unsupported command still needs human han
 Bounds: 16 pages per original command, 120 total photo checks including preflight,
 12 model plan revisions and 240 visible session steps. Reaching the output-page limit
 cleans up then requests focused diagnostics; global limits stop. The model wire remains
-strict, maximum 40 commands per proposal. Collected page bodies are limited to 1024
-characters each; revision evidence is bounded to 14,000 characters and the request to
+strict, maximum 40 commands per proposal. Collected page bodies must fit their displayed line range (at most 522 characters
+for an eight-line page; wire ceiling 1024); revision evidence is bounded to 14,000 characters and the request to
 32,768. No claim of whole-system security follows merely from reaching the end.
 
 Stopping before cleanup can leave a private capture directory on the Linux target;

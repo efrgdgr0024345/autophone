@@ -81,6 +81,7 @@ internal class AutoOutputCollection {
     fun retain(op: Operation, value: AutoObservation) {
         require(op.page > 0 && value.collectionReady(op))
         require(op.ticket.pages.size == op.page - 1)
+        require(value.pageText.length <= (op.to - op.from + 1) * 65 + 2)
         op.ticket.pages.add(value.pageText)
     }
     fun evidence(op: Operation) = op.ticket.pages.mapIndexed { i, text -> "PAGE ${i + 1}: $text" }.joinToString("\n")

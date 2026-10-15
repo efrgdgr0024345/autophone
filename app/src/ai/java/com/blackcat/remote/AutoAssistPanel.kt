@@ -79,8 +79,8 @@ internal class AutoAssistPanel(
             else if (session?.active == true) explainStep()
             updateQuickControls()
         }
-        bar.addView(autoToggle, LinearLayout.LayoutParams(0, dp(56), 1f))
-        bar.addView(voiceToggle, LinearLayout.LayoutParams(0, dp(56), 1f).apply { leftMargin = dp(6) })
+        bar.addView(autoToggle, LinearLayout.LayoutParams(0, -2, 1f))
+        bar.addView(voiceToggle, LinearLayout.LayoutParams(0, -2, 1f).apply { leftMargin = dp(6) })
         root.addView(bar)
         status = label("Review the session before starting.", 13f).apply {
             setTextColor(BlackCatStyle.INK)
@@ -440,7 +440,7 @@ internal class AutoAssistPanel(
         revisionRequests++
         status.text = "The output needs attention. Preparing a plan update for your original goal."
         val feedback = "Automatic photo observation, NOT human-confirmed success: " + value.explanation +
-            "\nVisible evidence: " + value.evidence.joinToString("\n")
+            "\nVisible evidence: " + value.evidence.joinToString("\n").take(1000)
         val source = operation?.ticket?.original ?: current.current!!
         val context = AutoRevisionContext.goal(originalGoal, source, current.steps.drop(current.index + 1),
             feedback + "\n" + collected, current.transmitted)

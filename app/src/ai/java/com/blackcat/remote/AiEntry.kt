@@ -348,8 +348,8 @@ private class AiPanel(
             prefs.edit().putString(AssistantNarrator.VOICE_KEY, if (enabled) NarrationVoice.TEXT.name else NarrationVoice.OPENAI.name).apply()
             renderAll()
         }
-        quickControls.addView(autoPlayButton, LinearLayout.LayoutParams(0, dp(56), 1f))
-        quickControls.addView(quickVoiceButton, LinearLayout.LayoutParams(0, dp(56), 1f).apply { leftMargin = dp(6) })
+        quickControls.addView(autoPlayButton, LinearLayout.LayoutParams(0, -2, 1f))
+        quickControls.addView(quickVoiceButton, LinearLayout.LayoutParams(0, -2, 1f).apply { leftMargin = dp(6) })
         root.addView(quickControls, matchWrap())
 
         contentHost = FrameLayout(activity).apply { setBackgroundColor(BG) }

@@ -121,5 +121,5 @@ jobs:
           languages: java-kotlin
           build-mode: manual
           queries: security-and-quality
-      - run: gradle clean assembleOfflineDebug assembleAiDebug --console=plain --stacktrace
+      - run: gradle -Dorg.gradle.jvmargs='-Xmx2048m -XX:MaxMetaspaceSize=1024m' clean assembleOfflineDebug assembleAiDebug --console=plain --stacktrace
       - uses: github/codeql-action/analyze@v4
