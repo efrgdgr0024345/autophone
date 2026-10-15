@@ -1,0 +1,91 @@
+{
+  "build_source": "37897cb894d3b5a22f55afb076d7655ce2d27948",
+  "version_code": 16,
+  "version_name": "14.0-command-flow",
+  "application_id": "com.blackcat.remote",
+  "rollback": "5a6968d4ffe8e8b28e4bdb021bbb9ffda17489f7",
+  "signer_sha256": "fc5c0b42b9da40c2507d8f2e77ed92db9e023740aa1a44d1a3b2c14a6e9f4764",
+  "apks": {
+    "CatAI-14.apk": {
+      "sha256": "04c21dcb9f22f2c4e92fabe05a717d97df70e301a0e93cea56b5fa935ce2741a",
+      "bytes": 5385233
+    },
+    "CatBT-14.apk": {
+      "sha256": "ba3f9eb571e40cd009baefbebfdfb4849cdde3a692649bd19245325e3fbd5c8c",
+      "bytes": 5027225
+    }
+  },
+  "unit_tests": {
+    "ai": 134,
+    "offline": 27,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "policy_mutation_tests": 83,
+  "planner_contract_tests": 40,
+  "artwork_decode_tests": 1,
+  "catalog": {
+    "commands": 212,
+    "categories": 13,
+    "topics": 63
+  },
+  "lint": {
+    "errors": 0,
+    "ai_warnings": 67,
+    "offline_warnings": 21
+  },
+  "apk_inspection": "passed; exact permissions, identity, non-debuggable, matching certificate, no test bridge in shipping DEX",
+  "codeql": {
+    "version": "2.27.2",
+    "suite": "java-security-and-quality",
+    "source_files": 48,
+    "security_findings": 0,
+    "quality_notes": 22
+  },
+  "native": {
+    "runtime": "Android 12 / API 31 AOSP ATD x86_64; software CPU emulation; real PixelCopy",
+    "full_smoke_checks_passed": 21,
+    "layout_checks_passed": 26,
+    "widths_dp": [
+      320,
+      360,
+      390,
+      412
+    ],
+    "font_scales": [
+      1,
+      1.3,
+      2
+    ],
+    "screens": 37,
+    "matrix_screens": 36,
+    "native_icon_render": true,
+    "installed_apk_sha256": "04c21dcb9f22f2c4e92fabe05a717d97df70e301a0e93cea56b5fa935ce2741a"
+  },
+  "image_loop": {
+    "status": "running",
+    "vision": "Tesseract with scripted demo planner; not OpenAI",
+    "image_delivery": "test observer-boundary injection after actual Camera2 JPEG capture",
+    "physical_hid": false,
+    "test_driver_sha256": "92dc743970e7dfa7e509b8472a93926fc444709f86d379c9cf52e893fcdbc467"
+  },
+  "live_openai": {
+    "authenticated_requests_run": false,
+    "runtime_secret_present": false,
+    "saved_binding_reported": false,
+    "unauthenticated_connectivity_http_status": 401,
+    "paid_planning_vision_audio": "not run"
+  },
+  "limitations": [
+    "No physical phone/computer Bluetooth or camera acceptance.",
+    "API35 attempted images failed with framework/SystemUI issues, not passed coverage.",
+    "ATD has no normal system IME/launcher; soft keyboard, dictation, audio and launcher grid remain physical checks.",
+    "Video camera stream injection attempt failed; separate observer-boundary injection must not be described as a camera-sensor feed."
+  ],
+  "publication": {
+    "baseline_promoted": false,
+    "merged": false,
+    "new_apk_bytes_copied_without_rebuild": true
+  }
+}

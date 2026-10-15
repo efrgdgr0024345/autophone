@@ -1,0 +1,45 @@
+UI12_SMOKE_START
+PASS: Bluetooth-off failure is visible, an explicit setup tap requests Android enablement, and cancellation stays passive
+PASS: Keyboard navigation exposes editable phone input, explicit Send Text and the original mouse controls
+PASS: Settings opens without checking a key and displays injected rejection or verification only after an explicit check
+PASS: Editing the key invalidates an arriving verification result and preserves the person's new input
+PASS: Forgetting a checked temporary key clears it before asynchronous storage cleanup
+PASS: Opening the planner does not start dictation or send a request
+PASS: Structured command and clarification decisions parse separately, while mixed output is rejected
+PASS: The plan advances to the selected step without typing
+PASS: Editing rejects control characters and requires renewed risk review
+PASS: The offline tree adds one local command without an AI request or typing
+PASS: Applying a proposal replaces plan data without confirming a terminal result
+PASS: Voice consent does not begin recording or submit feedback
+PASS: Camera2 captures an emulated JPEG for exact review without an API request
+PASS: Photo evidence stages a reviewed replacement without typing or assuming success
+PASS: Leaving and reopening AI retains the editable draft while invalidating pending work without a request or replay
+PASS: Suspension invalidates pending work while retaining only the in-memory plan
+PASS: A detailed 18-step roadmap remains visible; selection opens one approval screen without a second modal or HID input
+PASS: Opening Auto and Start without session consent cause no API/HID requests
+PASS: Auto captures two numbered pages, reconciles their evidence, replaces the remaining plan with a new diagnostic and finishes without manual approval; real Camera2 photos, synthetic vision/planner/HID
+PASS: Stopping during the Auto countdown sends no fake-target keys or Enter and clears camera/key state without replay
+PASS: Inline session key clears after approval; preflight provider failure stays visible, sends no keys, and hands off the canonical plan
+
+UI12_SMOKE_PASS 21
+PASS: Bluetooth-off failure is visible, an explicit setup tap requests Android enablement, and cancellation stays passive
+PASS: Keyboard navigation exposes editable phone input, explicit Send Text and the original mouse controls
+PASS: Settings opens without checking a key and displays injected rejection or verification only after an explicit check
+PASS: Editing the key invalidates an arriving verification result and preserves the person's new input
+PASS: Forgetting a checked temporary key clears it before asynchronous storage cleanup
+PASS: Opening the planner does not start dictation or send a request
+PASS: Structured command and clarification decisions parse separately, while mixed output is rejected
+PASS: The plan advances to the selected step without typing
+PASS: Editing rejects control characters and requires renewed risk review
+PASS: The offline tree adds one local command without an AI request or typing
+PASS: Applying a proposal replaces plan data without confirming a terminal result
+PASS: Voice consent does not begin recording or submit feedback
+PASS: Camera2 captures an emulated JPEG for exact review without an API request
+PASS: Photo evidence stages a reviewed replacement without typing or assuming success
+PASS: Leaving and reopening AI retains the editable draft while invalidating pending work without a request or replay
+PASS: Suspension invalidates pending work while retaining only the in-memory plan
+PASS: A detailed 18-step roadmap remains visible; selection opens one approval screen without a second modal or HID input
+PASS: Opening Auto and Start without session consent cause no API/HID requests
+PASS: Auto captures two numbered pages, reconciles their evidence, replaces the remaining plan with a new diagnostic and finishes without manual approval; real Camera2 photos, synthetic vision/planner/HID
+PASS: Stopping during the Auto countdown sends no fake-target keys or Enter and clears camera/key state without replay
+PASS: Inline session key clears after approval; preflight provider failure stays visible, sends no keys, and hands off the canonical plan
