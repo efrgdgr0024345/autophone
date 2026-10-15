@@ -94,14 +94,14 @@ def adb(*args, **kwargs):
 
 
 def render(output, text, clipped=False, full_width=False):
-    font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf', 21 if full_width else 12)
+    font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf', 26 if full_width else 12)
     # A deliberately small terminal viewport makes the first eight-line page overflow.
     rows = text.splitlines()
     if clipped:
         rows = rows[-7:]
     else:
-        columns = 94 if full_width else 64
-        rows = [piece for row in rows for piece in ([row[i:i+columns] for i in range(0, len(row), columns)] or [''])][-24:]
+        columns = 72 if full_width else 64
+        rows = [piece for row in rows for piece in ([row[i:i+columns] for i in range(0, len(row), columns)] or [''])][-(20 if full_width else 24):]
     image = Image.new('RGB', (1280, 720), '#101710')
     draw = ImageDraw.Draw(image)
     draw.text((22 if full_width else 400, 14), 'Black Cat | Linux CAMERA DEMO', font=font, fill='#70e17a')

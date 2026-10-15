@@ -494,12 +494,6 @@ private class AiPanel(
             renderAll()
         }
         card.addView(cancelButton, matchWrap(top = 8))
-        card.addView(
-            actionButton("Browse Offline Linux Library", primary = false) {
-                openCommandTree()
-            },
-            matchWrap(top = 8)
-        )
         body.addView(stage, matchWrap())
 
         recentSection = LinearLayout(activity).apply {
@@ -527,6 +521,9 @@ private class AiPanel(
             visibility = View.GONE
         }
         body.addView(planResult, matchWrap(top = 10))
+        body.addView(actionButton("Browse Offline Linux Library", primary = false) {
+            openCommandTree()
+        }, matchWrap(top = 8))
 
         val changed = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
