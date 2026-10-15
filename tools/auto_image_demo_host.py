@@ -168,10 +168,12 @@ def main():
     try:
         while time.monotonic() - started < 1800:
             try:
-                listing = adb('shell', 'ls', REMOTE).decode().split()
-                if 'run-id' not in listing or adb('shell', 'cat', REMOTE + '/run-id').decode() != args.run_id:
+                if adb('shell', 'cat', REMOTE + '/run-id').decode() != args.run_id:
                     time.sleep(.5)
                     continue
+                # List only AFTER matching the ID: a previous directory listing
+                # may belong to the old fixture that instrumentation just reset.
+                listing = adb('shell', 'ls', REMOTE).decode().split()
             except subprocess.CalledProcessError:
                 time.sleep(.5)
                 continue
