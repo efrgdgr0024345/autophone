@@ -490,7 +490,11 @@ internal class AutoAssistPanel(
 
     private fun explainStep() {
         val step = session?.current ?: return
-        narrator.explain(NarrationText.step(step), if (muted) NarrationVoice.TEXT else selectedVoice(), key)
+        val operation = session?.collection?.operation(step.command)
+        val speech = if (operation == null) NarrationText.step(step)
+            else if (operation.page == 0) NarrationText.step(operation.ticket.original)
+            else step.explanation
+        narrator.explain(speech, if (muted) NarrationVoice.TEXT else selectedVoice(), key)
     }
 
     private fun pause(message: String, keepObservation: Boolean = false) {
