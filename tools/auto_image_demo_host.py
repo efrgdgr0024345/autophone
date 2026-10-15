@@ -34,7 +34,7 @@ def ocr_reply(output, request):
     prompt/markers fails closed. The scripted planner below is scoped to this demo.
     """
     if request['kind'] == 'plan':
-        context = request['context']
+        context = request['context'].replace('\\/', '/') # JSON's optional slash escaping is not different evidence.
         assert '01 demo-service' in context and '14 END:' in context, 'Not all log pages reached the revision'
         assert '/etc/os-release' in context and 'Diagnose why' in context
         return provider_response({'explanation': 'The collected log points to a distribution mismatch; identify the host before any repair.',
@@ -137,7 +137,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('output', type=Path)
     parser.add_argument('--run-id', required=True, help='Match instrumentation demoRunId; never process a previous run')
-    parser.add_argument('--resume', action='store_true')
+    parser.add_argument('--resume', action='store_true', help='Resume this same run from completed command journals; never repeat an ambiguous command')
     parser.add_argument('--automatic-ocr', action='store_true', help='Use a clearly labelled OCR/scripted test provider; no live model')
     parser.add_argument('--inject-vision-frame', action='store_true', help='Test-only image injection at the observer boundary; Camera2 lifecycle is still exercised separately')
     args = parser.parse_args()
@@ -166,6 +166,17 @@ def main():
     render(output, 'demo@linux:~$ ', full_width=args.inject_vision_frame)
     handled_commands, handled_requests, pushed_replies = set(), set(), set()
     tickets = set()
+    previous_commands = sorted(output.glob('command-*.json'))
+    if previous_commands and not args.resume:
+        raise RuntimeError('Use a fresh output directory, or explicitly resume its completed command journals')
+    if args.resume:
+        assert all(p.with_suffix('.txt').exists() for p in previous_commands), 'Ambiguous command journal; refusing replay'
+        for path in previous_commands:
+            assert allowed(json.loads(path.read_text())['command'], tickets), 'Unexpected journal command'
+            handled_commands.add(path.name)
+        handled_requests = {p.name for p in output.glob('request-*.json')
+                            if (output / p.name.replace('request-', 'reply-')).exists()}
+        print(json.dumps({'resumed_completed_commands': len(handled_commands), 'commands_replayed': 0}), flush=True)
     last_command = ''
     pushed_frame = 0
     started = time.monotonic()

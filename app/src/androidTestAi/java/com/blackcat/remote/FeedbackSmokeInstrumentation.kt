@@ -48,12 +48,14 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
     private var layoutOnly = false
     private var injectedImages = false
     private var imageRunId = ""
+    private var timeoutOnly = false
 
     override fun onCreate(arguments: Bundle?) {
         super.onCreate(arguments)
         autoOnly = arguments?.getString("scenario") == "auto"
         injectedImages = arguments?.getString("scenario") == "image-injected"
         imageRunId = arguments?.getString("demoRunId").orEmpty()
+        timeoutOnly = arguments?.getString("scenario") == "timeout"
         imageAuto = arguments?.getString("scenario") == "image-auto" || injectedImages
         layoutOnly = arguments?.getString("scenario") == "layout"
         start()
@@ -91,6 +93,12 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                 decor.isShown && decor.isAttachedToWindow && decor.isLaidOut && SystemClock.uptimeMillis() - stableSince >= 2000
             }
             startupSettled = true
+            if (timeoutOnly) {
+                captureAutoTimeout()
+                result.putString("stream", "\nUI14_TIMEOUT_PASS ${checks.size}\n" + checks.joinToString("\n"))
+                finish(Activity.RESULT_OK, result)
+                return
+            }
             if (imageAuto) {
                 AutoImageDemo(this, activity, injectedImages, imageRunId).run()
                 result.putString("stream", "\nIMAGE_AUTO_DEMO_PASS\n")
@@ -667,6 +675,59 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         }
         screenshot("auto-initial-error", autoDialog)
         onMain { auto!!.dismiss() }
+    }
+
+    private fun captureAutoTimeout() {
+        val host = HostSession("synthetic-fixture", 1, "Synthetic timeout test target")
+        val target = FixtureCommandTarget(host)
+        var revision = 1L
+        var handoff: AutoTaskHandoff? = null
+        var calls = 0
+        var cancelled = false
+        val observer = object : AutoObservationClient {
+            override fun cancel() { cancelled = true }
+            override suspend fun observe(goal: String, step: SuggestedCommand, target: String, model: String,
+                key: String, jpeg: ByteArray, preflight: Boolean, collectionContext: String): AutoObservation {
+                check(jpeg.size > 100 && jpeg[0] == 0xff.toByte() && jpeg[1] == 0xd8.toByte())
+                calls++
+                if (!preflight) return kotlinx.coroutines.withTimeout(1) {
+                    delay(60000)
+                    error("The synthetic provider must time out")
+                }
+                return AutoObservation("", "shell_prompt", "appears_complete", "An idle synthetic prompt.", listOf("Synthetic idle prompt."), false)
+            }
+        }
+        lateinit var auto: AutoAssistPanel
+        onMain {
+            activity.getSharedPreferences(TargetSystemPanel.PREFS, Activity.MODE_PRIVATE).edit()
+                .putString(AssistantNarrator.VOICE_KEY, NarrationVoice.TEXT.name).apply()
+            PendingApiKey.put(activity, "sk-ui14-timeout-fixture-not-a-real-key")
+            auto = AutoAssistPanel(activity, field(activity, "hid") as HidManager,
+                CommandPlan("Synthetic timeout recovery.", emptyList(), emptyList(), listOf(command("Inspect account", "id"), command("Check account name", "whoami"))),
+                "Inspect this disposable fixture", "Linux", PlanCodec.DEFAULT_MODEL, 0, { revision }, {}, { ++revision }, {},
+                observer, target, onTaskHandoff = { handoff = it })
+            auto.show()
+            dialog = field(auto, "dialog") as Dialog
+            dialog.window!!.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            (field(auto, "consentChoice") as android.widget.CheckBox).isChecked = true
+            findButton(dialog, "Start live camera preview").performClick()
+        }
+        await("timeout fixture camera preview") { field(auto, "cameraStarted") == true && (field(auto, "previewFrames") as Int) >= 3 }
+        onMain { findButton(dialog, "Start reviewed session").performClick() }
+        await("provider timeout stops Auto rather than leaving ON", timeoutMillis = 180000) {
+            (field(auto, "session") as AutoRunSession?)?.stage == AutoStage.STOPPED
+        }
+        onMain {
+            check(calls == 2 && cancelled)
+            check(target.reports.count { it.second == 40 } == 1)
+            check((field(auto, "status") as TextView).text.contains("timed out"))
+            check((field(auto, "autoToggle") as Button).text.contains("OFF"))
+            check(field(auto, "key") == "" && field(auto, "camera") == null)
+            check(handoff!!.remaining.single().command == "whoami" && handoff!!.attemptedCount == 1)
+            pass("A real TimeoutCancellationException during feedback turns Auto OFF, explains the error, clears camera/key state and never queues the attempted task again")
+        }
+        screenshot("auto-feedback-timeout", dialog)
+        onMain { auto.dismiss() }
     }
 
     private class FixtureCommandTarget(private val host: HostSession) : CommandTarget {

@@ -454,6 +454,8 @@ internal class AutoAssistPanel(
                     if (current.valid(target.current(), revision()) && current.next(visualReady = true, human = false)) advance(current)
                 }
                 else status.text = "The photo appears consistent with the expected result. Check it before moving on."
+            } catch (_: TimeoutCancellationException) {
+                pause("Photo analysis or plan update timed out. Auto stopped; no next command was sent. Review the latest evidence before starting a fresh session.", keepObservation = true)
             } catch (e: CancellationException) { throw e }
               catch (e: PlanException) { pause(e.message ?: "Photo check failed. Auto paused.") }
               catch (_: Exception) { pause("Camera or photo check failed. Auto paused; no next command.") }

@@ -9,8 +9,8 @@ android {
         applicationId 'com.blackcat.remote'
         minSdk 28
         targetSdk 35
-        versionCode 16
-        versionName '14.0-command-flow'
+        versionCode 17
+        versionName '14.1-timeout-recovery'
     }
     flavorDimensions 'capability'
     productFlavors {
