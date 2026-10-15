@@ -358,8 +358,17 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
             setField(panel, "selected", 0)
             invoke(panel, "renderAll")
             check(texts(dialog).contains("Full roadmap"))
-            check(findButton(dialog, "Auto ·").isEnabled)
+            val pinnedAuto = findButton(dialog, "▶ Auto Play")
+            check(pinnedAuto.isEnabled)
+            val pinnedVoice = findButton(dialog, "Voice ·")
+            val voiceBefore = pinnedVoice.text.toString()
+            pinnedVoice.performClick()
+            check(pinnedVoice.text.toString() != voiceBefore)
+            pinnedVoice.performClick()
             scrollBottom(dialog)
+            val visible = android.graphics.Rect()
+            check(pinnedAuto.getGlobalVisibleRect(visible) && visible.height() == pinnedAuto.height)
+            check(pinnedVoice.getGlobalVisibleRect(visible) && visible.height() == pinnedVoice.height)
         }
         screenshot("detailed-plan-18-steps")
         onMain {
@@ -385,13 +394,24 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         val host = HostSession("synthetic-fixture", 1, "Synthetic fixture computer")
         val fakeTarget = FixtureCommandTarget(host)
         val fakeObserver = FixtureAutoObserver().apply { firstResultGate = CompletableDeferred() }
+        var autoRevision = 1L
+        val publishedPlans = mutableListOf<CommandPlan>()
+        val fakePlanner = object : AutoPlanClient {
+            override fun cancel() {}
+            override suspend fun propose(goal: String, target: String, model: String, key: String): CommandPlan {
+                check(goal.contains("FIRST PAGE") && goal.contains("SECOND PAGE"))
+                check(goal.contains("Inspect this disposable fixture"))
+                return CommandPlan("Collected evidence needs a kernel check instead of the old account-name step.",
+                    emptyList(), emptyList(), listOf(command("Check kernel from feedback", "uname -r")))
+            }
+        }
         onMain {
             activity.getSharedPreferences(TargetSystemPanel.PREFS, Activity.MODE_PRIVATE).edit()
                 .putString(AssistantNarrator.VOICE_KEY, NarrationVoice.TEXT.name).apply()
             PendingApiKey.put(activity, "sk-ui12-synthetic-fixture-not-a-real-key")
             auto = AutoAssistPanel(activity, field(activity, "hid") as HidManager, autoPlan,
                 "Inspect this disposable fixture", "Ubuntu Linux / Bash", PlanCodec.DEFAULT_MODEL, 0,
-                { 1L }, {}, { 2L }, {}, fakeObserver, fakeTarget)
+                { autoRevision }, {}, { publishedPlans.add(it); ++autoRevision }, {}, fakeObserver, fakeTarget, fakePlanner)
             auto!!.show()
             autoDialog = field(auto!!, "dialog") as Dialog
             autoDialog!!.window!!.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
@@ -409,7 +429,12 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         await("Auto idle-terminal preflight and typing countdown") {
             fakeObserver.calls == 1 && (field(auto!!, "session") as AutoRunSession?)?.stage == AutoStage.TYPING
         }
-        onMain { check(autoDialog!!.window!!.attributes.flags and WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON != 0) }
+        onMain {
+            check(autoDialog!!.window!!.attributes.flags and WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON != 0)
+            val voice = field(auto!!, "voiceToggle") as Button
+            check(voice.text.toString().contains("OFF")) // No paid narration in the fixture.
+            check((field(auto!!, "autoToggle") as Button).text.toString().contains("ON"))
+        }
         screenshot("auto-countdown", autoDialog)
         await("first automatic Enter and its actual photo-check request") {
             (field(auto!!, "session") as AutoRunSession?)?.stage == AutoStage.ANALYZING &&
@@ -417,15 +442,18 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         }
         screenshot("auto-checking-output", autoDialog)
         onMain { fakeObserver.firstResultGate!!.complete(Unit) }
-        await("two steps plus three real camera captures checked by the synthetic observer") {
+        await("automatic pages and revised diagnostic checked by the synthetic observer", timeoutMillis = 180000) {
             (field(auto!!, "session") as AutoRunSession?)?.stage == AutoStage.FINISHED
         }
         onMain {
-            check(fakeTarget.reports.count { it.second == 40 } == 2)
-            check(fakeObserver.calls == 3 && fakeObserver.jpegCaptures == 3)
+            check(fakeTarget.reports.count { it.second == 40 } == 7)
+            check(fakeObserver.calls == 8 && fakeObserver.jpegCaptures == 8)
             check(field(auto!!, "key") == "" && field(auto!!, "camera") == null)
             check(autoDialog!!.window!!.attributes.flags and WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON == 0)
-            pass("Full Auto performs preflight, two fake-target commands with one Enter each and real Camera2 photos between steps, then clears the session")
+            check(publishedPlans.any { p -> p.commands.any { it.title.contains("page 2") } })
+            check(publishedPlans.any { p -> p.commands.any { it.title.contains("kernel from feedback") } && p.commands.none { it.command == "whoami" } })
+            check((field(auto!!, "session") as AutoRunSession).transmitted.contains("uname -r"))
+            pass("Auto captures two numbered pages, reconciles their evidence, replaces the remaining plan with a new diagnostic and finishes without manual approval; real Camera2 photos, synthetic vision/planner/HID")
         }
         screenshot("auto-plan-finished", autoDialog)
         onMain { auto!!.dismiss() }
@@ -445,7 +473,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         await("second Auto preview") { field(auto!!, "cameraStarted") == true && (field(auto!!, "previewFrames") as Int) >= 3 }
         onMain { findButton(autoDialog!!, "Start reviewed session").performClick() }
         await("second preflight before countdown") { (field(auto!!, "session") as AutoRunSession?)?.stage == AutoStage.TYPING }
-        onMain { findButton(autoDialog!!, "Stop / close").performClick() }
+        onMain { (field(auto!!, "autoToggle") as Button).performClick() }
         Thread.sleep(3500)
         onMain {
             check(stoppedTarget.reports.isEmpty())
@@ -471,12 +499,21 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         var firstResultGate: CompletableDeferred<Unit>? = null
         override fun cancel() {}
         override suspend fun observe(goal: String, step: SuggestedCommand, target: String, model: String,
-                                     key: String, jpeg: ByteArray, preflight: Boolean): AutoObservation {
+                                     key: String, jpeg: ByteArray, preflight: Boolean, collectionContext: String): AutoObservation {
             check(key.startsWith("sk-ui12-synthetic") && jpeg.size > 100 && jpeg[0] == 0xff.toByte() && jpeg[1] == 0xd8.toByte())
             calls++
             jpegCaptures++
             if (!preflight && calls == 2) firstResultGate?.await()
             delay(300)
+            if (collectionContext.isNotEmpty()) {
+                val context = org.json.JSONObject(collectionContext)
+                val page = context.getInt("page")
+                val original = context.getString("original_command")
+                val state = if (page < 0) "cleaned" else if (page == 0) "captured" else if (original == "id" && page == 1) "more" else "done"
+                return AutoObservation("", "shell_prompt", "appears_complete", "Synthetic numbered output page.",
+                    listOf("Synthetic page markers and idle prompt"), original == "id" && page == 2,
+                    context.getString("expected_marker"), state, if (page == 1) "FIRST PAGE" else if (page == 2) "SECOND PAGE" else "", "0")
+            }
             return AutoObservation(if (preflight) "" else step.command, "shell_prompt", "appears_complete",
                 "Synthetic observation: the fixture terminal appears ready.", listOf("Synthetic visible evidence fixture."), false)
         }
@@ -704,8 +741,8 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
             return result
         }
     }
-    private fun await(name: String, condition: () -> Boolean) {
-        val deadline = System.currentTimeMillis() + 30000
+    private fun await(name: String, timeoutMillis: Long = 30000, condition: () -> Boolean) {
+        val deadline = System.currentTimeMillis() + timeoutMillis
         while (System.currentTimeMillis() < deadline) {
             var ready = false
             onMain { ready = condition() }

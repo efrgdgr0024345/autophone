@@ -24,14 +24,15 @@ internal class AutoAssistPanel(
     private val model: String, private val startIndex: Int, private val revision: () -> Long,
     private val onProposal: (CommandPlan) -> Unit, private val onAutomaticPlan: (CommandPlan) -> Long, private val onClosed: () -> Unit,
     private val observer: AutoObservationClient = OpenAiAutoObserver(),
-    commandTargetOverride: CommandTarget? = null
+    commandTargetOverride: CommandTarget? = null,
+    planClientOverride: AutoPlanClient? = null
 ) {
     private val dialog = Dialog(activity, android.R.style.Theme_Material_Light_NoActionBar)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val transport = AiTransportScope(activity, manager) { dismiss() }
     private val target: CommandTarget = commandTargetOverride ?: transport
     private val vault = ApiKeyVault(activity.applicationContext)
-    private val planner = OpenAiPlanner()
+    private val planner: AutoPlanClient = planClientOverride ?: AutoPlanClient.Live()
     private val narrator = AssistantNarrator(activity) { message -> voiceStatus.text = message }
     private var session: AutoRunSession? = null
     private var work: Job? = null
@@ -45,10 +46,14 @@ internal class AutoAssistPanel(
     private var observation: AutoObservation? = null
     private var muted = false
     private var revisionRequests = 0
+    private var repeatPhotos = 0
+    private var activePlan = plan
     private lateinit var body: LinearLayout
     private lateinit var texture: TextureView
     private lateinit var status: TextView
     private lateinit var voiceStatus: TextView
+    private lateinit var autoToggle: Button
+    private lateinit var voiceToggle: Button
     private var runChoice: RadioGroup? = null
     private var consentChoice: CheckBox? = null
 
@@ -56,8 +61,26 @@ internal class AutoAssistPanel(
         val root = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL; setBackgroundColor(Color.WHITE) }
         BlackCatStyle.applySystemBarInsets(root)
         val bar = LinearLayout(activity).apply { orientation = LinearLayout.HORIZONTAL; setPadding(dp(12), dp(6), dp(12), dp(6)) }
-        bar.addView(label("Auto", 21f, true).apply { setTextColor(BlackCatStyle.INK) }, LinearLayout.LayoutParams(0, -2, 1f))
-        bar.addView(button("Stop / close", false) { dismiss() }, LinearLayout.LayoutParams(-2, dp(48)))
+        autoToggle = button("Auto Play · OFF", true) {
+            if (session?.active == true) dismiss()
+            else {
+                val group = runChoice
+                if (group != null && consentChoice?.isChecked == true && cameraStarted)
+                    startSession(group.indexOfChild(group.findViewById(group.checkedRadioButtonId)), true)
+                else status.text = "Review the goal and destination below, start the camera and enable session consent, then turn Auto on."
+            }
+        }
+        voiceToggle = button("Voice · ON", false) {
+            val isOn = !muted && selectedVoice() != NarrationVoice.TEXT
+            muted = isOn
+            activity.getSharedPreferences(TargetSystemPanel.PREFS, Activity.MODE_PRIVATE).edit()
+                .putString(AssistantNarrator.VOICE_KEY, if (isOn) NarrationVoice.TEXT.name else NarrationVoice.OPENAI.name).apply()
+            if (isOn) { narrator.stop(); voiceStatus.text = "Voice off. Explanations remain visible." }
+            else if (session?.active == true) explainStep()
+            updateQuickControls()
+        }
+        bar.addView(autoToggle, LinearLayout.LayoutParams(0, dp(56), 1f))
+        bar.addView(voiceToggle, LinearLayout.LayoutParams(0, dp(56), 1f).apply { leftMargin = dp(6) })
         root.addView(bar)
         status = label("Review the session before starting.", 13f).apply {
             setTextColor(BlackCatStyle.INK)
@@ -97,6 +120,7 @@ internal class AutoAssistPanel(
         dialog.show()
         dialog.window?.setLayout(-1, -1)
         transport.start()
+        updateQuickControls()
         renderSetup()
         scope.launch {
             while (isActive) {
@@ -118,22 +142,23 @@ internal class AutoAssistPanel(
         body.addView(label("Auto explains each step, types it, photographs the terminal reply and checks that photo with OpenAI. Keep the phone pointed at the terminal and keep that terminal focused. A photo is advisory evidence; it cannot prove an exit code or that the whole system is secure.", 13f))
         val run = RadioGroup(activity).apply { orientation = RadioGroup.VERTICAL }
         val choiceIds = List(3) { View.generateViewId() }
-        listOf("Full Auto · run this reviewed plan", "Auto read-only checks", "Guided · approve and press Enter yourself").forEachIndexed { index, title ->
+        listOf("Auto Play · run and adapt this plan", "Auto read-only checks", "Guided · approve and press Enter yourself").forEachIndexed { index, title ->
             run.addView(RadioButton(activity).apply { id = choiceIds[index]; text = title; minHeight = dp(48); setTextColor(Color.WHITE) })
         }
         run.check(choiceIds[0])
         runChoice = run
         body.addView(run)
-        body.addView(label("Full Auto types and presses Enter for supported commands you approve here, including system changes. It stops for destructive/unsupported commands, password prompts, unclear photos, lost connection or changes outside this approved plan. Authenticate on the computer first if needed; the app never handles passwords. Read-only Auto pauses before changes. Guided mode uses manual Enter.", 12f))
+        body.addView(label("Full Auto types and presses Enter for supported commands you approve here, including system changes. It collects paged output and may add diagnostics or change remaining commands to meet your original goal. It stops for destructive/unsupported commands, password prompts, unusable camera views or lost connection. Authenticate on the computer first if needed; the app never handles passwords. Read-only Auto pauses before changes. Guided mode uses manual Enter.", 12f))
         body.addView(button(if (cameraStarted) "Restart camera preview" else "Start live camera preview", false) { startCamera() }, lp())
         val consent = CheckBox(activity).apply {
-            text = "I have reviewed these commands and the destination. The terminal is focused, the camera frame contains no secrets, and I allow automatic terminal photos to OpenAI for this session."
+            text = "I approve this goal and destination, automatic Enter, new diagnostic commands and plan changes for this goal, and automatic photos to OpenAI. The terminal is focused and the camera frame contains no secrets."
             isChecked = false; minHeight = dp(56); setTextColor(Color.WHITE)
         }
         consentChoice = consent
         body.addView(consent)
         val voice = selectedVoice()
-        body.addView(label("This session permits up to ${AutoRunSession.MAX_CAPTURES} photo checks and up to three bounded plan revisions. These use your OpenAI API account and may incur charges. Voice: ${voice.label}. OpenAI voice sends explanation text to OpenAI for paid AI-generated speech. Stop/close or leaving the app ends consent and clears the session key/audio/photos.", 12f))
+        body.addView(label("This session permits up to ${AutoRunSession.MAX_CAPTURES} photo checks and up to ${AutoRunSession.MAX_REVISIONS} bounded plan revisions. These use your OpenAI API account and may incur charges. Voice: ${voice.label}. OpenAI voice sends explanation text to OpenAI for paid AI-generated speech. Output is stored temporarily in a private /tmp/bc-* folder on Linux and removed after the last page. Stopping early can leave that folder on Linux. Stop/close or leaving the app ends consent and clears phone session key/audio/photos.", 12f))
+        body.addView(button("Stop / close", false) { dismiss() }, lp())
         body.addView(button("Start reviewed session", true) { startSession(choiceIds.indexOf(run.checkedRadioButtonId), consent.isChecked) }, lp())
         plan.commands.drop(startIndex).forEachIndexed { offset, step ->
             body.addView(label("${startIndex + offset + 1}. ${step.title}", 14f, true), lp())
@@ -219,15 +244,14 @@ internal class AutoAssistPanel(
                 if (!current.valid(target.current(), revision()) || closed) return@launch
                 if (!preflight.allowsNext("")) { pause("Camera cannot clearly see an idle terminal prompt. No command was sent."); return@launch }
                 observation = null
-                renderSession()
-                if (current.canRun(current.current!!)) typeStep(human = false)
-                else explainStep()
+                advance(current)
             } catch (e: CancellationException) { throw e }
               catch (_: Exception) { pause("Could not prepare Auto securely. No command was sent.") }
         }
     }
 
     private fun renderSession() {
+        updateQuickControls()
         body.removeAllViews()
         val current = session ?: return
         val step = current.current
@@ -263,18 +287,40 @@ internal class AutoAssistPanel(
             }, lp())
             else -> Unit
         }
-        body.addView(button("Mute explanations", false) { muted = true; narrator.stop(); voiceStatus.text = "Voice muted for this session." }, lp())
+        body.addView(label("Live command list · ${current.steps.size} commands", 16f, true), lp())
+        current.steps.forEachIndexed { i, item ->
+            val details = LinearLayout(activity).apply {
+                orientation = LinearLayout.VERTICAL; visibility = View.GONE
+                addView(label(item.explanation, 13f))
+                addView(label("Expected: ${item.expectedResult}", 12f))
+                addView(label("${item.risk} risk · ${if (item.requiresAdmin) "admin" else "no admin"}", 12f))
+                item.warnings.forEach { addView(label(it, 12f)) }
+            }
+            body.addView(label("${i + 1}. ${if (i < current.index) "Observed · " else if (i == current.index) "Current · " else "Pending · "}${item.title}", 13f, true), lp())
+            body.addView(label(item.command, 12f).apply {
+                typeface = Typeface.MONOSPACE
+                minHeight = dp(48); isClickable = true; isFocusable = true
+                contentDescription = "Command ${i + 1}. Tap to expand explanation. ${item.command}"
+                setOnClickListener { details.visibility = if (details.visibility == View.GONE) View.VISIBLE else View.GONE }
+            })
+            body.addView(details)
+        }
+        body.addView(button("Stop / close", false) { dismiss() }, lp())
         body.addView(button("Stop session", false) { pause("Stopped by you. Nothing will resume; inspect any partial text.") }, lp())
     }
 
     private fun typeStep(human: Boolean) {
         val current = session ?: return
-        val approval = current.approve(target.current(), revision(), human) ?: return
+        val approval = current.approve(target.current(), revision(), human) ?: run {
+            if (!human) pause("Auto cannot approve this step or repeat a transmitted change. Current plan preserved.")
+            return
+        }
         work = scope.launch {
             try {
                 explainStep()
-                status.text = if (approval.enter) "Approved command runs in 3 seconds. Stop remains available." else "Typing your approved text only."
+                status.text = if (approval.enter) "Explaining this step, then running it after a 3-second pause. Stop remains available." else "Typing your approved text only."
                 renderSession()
+                narrator.awaitExplanation()
                 if (approval.enter) delay(3000)
                 val outcome = AutoReadOnlySender.send(approval, current, target, revision)
                 if (outcome != SendOutcome.REPORTS_ACCEPTED) { pause("Typing stopped ($outcome). Inspect any partial text; no automatic retry."); return@launch }
@@ -299,16 +345,65 @@ internal class AutoAssistPanel(
                 bytes = capturePhoto()
                 status.text = "Checking the terminal photo with OpenAI. No next command is being typed."
                 renderSession()
-                val value = withTimeout(75000) { observer.observe(originalGoal, current.current!!, targetSystem, model, key, bytes) }
+                val operation = current.collection.operation(current.current!!.command)
+                val value = withTimeout(75000) { observer.observe(originalGoal, current.current!!, targetSystem, model, key, bytes,
+                    collectionContext = operation?.let { current.collection.context(it) }.orEmpty()) }
                 if (!current.valid(target.current(), revision()) || !current.observed(token) || closed) return@launch
                 observation = value
                 narrator.explain(value.explanation, if (muted) NarrationVoice.TEXT else selectedVoice(), key)
-                val ready = value.allowsNext(current.current!!.command)
                 renderSession()
+                if (value.terminalState == "busy" && repeatPhotos < 12) {
+                    repeatPhotos++
+                    status.text = "The command is still working. Checking again automatically ($repeatPhotos/12)."
+                    if (current.waitAgain()) scheduleCapture(current)
+                    return@launch
+                }
+                if (operation != null) {
+                    if (!value.collectionReady(operation)) {
+                        val smaller = if (value.canResizePage(operation)) current.collection.smallerPage(operation) else null
+                        if (smaller != null) {
+                            insertCollection(current, smaller, "The output page did not fit. Displaying a smaller slice automatically.")
+                            return@launch
+                        }
+                        if (value.terminalState != "password_prompt" && repeatPhotos < 3) {
+                            repeatPhotos++
+                            if (current.waitAgain()) scheduleCapture(current)
+                        } else pause("Cannot verify the captured page or a safe idle prompt. Auto stopped without typing more.", keepObservation = true)
+                        return@launch
+                    }
+                    repeatPhotos = 0
+                    if (operation.page < 0) {
+                        val result = operation.ticket.conclusion!!
+                        if (result.revisionNeeded || result.outcome != "appears_complete" || operation.ticket.exitCode != "0" || result.pageState == "limit") {
+                            proposeRevision(current, value, result.explanation + "\n" +
+                                (if (result.pageState == "limit") "Capture limit reached. Use focused diagnostic queries.\n" else "") + current.collection.evidence(operation))
+                            return@launch
+                        }
+                    } else {
+                        if (operation.page > 0) current.collection.retain(operation, value)
+                        else operation.ticket.exitCode = value.exitCode
+                        if (operation.page == 0 || value.pageState == "more") {
+                            val page = current.collection.nextPage(operation) ?: throw PlanException("Output page limit reached.")
+                            insertCollection(current, page, "Collecting terminal output in numbered pages; remaining task stays visible.")
+                        } else {
+                            operation.ticket.conclusion = value
+                            insertCollection(current, current.collection.cleanup(operation), "Output collected. Clearing temporary Linux files before reconciling the plan.")
+                        }
+                        return@launch
+                    }
+                    narrator.awaitExplanation()
+                    if (current.valid(target.current(), revision()) && current.next(visualReady = true, human = false)) advance(current)
+                    return@launch
+                }
+                val ready = value.allowsNext(current.current!!.command)
                 if (!ready) {
                     if (value.revisionNeeded || value.outcome == "error") proposeRevision(current, value)
-                    else pause("Photo did not clearly show this command finishing at a shell prompt. Auto stopped; inspect the terminal manually.", keepObservation = true)
+                    else if (value.terminalState != "password_prompt" && repeatPhotos < 3) {
+                        repeatPhotos++
+                        if (current.waitAgain()) scheduleCapture(current)
+                    } else pause("Camera could not establish the result and a safe shell prompt. Auto stopped.", keepObservation = true)
                 } else if (current.automatic) {
+                    repeatPhotos = 0
                     narrator.awaitExplanation()
                     if (current.valid(target.current(), revision()) && current.next(visualReady = true, human = false)) advance(current)
                 }
@@ -321,38 +416,45 @@ internal class AutoAssistPanel(
     }
 
     private fun advance(current: AutoRunSession) {
+        current.prepareCurrent { updated -> publish(updated, "Auto Play: commands and output collection are updated here as evidence arrives.") }
+        repeatPhotos = 0
         observation = null
         renderSession()
         if (current.stage == AutoStage.FINISHED) {
             stopWork(finished = true)
-        } else if (current.canRun(current.current!!)) typeStep(human = false)
+        } else if (current.canRun(current.current!!) && (!current.runAllReviewed || current.collection.owns(current.current!!.command))) typeStep(human = false)
         else {
             status.text = "Next step needs your approval and manual Enter. Auto will not execute this change."
             explainStep()
         }
     }
 
-    private suspend fun proposeRevision(current: AutoRunSession, value: AutoObservation) {
+    private suspend fun proposeRevision(current: AutoRunSession, value: AutoObservation, collected: String = "") {
         val originIndex = current.index
-        if (!value.canAutoRevise(current.current!!.command)) {
+        val operation = current.collection.operation(current.current!!.command)
+        if (!value.canAutoRevise(current.current!!.command) && !(operation != null && value.collectionReady(operation))) {
             pause("The terminal needs manual attention. Auto stopped before any plan request or revised command.", keepObservation = true)
             return
         }
-        if (revisionRequests >= 3) { pause("Plan-revision budget reached. Review the current result before a fresh session.", keepObservation = true); return }
+        if (revisionRequests >= AutoRunSession.MAX_REVISIONS) { pause("Plan-revision budget reached. Review the current result before a fresh session.", keepObservation = true); return }
         revisionRequests++
-        status.text = "The output needs attention. Preparing a plan update within your approved scope."
+        status.text = "The output needs attention. Preparing a plan update for your original goal."
         val feedback = "Automatic photo observation, NOT human-confirmed success: " + value.explanation +
             "\nVisible evidence: " + value.evidence.joinToString("\n")
-        val context = PlanFeedbackRequest.goal(originalGoal, current.current, emptySet(), feedback, current.steps.drop(current.index))
+        val source = operation?.ticket?.original ?: current.current!!
+        val context = AutoRevisionContext.goal(originalGoal, source, current.steps.drop(current.index + 1),
+            feedback + "\n" + collected, current.transmitted)
+        narrator.awaitExplanation()
+        if (!current.valid(target.current(), revision()) || current.index != originIndex || current.stage != AutoStage.REVIEW_RESULT || closed) return
         val candidate = withTimeout(75000) { planner.propose(context, targetSystem, model, key) }
         if (!current.valid(target.current(), revision()) || current.index != originIndex ||
             current.stage != AutoStage.REVIEW_RESULT || closed) return
         if (current.canAdopt(candidate)) {
-            val updated = CommandPlan(candidate.explanation, candidate.assumptions, candidate.questions,
-                current.steps.take(current.index + 1) + candidate.commands, candidate.roadmap.ifEmpty { plan.roadmap })
-            val newRevision = onAutomaticPlan(updated)
+            activePlan = CommandPlan(candidate.explanation, candidate.assumptions, emptyList(), activePlan.commands,
+                candidate.roadmap.ifEmpty { activePlan.roadmap })
+            val newRevision = publish(current.steps.take(current.index + 1) + candidate.commands, candidate.explanation)
             if (current.adopt(candidate, newRevision)) {
-                status.text = "Updated the remaining plan within your approved scope. Continuing with fresh command checks."
+                status.text = "Updated the remaining plan for your goal from the collected evidence. Continuing with fresh command checks."
                 advance(current)
                 return
             }
@@ -362,6 +464,28 @@ internal class AutoAssistPanel(
         status.text = "Updated plan proposed. Close Auto to review/apply it; a new session needs fresh approval."
         stopWork()
         body.addView(button("Close Auto · review updated plan", true) { dismiss() }, lp())
+    }
+
+    private suspend fun insertCollection(current: AutoRunSession, step: SuggestedCommand, explanation: String) {
+        val originIndex = current.index
+        narrator.awaitExplanation()
+        if (!current.valid(target.current(), revision()) || current.index != originIndex || current.stage != AutoStage.REVIEW_RESULT || closed) return
+        if (current.steps.size >= AutoRunSession.MAX_STEPS) throw PlanException("Auto plan-step limit reached.")
+        val updated = current.steps.take(current.index + 1) + step + current.steps.drop(current.index + 1)
+        val newRevision = publish(updated, explanation)
+        if (current.insertCollection(step, newRevision)) advance(current)
+    }
+
+    private fun updateQuickControls() {
+        autoToggle.text = if (session?.active == true) "■ Auto Play · ON" else "▶ Auto Play · OFF"
+        autoToggle.contentDescription = if (session?.active == true) "Turn Auto Play off immediately and close session" else "Turn Auto Play on after session review"
+        voiceToggle.text = if (muted || selectedVoice() == NarrationVoice.TEXT) "Voice · OFF" else "Voice · ON"
+        voiceToggle.contentDescription = "Toggle OpenAI spoken explanations of commands and terminal feedback"
+    }
+
+    private fun publish(commands: List<SuggestedCommand>, explanation: String): Long {
+        activePlan = CommandPlan(explanation, activePlan.assumptions, emptyList(), commands, activePlan.roadmap)
+        return onAutomaticPlan(activePlan)
     }
 
     private fun explainStep() {
@@ -389,6 +513,7 @@ internal class AutoAssistPanel(
         photoWaiter = null
         narrator.stop()
         key = ""
+        session?.collection?.clear()
         cameraGeneration++
         camera?.close()
         camera = null
@@ -417,4 +542,15 @@ internal class AutoAssistPanel(
     }
     private fun lp() = LinearLayout.LayoutParams(-1, -2).apply { topMargin = dp(8) }
     private fun dp(value: Int) = BlackCatStyle.dp(activity, value)
+}
+
+/** Test seam at the network boundary; production retains the existing HTTPS planner. */
+internal interface AutoPlanClient {
+    suspend fun propose(goal: String, target: String, model: String, key: String): CommandPlan
+    fun cancel()
+    class Live : AutoPlanClient {
+        private val client = OpenAiPlanner()
+        override suspend fun propose(goal: String, target: String, model: String, key: String) = client.propose(goal, target, model, key)
+        override fun cancel() = client.cancel()
+    }
 }

@@ -38,9 +38,9 @@ class AutoBoundaryTests(unittest.TestCase):
         self.mutate('app/src/ai/java/com/blackcat/remote/AutoObservation.kt', 'observedCommand == command', 'true')
     def test_vision_must_see_a_shell_prompt(self):
         self.mutate('app/src/ai/java/com/blackcat/remote/AutoObservation.kt', 'terminalState == "shell_prompt"', 'true')
-    def test_revised_plan_must_stay_in_scope(self):
+    def test_revised_plan_cannot_replay_a_transmitted_change(self):
         self.mutate('app/src/ai/java/com/blackcat/remote/AutoRunSession.kt',
-                    'it.command in originallyApproved || AutoRunPolicy.canRun(it)', 'true')
+                    'executed.none { previous -> AutoRunPolicy.identity(previous) == AutoRunPolicy.identity(collection.original(it.command)) } || AutoRunPolicy.isReadOnly(it)', 'true')
     def test_readonly_cannot_trust_risk_alone(self):
         self.mutate('app/src/ai/java/com/blackcat/remote/AutoRunSession.kt', 'step.command in readOnly', 'true')
     def test_speech_cannot_follow_redirects(self):
@@ -53,7 +53,16 @@ class AutoBoundaryTests(unittest.TestCase):
                     'AlertDialog.Builder(activity)\n        CommandPolicy.problem(command)?.let { setStatus(it, error = true); return }')
     def test_error_revision_requires_a_fresh_terminal_prompt(self):
         self.mutate('app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt',
-                    'if (!value.canAutoRevise(current.current!!.command))', 'if (false)')
+                    'if (!value.canAutoRevise(current.current!!.command) && !(operation != null && value.collectionReady(operation)))', 'if (false)')
+
+    def test_unreadable_page_cannot_authorize_typing(self):
+        self.mutate('app/src/ai/java/com/blackcat/remote/AutoObservation.kt', 'pageMarker == op.marker', 'true')
+    def test_paging_cannot_be_unbounded(self):
+        self.mutate('app/src/ai/java/com/blackcat/remote/AutoOutputCollection.kt', 'if (page > MAX_PAGES) return null', '// removed')
+    def test_output_control_characters_cannot_reach_terminal(self):
+        self.mutate('app/src/ai/java/com/blackcat/remote/AutoOutputCollection.kt', 'LC_ALL=C cat -v', 'cat')
+    def test_auto_cannot_be_buried_in_scrolling_content(self):
+        self.mutate('app/src/ai/java/com/blackcat/remote/AiEntry.kt', 'root.addView(quickControls', 'contentHost.addView(quickControls')
 
 
 if __name__ == '__main__': unittest.main()

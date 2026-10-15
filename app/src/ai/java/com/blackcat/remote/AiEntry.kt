@@ -172,6 +172,8 @@ private class AiPanel(
     private lateinit var goal: EditText
     private lateinit var targetLabel: TextView
     private lateinit var buildButton: Button
+    private lateinit var autoPlayButton: Button
+    private lateinit var quickVoiceButton: Button
     private lateinit var cancelButton: Button
     private lateinit var statusPill: TextView
     private lateinit var statusText: TextView
@@ -336,6 +338,19 @@ private class AiPanel(
         BlackCatStyle.applySystemBarInsets(root)
         root.addView(buildBottomNav(), matchWrap())
         root.addView(buildStatusBar(), matchWrap())
+        val quickControls = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL; setPadding(dp(12), dp(4), dp(12), dp(4))
+        }
+        autoPlayButton = actionButton("▶ Auto Play · OFF", true) { openAutoAssist() }
+        quickVoiceButton = actionButton("Voice · ON", false) {
+            val prefs = activity.getSharedPreferences(TargetSystemPanel.PREFS, Activity.MODE_PRIVATE)
+            val enabled = prefs.getString(AssistantNarrator.VOICE_KEY, NarrationVoice.OPENAI.name) != NarrationVoice.TEXT.name
+            prefs.edit().putString(AssistantNarrator.VOICE_KEY, if (enabled) NarrationVoice.TEXT.name else NarrationVoice.OPENAI.name).apply()
+            renderAll()
+        }
+        quickControls.addView(autoPlayButton, LinearLayout.LayoutParams(0, dp(56), 1f))
+        quickControls.addView(quickVoiceButton, LinearLayout.LayoutParams(0, dp(56), 1f).apply { leftMargin = dp(6) })
+        root.addView(quickControls, matchWrap())
 
         contentHost = FrameLayout(activity).apply { setBackgroundColor(BG) }
         planView = buildPlanView()
@@ -579,6 +594,15 @@ private class AiPanel(
     }
 
     private fun renderAll() {
+        if (::autoPlayButton.isInitialized) {
+            autoPlayButton.text = "▶ Auto Play · OFF"
+            val voice = activity.getSharedPreferences(TargetSystemPanel.PREFS, Activity.MODE_PRIVATE)
+                .getString(AssistantNarrator.VOICE_KEY, NarrationVoice.OPENAI.name)
+            quickVoiceButton.text = if (voice == NarrationVoice.TEXT.name) "Voice · OFF" else "Voice · ON"
+            quickVoiceButton.contentDescription = "Toggle spoken explanations of commands and results. OpenAI text to speech uses your API account."
+            autoPlayButton.contentDescription = if (commands.isEmpty()) "Auto Play off. Create a plan first." else "Auto Play off. Start automated plan with ${commands.size} commands."
+            autoPlayButton.isEnabled = commands.isNotEmpty() && !busy && workspace.proposal == null && !transportPaused
+        }
         if (!::goal.isInitialized) return
         buildButton.isEnabled = !busy && goal.text.isNotBlank() && selectedTarget.isNotBlank()
         cancelButton.visibility = if (busy) View.VISIBLE else View.GONE
@@ -642,11 +666,6 @@ private class AiPanel(
         planResult.visibility = View.VISIBLE
         val card = card()
         card.addView(label("Plan", 18f, INK, Typeface.BOLD))
-        if (commands.isNotEmpty()) {
-            card.addView(actionButton("Auto · explain, run and check", true) { openAutoAssist() }.apply {
-                isEnabled = !busy && workspace.proposal == null
-            }, matchWrap(top = 8))
-        }
         if (plan.explanation.isNotBlank()) card.addView(label(plan.explanation, 13f, MUTED).apply { setPadding(0, dp(6), 0, dp(8)) })
         if (plan.questions.isNotEmpty()) {
             val box = LinearLayout(activity).apply {
@@ -703,7 +722,8 @@ private class AiPanel(
                     orientation = LinearLayout.VERTICAL
                     setPadding(dp(10), 0, 0, 0)
                     addView(label(command.title, 14f, INK, Typeface.BOLD))
-                    addView(label(command.explanation, 12f, MUTED).apply { maxLines = 3 })
+                    addView(label(command.command, 13f, INK).apply { typeface = Typeface.MONOSPACE })
+                    addView(label("Tap for explanation and details", 11f, MUTED))
                     addView(label("Check: ${command.expectedResult}", 11f, MUTED).apply { maxLines = 2 })
                     addView(label("${command.risk.uppercase()} · ${if (command.requiresAdmin) "admin may be required" else "no admin flag"}", 11f, MUTED))
                     if (index in workspace.confirmedSteps) addView(label("✓ Result confirmed by you", 11f, GREEN))

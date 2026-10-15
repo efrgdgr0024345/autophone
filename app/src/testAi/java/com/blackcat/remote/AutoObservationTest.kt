@@ -10,7 +10,7 @@ class AutoObservationTest {
         JSONObject().put("observed_command", command).put("terminal_state", terminal).put("outcome", outcome)
             .put("explanation", "The photo appears to show account details and a fresh prompt.")
             .put("visible_evidence", JSONArray().put("uid=1000 and a fresh prompt are visible"))
-            .put("revision_needed", false)
+            .put("revision_needed", false).put("page_marker", "").put("page_state", "none").put("page_text", "").put("exit_code", "")
     @Test fun exactCommandAndVisibleEvidenceRequiredForAdvance() {
         assertTrue(AutoObservationCodec.parse(fixture().toString()).allowsNext("id"))
         assertFalse(AutoObservationCodec.parse(fixture("whoami").toString()).allowsNext("id"))

@@ -128,11 +128,12 @@ class AutoRunSessionTest {
         assertFalse(value.next(true, true))
         assertNull(value.approve(host, 7, true))
     }
-    @Test fun revisedCommandsCannotExpandApprovedScopeOrRetryAChange() {
+    @Test fun revisedCommandsCanAdaptToTheGoalButCannotRetryATransmittedChange() {
         val value = session(full = true, steps = listOf(step("sudo -n ufw allow 22/tcp", "high", true), step("whoami")))
         value.observed(observe(value))
         fun plan(command: String) = CommandPlan("Update", emptyList(), emptyList(), listOf(step(command)))
-        assertFalse(value.canAdopt(plan("sudo -n ufw deny 22/tcp")))
+        assertTrue(value.canAdopt(plan("sudo -n ufw allow 443/tcp")))
+        assertTrue(value.canAdopt(plan("journalctl -n 30 --no-pager")))
         assertFalse(value.canAdopt(plan("sudo -n ufw allow 22/tcp")))
         assertTrue(value.canAdopt(plan("id")))
         assertTrue(value.adopt(plan("id"), 8))
@@ -157,4 +158,57 @@ class AutoRunSessionTest {
         value.stop()
         assertFalse(value.canAdopt(candidate))
     }
+    @Test fun collectionStepsAreVisibleAndPreserveTheRemainingPlanAndRevisionBoundary() {
+        val value = session(full = true, steps = listOf(step(), step("whoami")))
+        var revision = 7L
+        var visible = value.steps
+        value.prepareCurrent { visible = it; ++revision }
+        assertEquals(value.steps, visible)
+        assertTrue(value.collection.owns(value.current!!.command))
+        val approval = value.approve(host, revision, false)!!
+        value.typed(approval)
+        val oldToken = value.captured()!!
+        value.observed(oldToken)
+        val op = value.collection.operation(value.current!!.command)!!
+        val page = value.collection.nextPage(op)!!
+        assertTrue(value.insertCollection(page, ++revision))
+        assertEquals(page.command, value.current!!.command)
+        assertEquals("whoami", value.steps.last().command)
+        assertFalse(value.observed(oldToken))
+        assertFalse(value.valid(host, revision - 1))
+        assertEquals(listOf("id"), value.transmitted)
+    }
+    @Test fun busyRecaptureCannotReplayAnApprovalAndHasABoundedPhotoBudget() {
+        val value = session(full = true)
+        val first = value.approve(host, 7, false)!!
+        value.typed(first)
+        var previous = -1L
+        repeat(AutoRunSession.MAX_CAPTURES) {
+            val token = value.captured()!!
+            if (previous >= 0) assertFalse(value.observed(previous))
+            assertTrue(value.observed(token))
+            assertNull(value.approve(host, 7, false))
+            assertTrue(value.waitAgain())
+            previous = token
+        }
+        assertNull(value.captured())
+        assertEquals(AutoStage.BLOCKED, value.stage)
+    }
+    @Test fun quotedOrNoninteractiveVariantsCannotReplayATransmittedChange() {
+        val value = session(full = true, steps = listOf(step("sudo -n ufw allow 22/tcp")))
+        value.observed(observe(value))
+        val candidate = CommandPlan("Updated", emptyList(), emptyList(), listOf(step("sudo ufw 'allow' 22/tcp")))
+        assertFalse(value.canAdopt(candidate))
+        assertFalse(AutoRunPolicy.isReadOnly(step("journalctl --rotate")))
+        assertFalse(AutoRunPolicy.isReadOnly(step("ss -K")))
+        assertFalse(AutoRunPolicy.isReadOnly(step("systemctl restart status")))
+    }
+    @Test fun aReconciledEmptyRemainingPlanFinishesWithoutAskingForAnotherStep() {
+        val value = session(full = true)
+        value.observed(observe(value))
+        val complete = CommandPlan("Evidence indicates no further commands are needed.", emptyList(), emptyList(), emptyList())
+        assertTrue(value.adopt(complete, 8))
+        assertEquals(AutoStage.FINISHED, value.stage)
+    }
+
 }

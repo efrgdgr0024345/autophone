@@ -145,6 +145,27 @@ Test at phone widths equivalent to 320, 360, 390 and 412 dp, with large text, so
 
 # Priority 5 — change control
 
+## Reviewed UI13 continuation — 15 October 2026
+
+The user explicitly requests visible exact-command lists, tap-to-expand explanations, a prominent
+Auto Play button, automatic output pagination/photo collection, reconciliation of those pages,
+and new diagnostic commands/remaining-plan changes without ordinary user intervention. This
+supersedes UI12's restriction to originally reviewed commands and its stop on incomplete output.
+Consent remains scoped to the original goal, target and foreground session. A pure Auto output
+collector may generate bounded shell wrappers, private temporary Linux output files, explicit
+page reads and exact-file cleanup; model-provided shell scripts remain unsupported. These
+operations appear in the live plan before transmission. New supported commands for the same
+goal may be adopted automatically. Transmitted changes cannot be retried, and interruption,
+password prompts or inability to establish a safe terminal stop typing. Preserve all frozen
+transport/manual/key/camera files and ordinary TYPE ONLY behavior. Do not add phone storage,
+permissions, a desktop companion or background execution.
+
+Start/rollback: `e3fd22487442e555b8cd8a14d17eebcd917b2ac1`; branch
+`feature/ui13-adaptive-auto`. Scope: AI command list/pinned Auto, Auto session/coordinator/output
+collector/observation/revision context, planner instructions, workspace capacity for visible page
+steps, version, tests/guards and delivery docs. Toolchain and models stay pinned. See
+`docs/UI13-ADAPTIVE-AUTO-TEST-PLAN.md` for bounds and validation. No baseline promotion or merge.
+
 ## Reviewed UI12 continuation — 14 October 2026
 
 The user reports UI11 installs/works, requests a better command-selection flow, comprehensive

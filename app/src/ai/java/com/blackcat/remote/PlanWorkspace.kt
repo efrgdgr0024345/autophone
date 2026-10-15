@@ -91,7 +91,7 @@ internal class PlanWorkspace {
     }
 
     private fun validate(value: CommandPlan) {
-        if (value.commands.size > PlanCodec.MAX_COMMANDS || (value.questions.isNotEmpty() && value.commands.isNotEmpty()))
+        if (value.commands.size > AutoRunSession.MAX_STEPS || (value.questions.isNotEmpty() && value.commands.isNotEmpty()))
             throw PlanException("Resolve clarification questions before adding commands.")
         value.commands.forEach { item ->
             CommandPolicy.problem(item.command)?.let { throw PlanException(it) }
