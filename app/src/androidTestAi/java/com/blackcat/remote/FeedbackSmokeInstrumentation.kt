@@ -365,8 +365,15 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
             pinnedVoice.performClick()
             check(pinnedVoice.text.toString() != voiceBefore)
             pinnedVoice.performClick()
+        }
+        await("pinned Auto and Voice controls laid out") {
+            findButton(dialog, "▶ Auto Play").let { it.isLaidOut && it.height > 0 }
+        }
+        onMain {
             scrollBottom(dialog)
             val visible = android.graphics.Rect()
+            val pinnedAuto = findButton(dialog, "▶ Auto Play")
+            val pinnedVoice = findButton(dialog, "Voice ·")
             check(pinnedAuto.getGlobalVisibleRect(visible) && visible.height() == pinnedAuto.height)
             check(pinnedVoice.getGlobalVisibleRect(visible) && visible.height() == pinnedVoice.height)
         }
