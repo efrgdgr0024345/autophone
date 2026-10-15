@@ -4,6 +4,33 @@ Android phone remote that preserves the proven Bluetooth HID keyboard/mouse core
 
 > **UI09 is a physical-test prerelease.** All automated build, policy, unit, lint, APK inspection, CodeQL and provenance gates passed. Real Android-to-computer Bluetooth testing is still required before this version becomes the protected baseline.
 
+## UI14.2 test download — live API fixes and clearer controls
+
+Full direct APK download URL (no ZIP):
+
+https://raw.githubusercontent.com/efrgdgr0024345/autophone/f8f80b2c03e5ce202e2d0f9d2986a26d1d6e9d5e/docs/ui14.2/install/CatAI-14.2.apk
+
+Live testing found and fixed a detailed-plan timeout and model proposals outside
+Auto's supported command grammar. Planning now has a bounded longer deadline;
+Cancel stays visible above the bottom navigation, including during feedback updates.
+The black cat on white icon, exact-command list, pinned Auto/Voice and editable
+feedback plans are retained. Ordinary command approval remains TYPE ONLY.
+
+The revised live checks passed: an 18-command/nine-phase plan, image preflight,
+clipped-page detection, readable page transcription, a five-command replan and
+OpenAI PCM speech. All 161 unit tests, 83 policy mutations, 40 planner contracts
+and 49 native emulator checks passed. Lint has zero errors; CodeQL has zero
+security findings (22 quality notes remain). Host API checks and emulator fixtures
+are separate tests; a continuous live phone-camera/Bluetooth run is still pending.
+
+Version code 18, same signer. App source: `28fec6a187cca84f92fa14821167d660c5436eed`.
+SHA-256: `937a7f18b823f39e16f7a21b0ff83df741c76bb0614eb7bd27e0cc3103bc1042`.
+[Install and verification](docs/ui14.2/README.md), [workflow screenshots](docs/ui14.2/screens/README.md),
+[width/font matrix](docs/ui14.2/layout-matrix/README.md) and [live API evidence](docs/ui14.2/live-openai/README.md).
+Physical Bluetooth, phone optics/playback/IME/dictation and Keystore still need
+acceptance. UI14/UI14.1 are superseded; their old APK bytes remain unchanged.
+No merge or baseline promotion.
+
 ## UI13 test download — pinned Auto Play and Voice
 
 Full direct APK download URL:

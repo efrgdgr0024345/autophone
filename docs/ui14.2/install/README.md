@@ -13,3 +13,7 @@ key is never included in the app. CatBT is the offline keyboard/mouse/library al
 Version code 18, `14.2-live-api-validation`. See [SHA256SUMS.txt](SHA256SUMS.txt),
 [SOURCE.txt](SOURCE.txt), signing reports and the [verification report](../README.md).
 The app remains a physical-test candidate; previous releases are unchanged.
+
+Full direct APK URL:
+
+https://raw.githubusercontent.com/efrgdgr0024345/autophone/f8f80b2c03e5ce202e2d0f9d2986a26d1d6e9d5e/docs/ui14.2/install/CatAI-14.2.apk
