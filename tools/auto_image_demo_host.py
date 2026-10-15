@@ -61,19 +61,23 @@ def ocr_reply(output, request):
         return provider_response(value)
     context = json.loads(request['collection_context'])
     marker, page = context['expected_marker'], context['page']
-    normalized = [line.replace(' ', '') for line in lines]
+    # OCR renders underscore separators as either underscores or whitespace.
+    # Compare the complete alphanumeric marker, including every random token
+    # character and page number. Never repair letters/digits from the context.
+    normalized = [re.sub(r'[\s_]+', '', line) for line in lines]
+    marker_key = marker.replace('_', '')
     if page <= 0:
-        matches = [re.fullmatch(re.escape(marker) + r'_(\d{1,3})', line) for line in normalized]
+        matches = [re.fullmatch(re.escape(marker_key) + r'(\d{1,3})', line) for line in normalized]
         match = next((m for m in matches if m), None)
         if match and prompt:
             value.update(page_marker=marker, page_state='cleaned' if page < 0 else 'captured',
                          exit_code=match[1], outcome='appears_complete', explanation='The visible completion marker and idle prompt match this operation.')
     else:
-        footer = next(((i, re.fullmatch(re.escape(marker) + r'_END_(\d{1,3})_(MORE|DONE|LIMIT)', line))
-                       for i, line in enumerate(normalized) if re.fullmatch(re.escape(marker) + r'_END_(\d{1,3})_(MORE|DONE|LIMIT)', line)), None)
+        footer = next(((i, re.fullmatch(re.escape(marker_key) + r'END(\d{1,3})(MORE|DONE|LIMIT)', line))
+                       for i, line in enumerate(normalized) if re.fullmatch(re.escape(marker_key) + r'END(\d{1,3})(MORE|DONE|LIMIT)', line)), None)
         if footer and prompt:
             end, match = footer
-            begin = next((i for i, line in enumerate(normalized) if line == marker + '_BEGIN'), None)
+            begin = next((i for i, line in enumerate(normalized) if line == marker_key + 'BEGIN'), None)
             value.update(page_marker=marker, exit_code=match[1], page_state='unreadable')
             if begin is not None and begin < end:
                 body = '\n'.join(lines[begin + 1:end]).strip('\n')
