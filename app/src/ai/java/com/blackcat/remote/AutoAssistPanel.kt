@@ -257,9 +257,9 @@ internal class AutoAssistPanel(
         val step = current.current
         if (current.stage == AutoStage.FINISHED) {
             status.text = "Reached the end of this reviewed plan. Check the computer; this is not a security guarantee."
-            body.addView(label("Plan steps finished", 18f, true)); return
+            body.addView(label("Plan steps finished", 18f, true))
         }
-        body.addView(label("Step ${current.index + 1} of ${current.steps.size} · ${current.stage.name.replace('_', ' ').lowercase()}", 14f, true))
+        body.addView(label(if (current.stage == AutoStage.FINISHED) "${current.steps.size} operations observed" else "Step ${current.index + 1} of ${current.steps.size} · ${current.stage.name.replace('_', ' ').lowercase()}", 14f, true))
         body.addView(label("Destination: ${current.host.label}", 12f))
         if (step != null) {
             body.addView(label(step.title, 18f, true), lp())
@@ -375,7 +375,7 @@ internal class AutoAssistPanel(
                     if (operation.page < 0) {
                         val result = operation.ticket.conclusion!!
                         if (result.revisionNeeded || result.outcome != "appears_complete" || operation.ticket.exitCode != "0" || result.pageState == "limit") {
-                            proposeRevision(current, value, result.explanation + "\n" +
+                            proposeRevision(current, value, "Captured command exit code: ${operation.ticket.exitCode}.\n" + result.explanation + "\n" +
                                 (if (result.pageState == "limit") "Capture limit reached. Use focused diagnostic queries.\n" else "") + current.collection.evidence(operation))
                             return@launch
                         }
