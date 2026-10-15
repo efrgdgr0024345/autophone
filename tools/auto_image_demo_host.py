@@ -27,7 +27,7 @@ def provider_response(value):
         {'type': 'output_text', 'text': json.dumps(value)}]}]}
 
 
-def ocr_reply(output, request):
+def ocr_reply(output, request, text_override=None):
     """Independent perception from the Camera2 JPEG, never from captured stdout/context.
 
     This is a deterministic test provider, not an OpenAI vision/model test. Missing
@@ -43,12 +43,34 @@ def ocr_reply(output, request):
                 'title': 'Identify Linux distribution from feedback', 'command': 'cat /etc/os-release',
                 'explanation': 'The log suggests an incompatible package. Read the installed distribution so we can choose a compatible repair.',
                 'risk': 'low', 'requires_admin': False, 'expected_result': 'The installed Linux distribution and version.', 'warnings': []}]}})
-    photo = output / ('photo-' + request['id'] + '.jpg')
-    result = subprocess.run(['tesseract', str(photo), 'stdout', '--psm', '6'],
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=20, check=True,
-                            env={**os.environ, 'OMP_THREAD_LIMIT': '1'})
-    text = result.stdout.decode('utf-8', 'replace')
-    (output / ('ocr-' + request['id'] + '.txt')).write_text(text)
+    if text_override is None:
+        photo = output / ('photo-' + request['id'] + '.jpg')
+        fallback = None
+        # Try independent text segmentations of the SAME JPEG. A single pass must
+        # read the complete marker and numeric code; never combine guessed glyphs
+        # or body text from different passes. The optional alphabet is justified
+        # only by this ASCII fixture and the collector's real cat -v output.
+        for mode, ascii_only in ((6, False), (11, False), (4, False), (6, True)):
+            arguments = ['tesseract', str(photo), 'stdout', '--psm', str(mode)]
+            if ascii_only:
+                arguments += ['-c', 'tessedit_char_whitelist=' + ''.join(chr(n) for n in range(32, 127))]
+            result = subprocess.run(arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=15, check=True,
+                                    env={**os.environ, 'OMP_THREAD_LIMIT': '1'})
+            text = result.stdout.decode('utf-8', 'replace')
+            reply = ocr_reply(output, request, text)
+            value = json.loads(reply['output'][0]['content'][0]['text'])
+            item = (reply, text, mode, ascii_only)
+            if value['terminal_state'] == 'shell_prompt' and (
+                    request['preflight'] or value['page_state'] in ('captured', 'cleaned', 'more', 'done', 'limit')):
+                fallback = item
+                break
+            if fallback is None or value['page_state'] == 'unreadable':
+                fallback = item
+        reply, text, mode, ascii_only = fallback
+        (output / ('ocr-' + request['id'] + '.txt')).write_text(text)
+        (output / ('ocr-' + request['id'] + '-mode.json')).write_text(json.dumps({'psm': mode, 'ascii_only': ascii_only}))
+        return reply
+    text = text_override
     lines = text.splitlines()
     prompt = any(re.search(r'demo@linux:.*\$', line) for line in lines)
     value = {'observed_command': '', 'terminal_state': 'shell_prompt' if prompt else 'unclear',

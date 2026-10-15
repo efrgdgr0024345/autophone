@@ -1,5 +1,12 @@
 # UI14 command flow and simulation review
 
+UI14.1 follows the extended image test: a feedback/plan timeout was previously
+re-thrown as ordinary cancellation, leaving Auto visibly ON in REVIEW_RESULT.
+It now stops, clears session resources, explains the timeout and preserves only
+canonical unattempted tasks. The `timeout` instrumentation scenario raises a real
+`TimeoutCancellationException` after the first transmitted operation and asserts
+OFF, no extra Enter, cleared camera/key and no attempted-task replay.
+
 User-authorized continuation of UI13 on `feature/ui14-command-flow-validation`.
 Rollback: `5a6968d4ffe8e8b28e4bdb021bbb9ffda17489f7`. This is a physical-test candidate,
 not a promotion of the protected Bluetooth baseline.

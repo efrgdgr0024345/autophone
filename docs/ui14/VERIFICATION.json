@@ -64,11 +64,12 @@
     "installed_apk_sha256": "04c21dcb9f22f2c4e92fabe05a717d97df70e301a0e93cea56b5fa935ce2741a"
   },
   "image_loop": {
-    "status": "running",
+    "status": "failed",
     "vision": "Tesseract with scripted demo planner; not OpenAI",
     "image_delivery": "test observer-boundary injection after actual Camera2 JPEG capture",
     "physical_hid": false,
-    "test_driver_sha256": "92dc743970e7dfa7e509b8472a93926fc444709f86d379c9cf52e893fcdbc467"
+    "test_driver_sha256": "92dc743970e7dfa7e509b8472a93926fc444709f86d379c9cf52e893fcdbc467",
+    "reason": "Scripted planner assertion failed; subsequent provider timeout left Auto ON in REVIEW_RESULT. Candidate superseded by UI14.1."
   },
   "live_openai": {
     "authenticated_requests_run": false,
@@ -86,6 +87,7 @@
   "publication": {
     "baseline_promoted": false,
     "merged": false,
-    "new_apk_bytes_copied_without_rebuild": true
+    "new_apk_bytes_copied_without_rebuild": true,
+    "superseded_by": "UI14.1"
   }
 }

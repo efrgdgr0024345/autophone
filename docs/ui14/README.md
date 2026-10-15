@@ -1,5 +1,10 @@
 # Black Cat UI14 testing candidate
 
+**Superseded:** the extended Linux/image test subsequently found that a timed-out
+plan request could leave Auto showing ON after its coroutine ended. Use UI14.1
+when available. The UI14 APK bytes are retained as historical evidence, not an
+accepted Auto candidate. See [UI14.1](../ui14.1/README.md).
+
 UI14 simplifies command review, keeps Auto/Voice visible, preserves remaining tasks
 when Auto stops, explains API failures in the session, and uses a black cat on white
 for the launcher. The Bluetooth core, manual typing/mouse path, encrypted key vault,
