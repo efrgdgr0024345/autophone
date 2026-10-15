@@ -171,6 +171,22 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
             onMain { scrollBottom(dialog) }
             screenshot("plan-steps")
             onMain {
+                switchTab("FEEDBACK")
+                setField(panel, "busy", true)
+                invoke(panel, "renderAll")
+                check((field(panel, "goalStage") as View).visibility == View.GONE)
+            }
+            screenshot("long-request-cancel")
+            onMain {
+                val cancel = findButton(field(panel, "manualActionBar") as View, "Cancel request / typing")
+                fullyVisible(cancel, 48)
+                cancel.performClick()
+                check(field(panel, "busy") == false)
+                check(workspace().plan === commandFixture)
+                pass("A long feedback request has a visible pinned Cancel even with its goal collapsed; cancellation retains the plan")
+                switchTab("PLAN")
+            }
+            onMain {
                 findButton(dialog, "Start with step 1").performClick()
                 check(texts(dialog).any { it == "Step 1 of 2" })
                 check(descendants(dialog.window!!.decorView).filterIsInstance<android.widget.ImageView>()

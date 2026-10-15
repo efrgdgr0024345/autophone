@@ -1315,6 +1315,15 @@ private class AiPanel(
     private fun renderManualActionBar() {
         manualActionBar.removeAllViews()
         manualActionHost = target.current()
+        if (busy) {
+            // Feedback can start with the goal form collapsed or on Result.
+            // Keep cancellation outside the scrollable/hidden page.
+            manualActionBar.visibility = View.VISIBLE
+            manualActionBar.addView(actionButton("Cancel request / typing", false) {
+                cancelButton.performClick()
+            }, matchWrap())
+            return
+        }
         val visible = activeTab in setOf(Tab.STEP, Tab.PREVIEW) && commands.getOrNull(selected) != null
         manualActionBar.visibility = if (visible) View.VISIBLE else View.GONE
         if (!visible) return
