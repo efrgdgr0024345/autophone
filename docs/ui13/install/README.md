@@ -58,3 +58,7 @@ successful hardening. This is a test candidate, not a whole-system security guar
 - Shell integration tests verify paged output without rerunning the original command, final unterminated lines, escaped controls, real exit codes, smaller slices, exact-file cleanup, a 1 MiB output cap without SIGPIPE, and successful 3 MB command file writes.
 
 These checks do not establish real phone Bluetooth, live OpenAI voice/vision, camera framing or successful Linux hardening.
+
+Full direct APK URL:
+
+https://raw.githubusercontent.com/efrgdgr0024345/autophone/dd5e43a7f77ca47e937cbb2dfda63913699edfd2/docs/ui13/install/CatAI-13.apk
