@@ -1,5 +1,7 @@
 # Black Cat UI14.1 testing candidate
 
+**Superseded by [UI14.2](../ui14.2/README.md)** after live API testing found the detailed-plan deadline and unsupported model proposals. These APK bytes and original results remain unchanged.
+
 UI14.1 fixes a timeout discovered by the extended Linux/image test. A plan or photo
 request could time out and leave Auto visibly ON after its coroutine had ended.
 Auto now stops, shows the timeout, clears the camera/key, and returns only canonical

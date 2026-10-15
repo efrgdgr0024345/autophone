@@ -1,0 +1,135 @@
+{
+  "utc": "2026-10-15T06:00:17.309864+00:00",
+  "source_sha": "d16c23efb33ffd63a8f920b2de6242a5e178be0e",
+  "artifact_sha256": "f21a79a7486f3f3f0d9abaa35d246adbbecc72b09cc5fe83aba19e4d1cdd10f6",
+  "method": "Host HTTPS requests serialized and parsed by unchanged compiled production Kotlin codecs; synthetic data only. No target commands executed.",
+  "key_saved_or_logged": false,
+  "physical_bluetooth_tested": false,
+  "phone_camera_openai_transport_tested": false,
+  "results": [
+    {
+      "scenario": "plan",
+      "requested_model": "gpt-6.1-sol",
+      "request_sha256": "e1caae435263eca7860272e68a10405c8e9f91a32482f8dc368bc8f1db5b6063",
+      "passed": false,
+      "failure_type": "TimeoutError",
+      "elapsed_seconds": 60.07
+    },
+    {
+      "scenario": "preflight",
+      "requested_model": "gpt-6.1-sol",
+      "request_sha256": "1ecb673a0f39afdf3f1baf349defb93afdf2d202109496dad62f2596aa2d5a77",
+      "http": 200,
+      "content_type": "application/json",
+      "returned_model": "gpt-6.1-sol",
+      "usage": {
+        "input_tokens": 2082,
+        "input_tokens_details": {
+          "cache_write_tokens": 2079,
+          "cached_tokens": 0
+        },
+        "output_tokens": 147,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2229
+      },
+      "terminal_state": "shell_prompt",
+      "page_state": "none",
+      "passed": true,
+      "revision_needed": false,
+      "outcome": "appears_complete",
+      "elapsed_seconds": 4.12
+    },
+    {
+      "scenario": "clipped",
+      "requested_model": "gpt-6.1-sol",
+      "request_sha256": "655277110708906e99bb48d75509d772f920673ec7cd8f1aeacf2632201c5063",
+      "http": 200,
+      "content_type": "application/json",
+      "returned_model": "gpt-6.1-sol",
+      "usage": {
+        "input_tokens": 2287,
+        "input_tokens_details": {
+          "cache_write_tokens": 2284,
+          "cached_tokens": 0
+        },
+        "output_tokens": 258,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2545
+      },
+      "terminal_state": "shell_prompt",
+      "page_state": "unreadable",
+      "passed": true,
+      "revision_needed": true,
+      "outcome": "error",
+      "elapsed_seconds": 5.99
+    },
+    {
+      "scenario": "page",
+      "requested_model": "gpt-6.1-sol",
+      "request_sha256": "e02d7be6deee57f2b93b73c7f5b70f68f44f428b0a3af7df58037efcce656f1c",
+      "http": 200,
+      "content_type": "application/json",
+      "returned_model": "gpt-6.1-sol",
+      "usage": {
+        "input_tokens": 2287,
+        "input_tokens_details": {
+          "cache_write_tokens": 2284,
+          "cached_tokens": 0
+        },
+        "output_tokens": 351,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2638
+      },
+      "terminal_state": "shell_prompt",
+      "page_state": "more",
+      "passed": true,
+      "revision_needed": false,
+      "outcome": "unclear",
+      "elapsed_seconds": 8.17
+    },
+    {
+      "scenario": "revision",
+      "requested_model": "gpt-6.1-sol",
+      "request_sha256": "4527dd7ae061fbe7c20cfeb0dbd417f032fe21befc6e4822dc8c55afb42279aa",
+      "http": 200,
+      "content_type": "application/json",
+      "returned_model": "gpt-6.1-sol",
+      "usage": {
+        "input_tokens": 1976,
+        "input_tokens_details": {
+          "cache_write_tokens": 537,
+          "cached_tokens": 1436
+        },
+        "output_tokens": 1506,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 3482
+      },
+      "passed": false,
+      "production_parser_or_behavior_check": "failed",
+      "assertion": "Exception in thread \"main\" java.lang.AssertionError: Command is not accepted by production Auto policy: systemctl list-unit-files '*demo*' '*blackcat*' --no-pager",
+      "elapsed_seconds": 42.99
+    },
+    {
+      "scenario": "speech",
+      "requested_model": "gpt-4o-mini-tts",
+      "request_sha256": "eab8fd17ed98d80dc43ef8722715543df9f398bbf5b173d26dd9c4fee8538b02",
+      "http": 200,
+      "content_type": "audio/pcm",
+      "passed": true,
+      "pcm_bytes": 477600,
+      "duration_seconds": 9.95,
+      "sample_rms": 2922.63,
+      "phone_playback_tested": false,
+      "elapsed_seconds": 2.61
+    }
+  ],
+  "passed": false
+}

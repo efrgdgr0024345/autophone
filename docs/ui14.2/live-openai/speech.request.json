@@ -1,0 +1,7 @@
+{
+  "voice": "marin",
+  "input": "First, I'll check which services are listening. This only reads the current settings. Then I'll review the result before choosing the next step. You can stop me at any time.",
+  "instructions": "Speak warmly and naturally, like a calm helpful companion. Explain without hype, pressure or theatrical voices. Use gentle pauses. Do not add words or claim commands succeeded.",
+  "response_format": "pcm",
+  "model": "gpt-4o-mini-tts"
+}

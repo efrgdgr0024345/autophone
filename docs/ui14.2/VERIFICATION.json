@@ -1,0 +1,107 @@
+{
+  "build_source": "28fec6a187cca84f92fa14821167d660c5436eed",
+  "version_code": 18,
+  "version_name": "14.2-live-api-validation",
+  "application_id": "com.blackcat.remote",
+  "rollback": "7cbb801f6f8fbededf97171025ae24a9ac8b9f05",
+  "signer_sha256": "fc5c0b42b9da40c2507d8f2e77ed92db9e023740aa1a44d1a3b2c14a6e9f4764",
+  "apks": {
+    "CatAI-14.2.apk": {
+      "sha256": "937a7f18b823f39e16f7a21b0ff83df741c76bb0614eb7bd27e0cc3103bc1042",
+      "bytes": 5387157
+    },
+    "CatBT-14.2.apk": {
+      "sha256": "3d0ce918309964c875256582fa23613baa27e45cbf3cd6b3971b14be388e0bf2",
+      "bytes": 5027237
+    }
+  },
+  "unit_tests": {
+    "ai": {
+      "tests": 134,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "offline": {
+      "tests": 27,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "policy_mutation_tests": 83,
+  "planner_contract_tests": 40,
+  "artwork_decode_tests": 1,
+  "catalog": {
+    "commands": 212,
+    "categories": 13,
+    "topics": 63
+  },
+  "lint": {
+    "ai": {
+      "Error": 0,
+      "Warning": 67
+    },
+    "offline": {
+      "Error": 0,
+      "Warning": 21
+    }
+  },
+  "codeql": {
+    "source_files": 48,
+    "security_findings": 0,
+    "quality_notes": 22
+  },
+  "native": {
+    "runtime": "API31 Android12 AOSP ATD x86_64, software CPU emulation, real PixelCopy",
+    "workflow_checks": 22,
+    "timeout_checks": 1,
+    "layout_checks": 26,
+    "total_checks": 49,
+    "workflow_and_timeout_pngs": 39,
+    "matrix_and_icon_pngs": 37,
+    "widths_dp": [
+      320,
+      360,
+      390,
+      412
+    ],
+    "font_scales": [
+      1,
+      1.3,
+      2
+    ],
+    "exact_apk_hash_checked_before_each_run": true
+  },
+  "live_openai": {
+    "authenticated_requests_run": true,
+    "key_binding": "BLACKCAT_TEST_API_KEY2",
+    "key_logged_or_packaged": false,
+    "revised_cases_passed": 6,
+    "initial_cases_passed": 4,
+    "initial_cases_failed": 2,
+    "latency_diagnostic_seconds": 90.4,
+    "method": "Host HTTPS with production compiled Kotlin wire/parsers, synthetic inputs; separate from native Android-network transport.",
+    "final_codec_request_hashes_match_live_requests": true,
+    "final_codec_reparse_passed": true,
+    "results": "live-openai/result.json"
+  },
+  "linux_image_loop": {
+    "current_candidate_full_host_loop_rerun": false,
+    "previous_candidate_result": "UI14.1: 13 operations, 14 independent OCR image observations, one replan; see ../ui14.1/image-loop",
+    "current_candidate_native_auto_fixture": "Passed two-page collection, reconciliation, one revised diagnostic, seven simulated HID Enter operations and cleanup; real Camera2, synthetic providers/target"
+  },
+  "limitations": [
+    "No continuous physical phone-camera/OpenAI/Bluetooth demonstration.",
+    "Phone playback, camera optics, pairing/reconnect, keyboard layout, mouse, IME/dictation and Keystore need physical acceptance.",
+    "API35 framework failures from earlier attempts are not passed coverage; API31 ATD has no ordinary launcher/IME.",
+    "Model output remains advisory and can be rejected; successful sampled outputs do not guarantee every future response."
+  ],
+  "publication": {
+    "prior_apks_unchanged": true,
+    "copied_exact_tested_apk_bytes_without_rebuild": true,
+    "baseline_promoted": false,
+    "merged": false,
+    "supersedes": "UI14.1 and UI14"
+  }
+}

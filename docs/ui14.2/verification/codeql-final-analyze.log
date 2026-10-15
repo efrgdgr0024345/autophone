@@ -1,0 +1,989 @@
+Running queries.
+Resolving data extensions.
+Finished resolving data extensions.
+Loading data extensions.
+Finished loading data extensions.
+WARNING: Not caching stages during query-loading, since max heap size is only 1800 MB.
+[1/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Arithmetic/InformationLoss.qlx.
+[2/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-020/OverlyLargeRange.qlx.
+[3/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-022/TaintedPath.qlx.
+[4/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-022/ZipSlip.qlx.
+[5/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-023/PartialPathTraversalFromRemote.qlx.
+[6/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-074/JndiInjection.qlx.
+[7/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-074/XsltInjection.qlx.
+[8/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-078/ExecTainted.qlx.
+[9/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-079/XSS.qlx.
+[10/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-089/SqlTainted.qlx.
+[11/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-090/LdapInjection.qlx.
+[12/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-094/GroovyInjection.qlx.
+[13/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-094/InsecureBeanValidation.qlx.
+[14/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-094/JexlInjection.qlx.
+[15/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-094/MvelInjection.qlx.
+[16/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-094/SpelInjection.qlx.
+[17/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-094/TemplateInjection.qlx.
+[18/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-1104/MavenPomDependsOnBintray.qlx.
+[19/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-1004/SensitiveCookieNotHttpOnly.qlx.
+[20/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-113/NettyResponseSplitting.qlx.
+[21/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-113/ResponseSplitting.qlx.
+[22/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-1204/StaticInitializationVector.qlx.
+[23/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-200/SpringBootActuators.qlx.
+[24/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-200/SpringBootActuatorsConfig/SpringBootActuatorsConfig.qlx.
+[25/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-134/ExternallyControlledFormatString.qlx.
+[26/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-209/SensitiveDataExposureThroughErrorMessage.qlx.
+[27/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-209/StackTraceExposure.qlx.
+[28/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-287/AndroidInsecureLocalAuthentication.qlx.
+[29/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-295/ImproperWebViewCertificateValidation.qlx.
+[30/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-266/IntentUriPermissionManipulation.qlx.
+[31/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-295/InsecureTrustManager.qlx.
+[32/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-312/AllowBackupAttributeEnabled.qlx.
+[33/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-297/UnsafeHostnameVerification.qlx.
+[34/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-326/InsufficientKeySize.qlx.
+[35/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-312/CleartextStorageCookie.qlx.
+[36/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-327/BrokenCryptoAlgorithm.qlx.
+[37/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-330/InsecureRandomness.qlx.
+[38/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-338/JHipsterGeneratedPRNG.qlx.
+[39/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-335/PredictableSeed.qlx.
+[40/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-352/SpringCSRFProtection.qlx.
+[41/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-347/MissingJWTSignatureCheck.qlx.
+[42/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-441/UnsafeContentUriResolution.qlx.
+[43/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-470/FragmentInjection.qlx.
+[44/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-470/FragmentInjectionInPreferenceActivity.qlx.
+[45/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-489/DebuggableAttributeEnabled.qlx.
+[46/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-489/WebviewDebuggingEnabled.qlx.
+[47/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-502/UnsafeDeserialization.qlx.
+[48/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-522/InsecureLdapAuth.qlx.
+[49/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-552/UrlForward.qlx.
+[50/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-601/UrlRedirect.qlx.
+[51/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-614/InsecureCookie.qlx.
+[52/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-611/XXE.qlx.
+[53/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-643/XPathInjection.qlx.
+[54/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-681/NumericCastTainted.qlx.
+[55/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-730/PolynomialReDoS.qlx.
+[56/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-730/ReDoS.qlx.
+[57/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-732/ReadingFromWorldWritableFile.qlx.
+[58/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-730/RegexInjection.qlx.
+[59/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-780/RsaWithoutOaep.qlx.
+[60/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-829/InsecureDependencyResolution.qlx.
+[61/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-807/TaintedPermissionsCheck.qlx.
+[62/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-917/OgnlInjection.qlx.
+[63/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-918/RequestForgery.qlx.
+[64/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-926/ImplicitlyExportedAndroidComponent.qlx.
+[65/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-925/ImproperIntentVerification.qlx.
+[66/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-927/ImplicitPendingIntents.qlx.
+[67/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/UnreleasedLock.qlx.
+[68/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-940/AndroidIntentRedirection.qlx.
+[69/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-023/PartialPathTraversal.qlx.
+[70/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-078/ExecRelative.qlx.
+[71/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-078/ExecTaintedEnvironment.qlx.
+[72/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-079/AndroidWebViewAddJavascriptInterface.qlx.
+[73/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-079/AndroidWebViewSettingsEnabledJavaScript.qlx.
+[74/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-078/ExecUnescaped.qlx.
+[75/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-089/SqlConcatenated.qlx.
+[76/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-094/ArbitraryApkInstallation.qlx.
+[77/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-117/LogInjection.qlx.
+[78/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-129/ImproperValidationOfArrayConstruction.qlx.
+[79/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-129/ImproperValidationOfArrayIndex.qlx.
+[80/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-190/ArithmeticTainted.qlx.
+[81/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-190/ComparisonWithWiderType.qlx.
+[82/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-190/ArithmeticUncontrolled.qlx.
+[83/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-200/AndroidSensitiveNotifications.qlx.
+[84/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-200/AndroidSensitiveTextField.qlx.
+[85/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-200/AndroidWebViewSettingsFileAccess.qlx.
+[86/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-200/AndroidWebViewSettingsAllowsContentAccess.qlx.
+[87/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-200/TempDirLocalInformationDisclosure.qlx.
+[88/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-273/UnsafeCertTrust.qlx.
+[89/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-287/AndroidInsecureKeys.qlx.
+[90/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-297/InsecureJavaMail.qlx.
+[91/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-295/AndroidMissingCertificatePinning.qlx.
+[92/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-312/CleartextStorageAndroidDatabase.qlx.
+[93/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-312/CleartextStorageAndroidFilesystem.qlx.
+[94/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-312/CleartextStorageProperties.qlx.
+[95/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-312/CleartextStorageSharedPrefs.qlx.
+[96/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-327/MaybeBrokenCryptoAlgorithm.qlx.
+[97/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-367/TOCTOURace.qlx.
+[98/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-421/SocketAuthRace.qlx.
+[99/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-352/CsrfUnprotectedRequestType.qlx.
+[100/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-501/TrustBoundaryViolation.qlx.
+[101/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-522/InsecureBasicAuth.qlx.
+[102/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-524/SensitiveKeyboardCache.qlx.
+[103/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-676/PotentiallyDangerousFunction.qlx.
+[104/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-532/SensitiveInfoLog.qlx.
+[105/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-749/UnsafeAndroidAccess.qlx.
+[106/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-807/ConditionalBypass.qlx.
+[107/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-926/ContentProviderIncompletePermissions.qlx.
+[108/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-835/InfiniteLoop.qlx.
+[109/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-927/SensitiveCommunication.qlx.
+[110/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Diagnostics/ExtractionErrors.qlx.
+[111/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Diagnostics/ExtractionWarnings.qlx.
+[112/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Diagnostics/SuccessfullyExtractedFiles.qlx.
+[113/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Telemetry/DatabaseQualityDiagnostics.qlx.
+[114/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Metrics/Summaries/LinesOfCode.qlx.
+[115/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Metrics/Summaries/LinesOfCodeJava.qlx.
+[116/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Metrics/Summaries/LinesOfCodeKotlin.qlx.
+[117/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Telemetry/ExternalLibraryUsage.qlx.
+[118/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Telemetry/ExtractorInformation.qlx.
+[119/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-927/SensitiveResultReceiver.qlx.
+[120/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Telemetry/SupportedExternalApis.qlx.
+[121/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Telemetry/SupportedExternalSinks.qlx.
+[122/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Telemetry/SupportedExternalSources.qlx.
+[123/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Telemetry/SupportedExternalTaint.qlx.
+[124/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Advisory/Declarations/MissingOverrideAnnotation.qlx.
+[125/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Advisory/Deprecated Code/AvoidDeprecatedCallableAccess.qlx.
+[126/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Advisory/Documentation/ImpossibleJavadocThrows.qlx.
+[127/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Advisory/Documentation/SpuriousJavadocParam.qlx.
+[128/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Compatibility/JDK9/JdkInternalAccess.qlx.
+[129/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Compatibility/JDK9/UnderscoreIdentifier.qlx.
+[130/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/DeadCode/UselessParameter.qlx.
+[131/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Language Abuse/ChainedInstanceof.qlx.
+[132/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Language Abuse/IterableIterator.qlx.
+[133/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Language Abuse/OverridePackagePrivate.qlx.
+[134/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Language Abuse/TypeVarExtendsFinalType.qlx.
+[135/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Language Abuse/TypeVariableHidesType.qlx.
+[136/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Language Abuse/UselessNullCheck.qlx.
+[137/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Language Abuse/UselessTypeTest.qlx.
+[138/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Language Abuse/WrappedIterator.qlx.
+[139/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Arithmetic/BadAbsOfRandom.qlx.
+[140/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Arithmetic/ConstantExpAppearsNonConstant.qlx.
+[141/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Arithmetic/IntMultToLong.qlx.
+[142/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Arithmetic/LShiftLargerThanTypeWidth.qlx.
+[143/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Arithmetic/MultiplyRemainder.qlx.
+[144/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Arithmetic/RandomUsedOnce.qlx.
+[145/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Arithmetic/WhitespaceContradictsPrecedence.qlx.
+[146/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Cloning/MissingCallToSuperClone.qlx.
+[147/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Cloning/MissingMethodClone.qlx.
+[148/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Collections/ArrayIndexOutOfBounds.qlx.
+[149/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Collections/ContainsTypeMismatch.qlx.
+[150/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Collections/IteratorRemoveMayFail.qlx.
+[151/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Telemetry/UnsupportedExternalAPIs.qlx.
+[152/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Collections/RemoveTypeMismatch.qlx.
+[153/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Collections/WriteOnlyContainer.qlx.
+[154/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/CompareIdenticalValues.qlx.
+[155/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/CovariantCompareTo.qlx.
+[156/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/CovariantEquals.qlx.
+[157/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/EqualsArray.qlx.
+[158/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/HashedButNoHash.qlx.
+[159/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/IncomparableEquals.qlx.
+[160/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/InconsistentCompareTo.qlx.
+[161/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/InconsistentEqualsHashCode.qlx.
+[162/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/MissingInstanceofInEquals.qlx.
+[163/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/RefEqBoxed.qlx.
+[164/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/StringComparison.qlx.
+[165/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Collections/ReadOnlyContainer.qlx.
+[166/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/WrongNanComparison.qlx.
+[167/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/CallsToConditionWait.qlx.
+[168/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/CallsToRunnableRun.qlx.
+[169/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/DateFormatThreadUnsafe.qlx.
+[170/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/UselessComparisonTest.qlx.
+[171/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/DoubleCheckedLocking.qlx.
+[172/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/FutileSynchOnField.qlx.
+[173/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/NonSynchronizedOverride.qlx.
+[174/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/NotifyNotNotifyAll.qlx.
+[175/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/SleepWithLock.qlx.
+[176/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/StartInConstructor.qlx.
+[177/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/SynchOnBoxedType.qlx.
+[178/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/DoubleCheckedLockingWithInitRace.qlx.
+[179/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/SynchSetUnsynchGet.qlx.
+[180/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Finalization/NullifiedSuperFinalize.qlx.
+[181/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/SynchWriteObject.qlx.
+[182/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Frameworks/JUnit/BadSuiteMethod.qlx.
+[183/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Frameworks/Swing/BadlyOverriddenAdapter.qlx.
+[184/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/ContainerSizeCmpZero.qlx.
+[185/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Inheritance/NoNonFinalInConstructor.qlx.
+[186/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/DangerousNonCircuitLogic.qlx.
+[187/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/EqualsTypo.qlx.
+[188/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/HashCodeTypo.qlx.
+[189/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/ContradictoryTypeChecks.qlx.
+[190/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/MissingSpaceTypo.qlx.
+[191/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/SelfAssignment.qlx.
+[192/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/StringBufferCharInit.qlx.
+[193/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/SuspiciousDateFormat.qlx.
+[194/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/ToStringTypo.qlx.
+[195/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/MissingFormatArg.qlx.
+[196/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Nullness/NullAlways.qlx.
+[197/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/UnusedFormatArg.qlx.
+[198/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Nullness/NullExprDeref.qlx.
+[199/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Reflection/AnnotationPresentCheck.qlx.
+[200/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Resource Leaks/CloseReader.qlx.
+[201/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Resource Leaks/CloseSql.qlx.
+[202/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Resource Leaks/CloseWriter.qlx.
+[203/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Serialization/IncorrectSerialVersionUID.qlx.
+[204/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Serialization/IncorrectSerializableMethods.qlx.
+[205/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Serialization/MissingVoidConstructorOnExternalizable.qlx.
+[206/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Serialization/MissingVoidConstructorsOnSerializable.qlx.
+[207/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Nullness/NullMaybe.qlx.
+[208/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Serialization/NonSerializableInnerClass.qlx.
+[209/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Statements/ContinueInFalseLoop.qlx.
+[210/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Serialization/ReadResolveObject.qlx.
+[211/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Statements/MissingEnumInSwitch.qlx.
+[212/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Statements/UseBraces.qlx.
+[213/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Statements/PartiallyMaskedCatch.qlx.
+[214/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Termination/SpinOnField.qlx.
+[215/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Performance/InefficientEmptyStringTest.qlx.
+[216/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Performance/InefficientKeySetIterator.qlx.
+[217/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Performance/InefficientOutputStream.qlx.
+[218/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Performance/InefficientPrimConstructor.qlx.
+[219/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Termination/ConstantLoopCondition.qlx.
+[220/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Performance/NewStringString.qlx.
+[221/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Performance/InnerClassCouldBeStatic.qlx.
+[222/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Boxed Types/BoxedVariable.qlx.
+[223/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Dead Code/DeadRefTypes.qlx.
+[224/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Dead Code/InterfaceCannotBeImplemented.qlx.
+[225/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Dead Code/UnreadLocal.qlx.
+[226/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Dead Code/UnusedLabel.qlx.
+[227/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Declarations/NoConstantsOnly.qlx.
+[228/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Exception Handling/IgnoreExceptionalReturn.qlx.
+[229/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Exception Handling/NumberFormatException.qlx.
+[230/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Implementation Hiding/AbstractToConcreteCollection.qlx.
+[231/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Dead Code/CreatesEmptyZip.qlx.
+[232/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Implementation Hiding/GetClassGetResource.qlx.
+[233/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Naming Conventions/AmbiguousOuterSuper.qlx.
+[234/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Naming Conventions/ConfusingMethodNames.qlx.
+[235/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Implementation Hiding/ExposeRepresentation.qlx.
+[236/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Naming Conventions/FieldMasksSuperField.qlx.
+[237/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Naming Conventions/ConfusingOverloading.qlx.
+[238/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Naming Conventions/LocalShadowsFieldConfusing.qlx.
+[239/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Naming Conventions/SameNameAsSuper.qlx.
+[240/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Undesirable Calls/CallsToRunFinalizersOnExit.qlx.
+[241/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Undesirable Calls/CallsToStringToString.qlx.
+[242/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Undesirable Calls/DefaultToString.qlx.
+[243/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Undesirable Calls/NextFromIterator.qlx.
+[244/244] Loaded /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Undesirable Calls/PrintLnArray.qlx.
+Starting evaluation of codeql/java-queries/Advisory/Declarations/MissingOverrideAnnotation.ql.
+Starting evaluation of codeql/java-queries/Advisory/Deprecated Code/AvoidDeprecatedCallableAccess.ql.
+Starting evaluation of codeql/java-queries/Advisory/Documentation/ImpossibleJavadocThrows.ql.
+[1/244 eval 1.8s] Evaluation done; writing results to codeql/java-queries/Advisory/Declarations/MissingOverrideAnnotation.bqrs.
+Starting evaluation of codeql/java-queries/Advisory/Documentation/SpuriousJavadocParam.ql.
+[2/244 eval 37ms] Evaluation done; writing results to codeql/java-queries/Advisory/Documentation/ImpossibleJavadocThrows.bqrs.
+Starting evaluation of codeql/java-queries/Compatibility/JDK9/JdkInternalAccess.ql.
+[3/244 eval 1ms] Evaluation done; writing results to codeql/java-queries/Advisory/Documentation/SpuriousJavadocParam.bqrs.
+Starting evaluation of codeql/java-queries/Compatibility/JDK9/UnderscoreIdentifier.ql.
+[4/244 eval 1.9s] Evaluation done; writing results to codeql/java-queries/Advisory/Deprecated Code/AvoidDeprecatedCallableAccess.bqrs.
+[5/244 eval 66ms] Evaluation done; writing results to codeql/java-queries/Compatibility/JDK9/JdkInternalAccess.bqrs.
+Starting evaluation of codeql/java-queries/DeadCode/UselessParameter.ql.
+Starting evaluation of codeql/java-queries/Diagnostics/ExtractionErrors.ql.
+[6/244 eval 56ms] Evaluation done; writing results to codeql/java-queries/Compatibility/JDK9/UnderscoreIdentifier.bqrs.
+[7/244 eval 57ms] Evaluation done; writing results to codeql/java-queries/Diagnostics/ExtractionErrors.bqrs.
+Starting evaluation of codeql/java-queries/Diagnostics/ExtractionWarnings.ql.
+Starting evaluation of codeql/java-queries/Diagnostics/SuccessfullyExtractedFiles.ql.
+[8/244 eval 2ms] Evaluation done; writing results to codeql/java-queries/Diagnostics/ExtractionWarnings.bqrs.
+Starting evaluation of codeql/java-queries/Language Abuse/ChainedInstanceof.ql.
+[9/244 eval 102ms] Evaluation done; writing results to codeql/java-queries/DeadCode/UselessParameter.bqrs.
+[10/244 eval 13ms] Evaluation done; writing results to codeql/java-queries/Language Abuse/ChainedInstanceof.bqrs.
+Starting evaluation of codeql/java-queries/Language Abuse/IterableIterator.ql.
+Starting evaluation of codeql/java-queries/Language Abuse/OverridePackagePrivate.ql.
+[11/244 eval 86ms] Evaluation done; writing results to codeql/java-queries/Diagnostics/SuccessfullyExtractedFiles.bqrs.
+[12/244 eval 74ms] Evaluation done; writing results to codeql/java-queries/Language Abuse/IterableIterator.bqrs.
+Starting evaluation of codeql/java-queries/Language Abuse/TypeVarExtendsFinalType.ql.
+Starting evaluation of codeql/java-queries/Language Abuse/TypeVariableHidesType.ql.
+[13/244 eval 47ms] Evaluation done; writing results to codeql/java-queries/Language Abuse/OverridePackagePrivate.bqrs.
+[14/244 eval 25ms] Evaluation done; writing results to codeql/java-queries/Language Abuse/TypeVarExtendsFinalType.bqrs.
+Starting evaluation of codeql/java-queries/Language Abuse/UselessNullCheck.ql.
+[15/244 eval 509ms] Evaluation done; writing results to codeql/java-queries/Language Abuse/TypeVariableHidesType.bqrs.
+Starting evaluation of codeql/java-queries/Language Abuse/UselessTypeTest.ql.
+Starting evaluation of codeql/java-queries/Language Abuse/WrappedIterator.ql.
+[16/244 eval 5ms] Evaluation done; writing results to codeql/java-queries/Language Abuse/UselessTypeTest.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Arithmetic/BadAbsOfRandom.ql.
+[17/244 eval 2ms] Evaluation done; writing results to codeql/java-queries/Language Abuse/WrappedIterator.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Arithmetic/ConstantExpAppearsNonConstant.ql.
+[18/244 eval 22ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Arithmetic/BadAbsOfRandom.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Arithmetic/InformationLoss.ql.
+[19/244 eval 3.4s] Evaluation done; writing results to codeql/java-queries/Language Abuse/UselessNullCheck.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Arithmetic/IntMultToLong.ql.
+[20/244 eval 22ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Arithmetic/InformationLoss.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Arithmetic/LShiftLargerThanTypeWidth.ql.
+[21/244 eval 63ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Arithmetic/ConstantExpAppearsNonConstant.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Arithmetic/MultiplyRemainder.ql.
+[22/244 eval 2ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Arithmetic/LShiftLargerThanTypeWidth.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Arithmetic/RandomUsedOnce.ql.
+[23/244 eval 10ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Arithmetic/MultiplyRemainder.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Arithmetic/WhitespaceContradictsPrecedence.ql.
+[24/244 eval 25ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Arithmetic/RandomUsedOnce.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Cloning/MissingCallToSuperClone.ql.
+[25/244 eval 78ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Arithmetic/IntMultToLong.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Cloning/MissingMethodClone.ql.
+[26/244 eval 30ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Arithmetic/WhitespaceContradictsPrecedence.bqrs.
+[27/244 eval 24ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Cloning/MissingCallToSuperClone.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Collections/ArrayIndexOutOfBounds.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Collections/ContainsTypeMismatch.ql.
+[28/244 eval 43ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Cloning/MissingMethodClone.bqrs.
+[29/244 eval 44ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Collections/ArrayIndexOutOfBounds.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Collections/IteratorRemoveMayFail.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Collections/ReadOnlyContainer.ql.
+[30/244 eval 13ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Collections/IteratorRemoveMayFail.bqrs.
+[31/244 eval 617ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Collections/ContainsTypeMismatch.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Collections/RemoveTypeMismatch.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Collections/WriteOnlyContainer.ql.
+[32/244 eval 4ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Collections/RemoveTypeMismatch.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Comparison/CompareIdenticalValues.ql.
+[33/244 eval 98ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Collections/WriteOnlyContainer.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Comparison/CovariantCompareTo.ql.
+[34/244 eval 38ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Comparison/CompareIdenticalValues.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Comparison/CovariantEquals.ql.
+[35/244 eval 41ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Comparison/CovariantCompareTo.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Comparison/EqualsArray.ql.
+[36/244 eval 49ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Comparison/CovariantEquals.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Comparison/HashedButNoHash.ql.
+[37/244 eval 13ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Comparison/EqualsArray.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Comparison/IncomparableEquals.ql.
+[38/244 eval 44ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Comparison/HashedButNoHash.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Comparison/InconsistentCompareTo.ql.
+[39/244 eval 2.9s] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Collections/ReadOnlyContainer.bqrs.
+[40/244 eval 50ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Comparison/IncomparableEquals.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Comparison/InconsistentEqualsHashCode.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Comparison/MissingInstanceofInEquals.ql.
+[41/244 eval 13ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Comparison/InconsistentEqualsHashCode.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Comparison/RefEqBoxed.ql.
+[42/244 eval 1ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Comparison/MissingInstanceofInEquals.bqrs.
+[43/244 eval 7ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Comparison/RefEqBoxed.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Comparison/StringComparison.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Comparison/UselessComparisonTest.ql.
+[44/244 eval 78ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Comparison/InconsistentCompareTo.bqrs.
+[45/244 eval 41ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Comparison/StringComparison.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Comparison/WrongNanComparison.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Concurrency/CallsToConditionWait.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Concurrency/CallsToRunnableRun.ql.
+[46/244 eval 45ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Comparison/UselessComparisonTest.bqrs.
+[47/244 eval 3ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Concurrency/CallsToConditionWait.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Concurrency/DateFormatThreadUnsafe.ql.
+[48/244 eval 4ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Concurrency/CallsToRunnableRun.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Concurrency/DoubleCheckedLocking.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Concurrency/DoubleCheckedLockingWithInitRace.ql.
+[49/244 eval 18ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Comparison/WrongNanComparison.bqrs.
+[50/244 eval 2ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Concurrency/DoubleCheckedLocking.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Concurrency/FutileSynchOnField.ql.
+[51/244 eval 2ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Concurrency/DoubleCheckedLockingWithInitRace.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Concurrency/NonSynchronizedOverride.ql.
+[52/244 eval 1ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Concurrency/FutileSynchOnField.bqrs.
+[53/244 eval 4ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Concurrency/NonSynchronizedOverride.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Concurrency/NotifyNotNotifyAll.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Concurrency/SleepWithLock.ql.
+[54/244 eval 19ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Concurrency/DateFormatThreadUnsafe.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Concurrency/StartInConstructor.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Concurrency/SynchOnBoxedType.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Concurrency/SynchSetUnsynchGet.ql.
+[55/244 eval 12ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Concurrency/NotifyNotNotifyAll.bqrs.
+[56/244 eval 2ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Concurrency/SynchOnBoxedType.bqrs.
+[57/244 eval 11ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Concurrency/SleepWithLock.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Concurrency/SynchWriteObject.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Concurrency/UnreleasedLock.ql.
+[58/244 eval 5ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Concurrency/SynchSetUnsynchGet.bqrs.
+[59/244 eval 2ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Concurrency/SynchWriteObject.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Finalization/NullifiedSuperFinalize.ql.
+[60/244 eval 18ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Concurrency/UnreleasedLock.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Frameworks/JUnit/BadSuiteMethod.ql.
+[61/244 eval 24ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Concurrency/StartInConstructor.bqrs.
+[62/244 eval 8ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Finalization/NullifiedSuperFinalize.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Frameworks/Swing/BadlyOverriddenAdapter.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Inheritance/NoNonFinalInConstructor.ql.
+[63/244 eval 10ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Frameworks/JUnit/BadSuiteMethod.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Likely Typos/ContainerSizeCmpZero.ql.
+[64/244 eval 14ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Frameworks/Swing/BadlyOverriddenAdapter.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Likely Typos/ContradictoryTypeChecks.ql.
+[65/244 eval 27ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Likely Typos/ContainerSizeCmpZero.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Likely Typos/DangerousNonCircuitLogic.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Likely Typos/EqualsTypo.ql.
+[66/244 eval 8ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Likely Typos/ContradictoryTypeChecks.bqrs.
+[67/244 eval 3ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Likely Typos/DangerousNonCircuitLogic.bqrs.
+[68/244 eval 39ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Inheritance/NoNonFinalInConstructor.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Likely Typos/HashCodeTypo.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Likely Typos/MissingFormatArg.ql.
+[69/244 eval 2ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Likely Typos/HashCodeTypo.bqrs.
+[70/244 eval 12ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Likely Typos/EqualsTypo.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Likely Typos/MissingSpaceTypo.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Likely Typos/SelfAssignment.ql.
+[71/244 eval 13ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Likely Typos/MissingFormatArg.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Likely Typos/StringBufferCharInit.ql.
+[72/244 eval 11ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Likely Typos/SelfAssignment.bqrs.
+[73/244 eval 15ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Likely Typos/StringBufferCharInit.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Likely Typos/SuspiciousDateFormat.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Likely Typos/ToStringTypo.ql.
+[74/244 eval 51ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Likely Typos/MissingSpaceTypo.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Likely Typos/UnusedFormatArg.ql.
+[75/244 eval 3ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Likely Typos/ToStringTypo.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Nullness/NullAlways.ql.
+[76/244 eval 19ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Likely Typos/SuspiciousDateFormat.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Nullness/NullExprDeref.ql.
+[77/244 eval 22ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Likely Typos/UnusedFormatArg.bqrs.
+[78/244 eval 43ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Nullness/NullExprDeref.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Nullness/NullMaybe.ql.
+[79/244 eval 69ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Nullness/NullAlways.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Reflection/AnnotationPresentCheck.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Resource Leaks/CloseReader.ql.
+[80/244 eval 20ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Reflection/AnnotationPresentCheck.bqrs.
+[81/244 eval 54ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Resource Leaks/CloseReader.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Resource Leaks/CloseSql.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Resource Leaks/CloseWriter.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Serialization/IncorrectSerialVersionUID.ql.
+[82/244 eval 1ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Resource Leaks/CloseSql.bqrs.
+[83/244 eval 2ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Resource Leaks/CloseWriter.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Serialization/IncorrectSerializableMethods.ql.
+[84/244 eval 10ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Serialization/IncorrectSerialVersionUID.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Serialization/MissingVoidConstructorOnExternalizable.ql.
+[85/244 eval 109ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Serialization/IncorrectSerializableMethods.bqrs.
+[86/244 eval 237ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Nullness/NullMaybe.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Serialization/MissingVoidConstructorsOnSerializable.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Serialization/NonSerializableInnerClass.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Serialization/ReadResolveObject.ql.
+[87/244 eval 19ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Serialization/MissingVoidConstructorsOnSerializable.bqrs.
+[88/244 eval 1ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Serialization/NonSerializableInnerClass.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Statements/ContinueInFalseLoop.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Statements/MissingEnumInSwitch.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Statements/PartiallyMaskedCatch.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Statements/UseBraces.ql.
+Starting evaluation of codeql/java-queries/Likely Bugs/Termination/ConstantLoopCondition.ql.
+[89/244 eval 29ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Serialization/MissingVoidConstructorOnExternalizable.bqrs.
+[90/244 eval 4ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Serialization/ReadResolveObject.bqrs.
+[91/244 eval 3ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Statements/MissingEnumInSwitch.bqrs.
+[92/244 eval 3ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Statements/ContinueInFalseLoop.bqrs.
+[93/244 eval 3ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Statements/PartiallyMaskedCatch.bqrs.
+[94/244 eval 13ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Statements/UseBraces.bqrs.
+Starting evaluation of codeql/java-queries/Likely Bugs/Termination/SpinOnField.ql.
+[95/244 eval 2ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Termination/SpinOnField.bqrs.
+Starting evaluation of codeql/java-queries/Metrics/Summaries/LinesOfCode.ql.
+Starting evaluation of codeql/java-queries/Metrics/Summaries/LinesOfCodeJava.ql.
+Starting evaluation of codeql/java-queries/Metrics/Summaries/LinesOfCodeKotlin.ql.
+[96/244 eval 4ms] Evaluation done; writing results to codeql/java-queries/Metrics/Summaries/LinesOfCode.bqrs.
+[97/244 eval 2ms] Evaluation done; writing results to codeql/java-queries/Metrics/Summaries/LinesOfCodeJava.bqrs.
+Starting evaluation of codeql/java-queries/Performance/InefficientEmptyStringTest.ql.
+[98/244 eval 2ms] Evaluation done; writing results to codeql/java-queries/Metrics/Summaries/LinesOfCodeKotlin.bqrs.
+Starting evaluation of codeql/java-queries/Performance/InefficientKeySetIterator.ql.
+Starting evaluation of codeql/java-queries/Performance/InefficientOutputStream.ql.
+[99/244 eval 13ms] Evaluation done; writing results to codeql/java-queries/Performance/InefficientEmptyStringTest.bqrs.
+[100/244 eval 5ms] Evaluation done; writing results to codeql/java-queries/Performance/InefficientKeySetIterator.bqrs.
+[101/244 eval 49ms] Evaluation done; writing results to codeql/java-queries/Likely Bugs/Termination/ConstantLoopCondition.bqrs.
+Starting evaluation of codeql/java-queries/Performance/InefficientPrimConstructor.ql.
+[102/244 eval 4ms] Evaluation done; writing results to codeql/java-queries/Performance/InefficientPrimConstructor.bqrs.
+Starting evaluation of codeql/java-queries/Performance/InnerClassCouldBeStatic.ql.
+[103/244 eval 42ms] Evaluation done; writing results to codeql/java-queries/Performance/InefficientOutputStream.bqrs.
+Starting evaluation of codeql/java-queries/Performance/NewStringString.ql.
+[104/244 eval 3ms] Evaluation done; writing results to codeql/java-queries/Performance/NewStringString.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-020/OverlyLargeRange.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-022/TaintedPath.ql.
+[105/244 eval 50ms] Evaluation done; writing results to codeql/java-queries/Performance/InnerClassCouldBeStatic.bqrs.
+[106/244 eval 214ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-020/OverlyLargeRange.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-022/ZipSlip.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-023/PartialPathTraversal.ql.
+[107/244 eval 34ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-022/ZipSlip.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-023/PartialPathTraversalFromRemote.ql.
+[108/244 eval 60ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-023/PartialPathTraversal.bqrs.
+[109/244 eval 112ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-023/PartialPathTraversalFromRemote.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-074/JndiInjection.ql.
+[110/244 eval 67ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-074/JndiInjection.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-074/XsltInjection.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-078/ExecRelative.ql.
+[111/244 eval 24ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-074/XsltInjection.bqrs.
+[112/244 eval 537ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-022/TaintedPath.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-078/ExecTainted.ql.
+[113/244 eval 91ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-078/ExecRelative.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-078/ExecTaintedEnvironment.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-078/ExecUnescaped.ql.
+[114/244 eval 123ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-078/ExecTaintedEnvironment.bqrs.
+[115/244 eval 26ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-078/ExecUnescaped.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-079/AndroidWebViewAddJavascriptInterface.ql.
+[116/244 eval 225ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-078/ExecTainted.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-079/AndroidWebViewSettingsEnabledJavaScript.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-079/XSS.ql.
+[117/244 eval 22ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-079/AndroidWebViewAddJavascriptInterface.bqrs.
+[118/244 eval 10ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-079/AndroidWebViewSettingsEnabledJavaScript.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-089/SqlConcatenated.ql.
+[119/244 eval 88ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-079/XSS.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-089/SqlTainted.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-090/LdapInjection.ql.
+[120/244 eval 35ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-090/LdapInjection.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-094/ArbitraryApkInstallation.ql.
+[121/244 eval 238ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-089/SqlConcatenated.bqrs.
+[122/244 eval 66ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-089/SqlTainted.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-094/GroovyInjection.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-094/InsecureBeanValidation.ql.
+[123/244 eval 103ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-094/ArbitraryApkInstallation.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-094/JexlInjection.ql.
+[124/244 eval 34ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-094/GroovyInjection.bqrs.
+[125/244 eval 46ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-094/JexlInjection.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-094/MvelInjection.ql.
+[126/244 eval 66ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-094/InsecureBeanValidation.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-094/SpelInjection.ql.
+[127/244 eval 34ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-094/SpelInjection.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-094/TemplateInjection.ql.
+[128/244 eval 86ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-094/MvelInjection.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-1004/SensitiveCookieNotHttpOnly.ql.
+[129/244 eval 34ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-094/TemplateInjection.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-1104/MavenPomDependsOnBintray.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-113/NettyResponseSplitting.ql.
+[130/244 eval 40ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-1004/SensitiveCookieNotHttpOnly.bqrs.
+[131/244 eval 8ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-1104/MavenPomDependsOnBintray.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-113/ResponseSplitting.ql.
+[132/244 eval 11ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-113/NettyResponseSplitting.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-117/LogInjection.ql.
+[133/244 eval 33ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-113/ResponseSplitting.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-1204/StaticInitializationVector.ql.
+[134/244 eval 88ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-117/LogInjection.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-129/ImproperValidationOfArrayConstruction.ql.
+[135/244 eval 45ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-129/ImproperValidationOfArrayConstruction.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-129/ImproperValidationOfArrayIndex.ql.
+[136/244 eval 277ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-1204/StaticInitializationVector.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-134/ExternallyControlledFormatString.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-190/ArithmeticTainted.ql.
+[137/244 eval 19ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-134/ExternallyControlledFormatString.bqrs.
+[138/244 eval 129ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-129/ImproperValidationOfArrayIndex.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-190/ArithmeticUncontrolled.ql.
+[139/244 eval 441ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-190/ArithmeticTainted.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-190/ComparisonWithWiderType.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-200/AndroidSensitiveNotifications.ql.
+[140/244 eval 17ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-190/ComparisonWithWiderType.bqrs.
+[141/244 eval 483ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-190/ArithmeticUncontrolled.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-200/AndroidSensitiveTextField.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-200/AndroidWebViewSettingsAllowsContentAccess.ql.
+[142/244 eval 248ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-200/AndroidSensitiveNotifications.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-200/AndroidWebViewSettingsFileAccess.ql.
+[143/244 eval 148ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-200/AndroidWebViewSettingsAllowsContentAccess.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-200/SpringBootActuators.ql.
+[144/244 eval 223ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-200/AndroidSensitiveTextField.bqrs.
+[145/244 eval 15ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-200/AndroidWebViewSettingsFileAccess.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-200/SpringBootActuatorsConfig/SpringBootActuatorsConfig.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-200/TempDirLocalInformationDisclosure.ql.
+[146/244 eval 13ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-200/SpringBootActuators.bqrs.
+[147/244 eval 11ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-200/SpringBootActuatorsConfig/SpringBootActuatorsConfig.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-209/SensitiveDataExposureThroughErrorMessage.ql.
+[148/244 eval 62ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-209/SensitiveDataExposureThroughErrorMessage.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-209/StackTraceExposure.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-266/IntentUriPermissionManipulation.ql.
+[149/244 eval 78ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-200/TempDirLocalInformationDisclosure.bqrs.
+[150/244 eval 36ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-209/StackTraceExposure.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-273/UnsafeCertTrust.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-287/AndroidInsecureKeys.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-287/AndroidInsecureLocalAuthentication.ql.
+[151/244 eval 37ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-266/IntentUriPermissionManipulation.bqrs.
+[152/244 eval 10ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-287/AndroidInsecureKeys.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-295/AndroidMissingCertificatePinning.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-295/ImproperWebViewCertificateValidation.ql.
+[153/244 eval 30ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-273/UnsafeCertTrust.bqrs.
+[154/244 eval 25ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-287/AndroidInsecureLocalAuthentication.bqrs.
+[155/244 eval 18ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-295/ImproperWebViewCertificateValidation.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-295/InsecureTrustManager.ql.
+[156/244 eval 23ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-295/InsecureTrustManager.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-297/InsecureJavaMail.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-297/UnsafeHostnameVerification.ql.
+[157/244 eval 7ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-297/InsecureJavaMail.bqrs.
+[158/244 eval 33ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-297/UnsafeHostnameVerification.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-312/AllowBackupAttributeEnabled.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-312/CleartextStorageAndroidDatabase.ql.
+[159/244 eval 8ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-312/AllowBackupAttributeEnabled.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-312/CleartextStorageAndroidFilesystem.ql.
+[160/244 eval 42ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-312/CleartextStorageAndroidDatabase.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-312/CleartextStorageCookie.ql.
+[161/244 eval 218ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-312/CleartextStorageAndroidFilesystem.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-312/CleartextStorageProperties.ql.
+[162/244 eval 18ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-312/CleartextStorageCookie.bqrs.
+[163/244 eval 7ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-312/CleartextStorageProperties.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-312/CleartextStorageSharedPrefs.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-326/InsufficientKeySize.ql.
+[164/244 eval 437ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-295/AndroidMissingCertificatePinning.bqrs.
+[165/244 eval 37ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-326/InsufficientKeySize.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-327/BrokenCryptoAlgorithm.ql.
+[166/244 eval 50ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-327/BrokenCryptoAlgorithm.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-327/MaybeBrokenCryptoAlgorithm.ql.
+[167/244 eval 157ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-327/MaybeBrokenCryptoAlgorithm.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-330/InsecureRandomness.ql.
+[168/244 eval 306ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-312/CleartextStorageSharedPrefs.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-335/PredictableSeed.ql.
+[169/244 eval 28ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-335/PredictableSeed.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-338/JHipsterGeneratedPRNG.ql.
+[170/244 eval 9ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-338/JHipsterGeneratedPRNG.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-347/MissingJWTSignatureCheck.ql.
+[171/244 eval 10ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-347/MissingJWTSignatureCheck.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-352/CsrfUnprotectedRequestType.ql.
+[172/244 eval 74ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-330/InsecureRandomness.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-352/SpringCSRFProtection.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-367/TOCTOURace.ql.
+[173/244 eval 35ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-352/CsrfUnprotectedRequestType.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-421/SocketAuthRace.ql.
+[174/244 eval 14ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-367/TOCTOURace.bqrs.
+[175/244 eval 32ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-352/SpringCSRFProtection.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-441/UnsafeContentUriResolution.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-470/FragmentInjection.ql.
+[176/244 eval 24ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-441/UnsafeContentUriResolution.bqrs.
+[177/244 eval 24ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-470/FragmentInjection.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-470/FragmentInjectionInPreferenceActivity.ql.
+[178/244 eval 12ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-470/FragmentInjectionInPreferenceActivity.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-489/DebuggableAttributeEnabled.ql.
+[179/244 eval 2ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-489/DebuggableAttributeEnabled.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-489/WebviewDebuggingEnabled.ql.
+[180/244 eval 126ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-421/SocketAuthRace.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-501/TrustBoundaryViolation.ql.
+[181/244 eval 17ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-489/WebviewDebuggingEnabled.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-502/UnsafeDeserialization.ql.
+[182/244 eval 183ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-501/TrustBoundaryViolation.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-522/InsecureBasicAuth.ql.
+[183/244 eval 202ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-502/UnsafeDeserialization.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-522/InsecureLdapAuth.ql.
+[184/244 eval 18ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-522/InsecureBasicAuth.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-524/SensitiveKeyboardCache.ql.
+[185/244 eval 25ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-522/InsecureLdapAuth.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-532/SensitiveInfoLog.ql.
+[186/244 eval 16ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-524/SensitiveKeyboardCache.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-552/UrlForward.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-601/UrlRedirect.ql.
+[187/244 eval 88ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-552/UrlForward.bqrs.
+[188/244 eval 107ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-532/SensitiveInfoLog.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-611/XXE.ql.
+[189/244 eval 39ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-611/XXE.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-614/InsecureCookie.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-643/XPathInjection.ql.
+[190/244 eval 10ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-614/InsecureCookie.bqrs.
+[191/244 eval 73ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-601/UrlRedirect.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-676/PotentiallyDangerousFunction.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-681/NumericCastTainted.ql.
+[192/244 eval 25ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-643/XPathInjection.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-730/PolynomialReDoS.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-730/ReDoS.ql.
+[193/244 eval 21ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-676/PotentiallyDangerousFunction.bqrs.
+[194/244 eval 12ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-681/NumericCastTainted.bqrs.
+[195/244 eval 6ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-730/PolynomialReDoS.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-730/RegexInjection.ql.
+[196/244 eval 8ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-730/RegexInjection.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-732/ReadingFromWorldWritableFile.ql.
+[197/244 eval 28ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-730/ReDoS.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-749/UnsafeAndroidAccess.ql.
+[198/244 eval 12ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-749/UnsafeAndroidAccess.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-780/RsaWithoutOaep.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-807/ConditionalBypass.ql.
+[199/244 eval 41ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-732/ReadingFromWorldWritableFile.bqrs.
+[200/244 eval 24ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-780/RsaWithoutOaep.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-807/TaintedPermissionsCheck.ql.
+[201/244 eval 31ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-807/ConditionalBypass.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-829/InsecureDependencyResolution.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-835/InfiniteLoop.ql.
+[202/244 eval 1ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-829/InsecureDependencyResolution.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-917/OgnlInjection.ql.
+[203/244 eval 29ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-807/TaintedPermissionsCheck.bqrs.
+[204/244 eval 25ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-835/InfiniteLoop.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-918/RequestForgery.ql.
+[205/244 eval 23ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-917/OgnlInjection.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-925/ImproperIntentVerification.ql.
+[206/244 eval 10ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-925/ImproperIntentVerification.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-926/ContentProviderIncompletePermissions.ql.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-926/ImplicitlyExportedAndroidComponent.ql.
+[207/244 eval 9ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-926/ContentProviderIncompletePermissions.bqrs.
+[208/244 eval 3ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-926/ImplicitlyExportedAndroidComponent.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-927/ImplicitPendingIntents.ql.
+[209/244 eval 103ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-918/RequestForgery.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-927/SensitiveCommunication.ql.
+[210/244 eval 77ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-927/ImplicitPendingIntents.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-927/SensitiveResultReceiver.ql.
+[211/244 eval 31ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-927/SensitiveResultReceiver.bqrs.
+Starting evaluation of codeql/java-queries/Security/CWE/CWE-940/AndroidIntentRedirection.ql.
+[212/244 eval 124ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-927/SensitiveCommunication.bqrs.
+Starting evaluation of codeql/java-queries/Telemetry/DatabaseQualityDiagnostics.ql.
+Starting evaluation of codeql/java-queries/Telemetry/ExternalLibraryUsage.ql.
+[213/244 eval 103ms] Evaluation done; writing results to codeql/java-queries/Telemetry/DatabaseQualityDiagnostics.bqrs.
+Starting evaluation of codeql/java-queries/Telemetry/ExtractorInformation.ql.
+[214/244 eval 246ms] Evaluation done; writing results to codeql/java-queries/Security/CWE/CWE-940/AndroidIntentRedirection.bqrs.
+[215/244 eval 109ms] Evaluation done; writing results to codeql/java-queries/Telemetry/ExternalLibraryUsage.bqrs.
+Starting evaluation of codeql/java-queries/Telemetry/SupportedExternalApis.ql.
+Starting evaluation of codeql/java-queries/Telemetry/SupportedExternalSinks.ql.
+[216/244 eval 22ms] Evaluation done; writing results to codeql/java-queries/Telemetry/ExtractorInformation.bqrs.
+Starting evaluation of codeql/java-queries/Telemetry/SupportedExternalSources.ql.
+[217/244 eval 75ms] Evaluation done; writing results to codeql/java-queries/Telemetry/SupportedExternalSources.bqrs.
+Starting evaluation of codeql/java-queries/Telemetry/SupportedExternalTaint.ql.
+[218/244 eval 295ms] Evaluation done; writing results to codeql/java-queries/Telemetry/SupportedExternalSinks.bqrs.
+Starting evaluation of codeql/java-queries/Telemetry/UnsupportedExternalAPIs.ql.
+[219/244 eval 311ms] Evaluation done; writing results to codeql/java-queries/Telemetry/SupportedExternalApis.bqrs.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Boxed Types/BoxedVariable.ql.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Dead Code/CreatesEmptyZip.ql.
+[220/244 eval 14ms] Evaluation done; writing results to codeql/java-queries/Telemetry/UnsupportedExternalAPIs.bqrs.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Dead Code/DeadRefTypes.ql.
+[221/244 eval 4ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Boxed Types/BoxedVariable.bqrs.
+[222/244 eval 2ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Dead Code/CreatesEmptyZip.bqrs.
+[223/244 eval 76ms] Evaluation done; writing results to codeql/java-queries/Telemetry/SupportedExternalTaint.bqrs.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Dead Code/InterfaceCannotBeImplemented.ql.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Dead Code/UnreadLocal.ql.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Dead Code/UnusedLabel.ql.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Declarations/NoConstantsOnly.ql.
+[224/244 eval 19ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Dead Code/InterfaceCannotBeImplemented.bqrs.
+[225/244 eval 2ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Dead Code/UnreadLocal.bqrs.
+[226/244 eval 1ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Dead Code/UnusedLabel.bqrs.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Exception Handling/IgnoreExceptionalReturn.ql.
+[227/244 eval 12ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Declarations/NoConstantsOnly.bqrs.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Exception Handling/NumberFormatException.ql.
+[228/244 eval 7ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Exception Handling/IgnoreExceptionalReturn.bqrs.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Implementation Hiding/AbstractToConcreteCollection.ql.
+[229/244 eval 64ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Dead Code/DeadRefTypes.bqrs.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Implementation Hiding/ExposeRepresentation.ql.
+[230/244 eval 11ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Exception Handling/NumberFormatException.bqrs.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Implementation Hiding/GetClassGetResource.ql.
+[231/244 eval 7ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Implementation Hiding/AbstractToConcreteCollection.bqrs.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Naming Conventions/AmbiguousOuterSuper.ql.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Naming Conventions/ConfusingMethodNames.ql.
+[232/244 eval 68ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Implementation Hiding/GetClassGetResource.bqrs.
+[233/244 eval 70ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Implementation Hiding/ExposeRepresentation.bqrs.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Naming Conventions/ConfusingOverloading.ql.
+[234/244 eval 15ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Naming Conventions/AmbiguousOuterSuper.bqrs.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Naming Conventions/FieldMasksSuperField.ql.
+[235/244 eval 77ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Naming Conventions/ConfusingMethodNames.bqrs.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Naming Conventions/LocalShadowsFieldConfusing.ql.
+[236/244 eval 13ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Naming Conventions/FieldMasksSuperField.bqrs.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Naming Conventions/SameNameAsSuper.ql.
+[237/244 eval 11ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Naming Conventions/LocalShadowsFieldConfusing.bqrs.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Undesirable Calls/CallsToRunFinalizersOnExit.ql.
+[238/244 eval 12ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Naming Conventions/SameNameAsSuper.bqrs.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Undesirable Calls/CallsToStringToString.ql.
+[239/244 eval 5ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Undesirable Calls/CallsToRunFinalizersOnExit.bqrs.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Undesirable Calls/DefaultToString.ql.
+[240/244 eval 4ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Undesirable Calls/CallsToStringToString.bqrs.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Undesirable Calls/NextFromIterator.ql.
+[241/244 eval 26ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Undesirable Calls/DefaultToString.bqrs.
+[242/244 eval 135ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Naming Conventions/ConfusingOverloading.bqrs.
+Starting evaluation of codeql/java-queries/Violations of Best Practice/Undesirable Calls/PrintLnArray.ql.
+[243/244 eval 7ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Undesirable Calls/PrintLnArray.bqrs.
+[244/244 eval 774ms] Evaluation done; writing results to codeql/java-queries/Violations of Best Practice/Undesirable Calls/NextFromIterator.bqrs.
+Shutting down query evaluator.
+Interpreting results.
+Resolving extensions
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Arithmetic/InformationLoss.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-020/OverlyLargeRange.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-022/TaintedPath.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-022/ZipSlip.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-023/PartialPathTraversalFromRemote.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-074/JndiInjection.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-074/XsltInjection.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-078/ExecTainted.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-079/XSS.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-089/SqlTainted.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-090/LdapInjection.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-094/GroovyInjection.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-094/InsecureBeanValidation.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-094/JexlInjection.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-094/MvelInjection.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-094/SpelInjection.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-094/TemplateInjection.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-1004/SensitiveCookieNotHttpOnly.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-1104/MavenPomDependsOnBintray.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-113/NettyResponseSplitting.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-113/ResponseSplitting.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-1204/StaticInitializationVector.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-134/ExternallyControlledFormatString.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-200/SpringBootActuators.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-200/SpringBootActuatorsConfig/SpringBootActuatorsConfig.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-209/SensitiveDataExposureThroughErrorMessage.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-209/StackTraceExposure.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-266/IntentUriPermissionManipulation.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-287/AndroidInsecureLocalAuthentication.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-295/ImproperWebViewCertificateValidation.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-295/InsecureTrustManager.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-297/UnsafeHostnameVerification.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-312/AllowBackupAttributeEnabled.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-312/CleartextStorageCookie.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-326/InsufficientKeySize.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-327/BrokenCryptoAlgorithm.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-330/InsecureRandomness.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-335/PredictableSeed.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-338/JHipsterGeneratedPRNG.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-347/MissingJWTSignatureCheck.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-352/SpringCSRFProtection.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-441/UnsafeContentUriResolution.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-470/FragmentInjection.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-470/FragmentInjectionInPreferenceActivity.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-489/DebuggableAttributeEnabled.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-489/WebviewDebuggingEnabled.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-502/UnsafeDeserialization.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-522/InsecureLdapAuth.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-552/UrlForward.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-601/UrlRedirect.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-611/XXE.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-614/InsecureCookie.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-643/XPathInjection.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-681/NumericCastTainted.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-730/PolynomialReDoS.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-730/ReDoS.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-730/RegexInjection.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-732/ReadingFromWorldWritableFile.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-780/RsaWithoutOaep.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-807/TaintedPermissionsCheck.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-829/InsecureDependencyResolution.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-917/OgnlInjection.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-918/RequestForgery.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-925/ImproperIntentVerification.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-926/ImplicitlyExportedAndroidComponent.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-927/ImplicitPendingIntents.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-940/AndroidIntentRedirection.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/UnreleasedLock.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-023/PartialPathTraversal.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-078/ExecRelative.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-078/ExecTaintedEnvironment.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-078/ExecUnescaped.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-079/AndroidWebViewAddJavascriptInterface.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-079/AndroidWebViewSettingsEnabledJavaScript.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-089/SqlConcatenated.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-094/ArbitraryApkInstallation.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-117/LogInjection.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-129/ImproperValidationOfArrayConstruction.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-129/ImproperValidationOfArrayIndex.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-190/ArithmeticTainted.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-190/ArithmeticUncontrolled.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-190/ComparisonWithWiderType.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-200/AndroidSensitiveNotifications.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-200/AndroidSensitiveTextField.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-200/AndroidWebViewSettingsAllowsContentAccess.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-200/AndroidWebViewSettingsFileAccess.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-200/TempDirLocalInformationDisclosure.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-273/UnsafeCertTrust.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-287/AndroidInsecureKeys.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-295/AndroidMissingCertificatePinning.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-297/InsecureJavaMail.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-312/CleartextStorageAndroidDatabase.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-312/CleartextStorageAndroidFilesystem.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-312/CleartextStorageProperties.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-312/CleartextStorageSharedPrefs.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-327/MaybeBrokenCryptoAlgorithm.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-352/CsrfUnprotectedRequestType.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-367/TOCTOURace.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-421/SocketAuthRace.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-501/TrustBoundaryViolation.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-522/InsecureBasicAuth.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-524/SensitiveKeyboardCache.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-532/SensitiveInfoLog.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-676/PotentiallyDangerousFunction.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-749/UnsafeAndroidAccess.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-807/ConditionalBypass.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-835/InfiniteLoop.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-926/ContentProviderIncompletePermissions.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-927/SensitiveCommunication.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Security/CWE/CWE-927/SensitiveResultReceiver.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Diagnostics/ExtractionErrors.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Diagnostics/ExtractionWarnings.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Diagnostics/SuccessfullyExtractedFiles.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Telemetry/DatabaseQualityDiagnostics.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Metrics/Summaries/LinesOfCode.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Metrics/Summaries/LinesOfCodeJava.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Metrics/Summaries/LinesOfCodeKotlin.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Telemetry/ExternalLibraryUsage.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Telemetry/ExtractorInformation.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Telemetry/SupportedExternalApis.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Telemetry/SupportedExternalSinks.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Telemetry/SupportedExternalSources.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Telemetry/SupportedExternalTaint.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Telemetry/UnsupportedExternalAPIs.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Advisory/Declarations/MissingOverrideAnnotation.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Advisory/Deprecated Code/AvoidDeprecatedCallableAccess.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Advisory/Documentation/ImpossibleJavadocThrows.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Advisory/Documentation/SpuriousJavadocParam.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Compatibility/JDK9/JdkInternalAccess.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Compatibility/JDK9/UnderscoreIdentifier.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/DeadCode/UselessParameter.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Language Abuse/ChainedInstanceof.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Language Abuse/IterableIterator.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Language Abuse/OverridePackagePrivate.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Language Abuse/TypeVarExtendsFinalType.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Language Abuse/TypeVariableHidesType.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Language Abuse/UselessNullCheck.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Language Abuse/UselessTypeTest.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Language Abuse/WrappedIterator.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Arithmetic/BadAbsOfRandom.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Arithmetic/ConstantExpAppearsNonConstant.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Arithmetic/IntMultToLong.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Arithmetic/LShiftLargerThanTypeWidth.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Arithmetic/MultiplyRemainder.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Arithmetic/RandomUsedOnce.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Arithmetic/WhitespaceContradictsPrecedence.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Cloning/MissingCallToSuperClone.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Cloning/MissingMethodClone.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Collections/ArrayIndexOutOfBounds.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Collections/ContainsTypeMismatch.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Collections/IteratorRemoveMayFail.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Collections/ReadOnlyContainer.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Collections/RemoveTypeMismatch.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Collections/WriteOnlyContainer.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/CompareIdenticalValues.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/CovariantCompareTo.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/CovariantEquals.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/EqualsArray.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/HashedButNoHash.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/IncomparableEquals.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/InconsistentCompareTo.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/InconsistentEqualsHashCode.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/MissingInstanceofInEquals.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/RefEqBoxed.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/StringComparison.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/UselessComparisonTest.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Comparison/WrongNanComparison.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/CallsToConditionWait.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/CallsToRunnableRun.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/DateFormatThreadUnsafe.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/DoubleCheckedLocking.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/DoubleCheckedLockingWithInitRace.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/FutileSynchOnField.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/NonSynchronizedOverride.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/NotifyNotNotifyAll.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/SleepWithLock.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/StartInConstructor.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/SynchOnBoxedType.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/SynchSetUnsynchGet.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Concurrency/SynchWriteObject.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Finalization/NullifiedSuperFinalize.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Frameworks/JUnit/BadSuiteMethod.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Frameworks/Swing/BadlyOverriddenAdapter.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Inheritance/NoNonFinalInConstructor.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/ContainerSizeCmpZero.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/ContradictoryTypeChecks.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/DangerousNonCircuitLogic.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/EqualsTypo.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/HashCodeTypo.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/MissingFormatArg.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/MissingSpaceTypo.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/SelfAssignment.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/StringBufferCharInit.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/SuspiciousDateFormat.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/ToStringTypo.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Likely Typos/UnusedFormatArg.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Nullness/NullAlways.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Nullness/NullExprDeref.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Nullness/NullMaybe.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Reflection/AnnotationPresentCheck.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Resource Leaks/CloseReader.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Resource Leaks/CloseSql.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Resource Leaks/CloseWriter.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Serialization/IncorrectSerialVersionUID.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Serialization/IncorrectSerializableMethods.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Serialization/MissingVoidConstructorOnExternalizable.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Serialization/MissingVoidConstructorsOnSerializable.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Serialization/NonSerializableInnerClass.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Serialization/ReadResolveObject.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Statements/ContinueInFalseLoop.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Statements/MissingEnumInSwitch.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Statements/PartiallyMaskedCatch.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Statements/UseBraces.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Termination/ConstantLoopCondition.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Likely Bugs/Termination/SpinOnField.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Performance/InefficientEmptyStringTest.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Performance/InefficientKeySetIterator.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Performance/InefficientOutputStream.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Performance/InefficientPrimConstructor.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Performance/InnerClassCouldBeStatic.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Performance/NewStringString.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Boxed Types/BoxedVariable.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Dead Code/CreatesEmptyZip.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Dead Code/DeadRefTypes.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Dead Code/InterfaceCannotBeImplemented.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Dead Code/UnreadLocal.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Dead Code/UnusedLabel.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Declarations/NoConstantsOnly.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Exception Handling/IgnoreExceptionalReturn.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Exception Handling/NumberFormatException.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Implementation Hiding/AbstractToConcreteCollection.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Implementation Hiding/ExposeRepresentation.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Implementation Hiding/GetClassGetResource.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Naming Conventions/AmbiguousOuterSuper.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Naming Conventions/ConfusingMethodNames.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Naming Conventions/ConfusingOverloading.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Naming Conventions/FieldMasksSuperField.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Naming Conventions/LocalShadowsFieldConfusing.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Naming Conventions/SameNameAsSuper.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Undesirable Calls/CallsToRunFinalizersOnExit.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Undesirable Calls/CallsToStringToString.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Undesirable Calls/DefaultToString.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Undesirable Calls/NextFromIterator.ql...
+Interpreting /workspace/.autophone-tools/codeql/qlpacks/codeql/java-queries/1.11.12/Violations of Best Practice/Undesirable Calls/PrintLnArray.ql...
+Reading source archive /workspace/security-review/ui14.2/codeql-final-db/src.zip
+CodeQL scanned 48 out of 48 Java/Kotlin files in this invocation. Typically CodeQL is configured to analyze a single CodeQL language per invocation, so check other invocations to determine overall coverage information.
+Exporting results to SARIF...
+Exported results to SARIF (143ms).

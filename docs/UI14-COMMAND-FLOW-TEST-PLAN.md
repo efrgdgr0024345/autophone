@@ -115,8 +115,8 @@ planner contract, artwork decode, offline catalogue, both flavors' unit/Lint/bui
 APK permissions/identity/signature inspection, and traced CodeQL analysis. Publish
 the tested APK bytes without rebuilding to rename. Keep old releases immutable.
 
-Live OpenAI tests require the runtime `BLACKCAT_TEST_API_KEY` binding scoped to
-`api.openai.com`. Inspect presence only; never write or log its value. Proxy-held
+Live OpenAI tests require the configured runtime key binding scoped to
+`api.openai.com`; this session uses `BLACKCAT_TEST_API_KEY2`. Inspect presence only; never write or log its value. Proxy-held
 bindings must use their supported HTTPS route. Simulated transport tests do not
 establish account billing, model availability, live vision quality or spoken audio.
 
@@ -124,3 +124,14 @@ Physical pairing/reconnect, actual keyboard layout, mouse behavior, phone camera
 focus/glare, voice output, and phone-to-computer Auto execution still need handset
 acceptance. Refer to the established UI09/UI13 physical checklist. Simulation
 reduces that work; it cannot establish those hardware results.
+
+## UI14.2 live follow-up
+
+The secure key became available on 15 October. The [live evidence](ui14.2/live-openai/README.md)
+records six production-codec/API cases, the initial failures and the passing revised batch.
+A detailed plan took 90 seconds in the deadline diagnosis; planning now allows a
+180-second read and a 195-second outer bound. Observation and speech bounds are unchanged.
+Native workflow coverage now also checks a pinned Cancel on Results with a collapsed
+goal, then verifies that cancellation retains the editable plan. Current native
+results and exact APK provenance are in [UI14.2 verification](ui14.2/VERIFICATION.json).
+The live wire checks do not establish a continuous live phone-camera/Bluetooth run.

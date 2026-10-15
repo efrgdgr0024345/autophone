@@ -1,0 +1,8 @@
+{
+  "mixed_questions_and_commands": false,
+  "scenario": "plan",
+  "production_auto_policy": true,
+  "passed": true,
+  "roadmap_phases": 9,
+  "commands": 18
+}
