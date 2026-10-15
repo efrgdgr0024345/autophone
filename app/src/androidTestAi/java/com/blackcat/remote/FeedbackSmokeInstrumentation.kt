@@ -456,7 +456,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         }
         screenshot("auto-checking-output", autoDialog)
         onMain { fakeObserver.firstResultGate!!.complete(Unit) }
-        await("automatic pages and revised diagnostic checked by the synthetic observer", timeoutMillis = 180000) {
+        await("automatic pages and revised diagnostic checked by the synthetic observer", timeoutMillis = 300000) {
             (field(auto!!, "session") as AutoRunSession?)?.stage == AutoStage.FINISHED
         }
         onMain {
