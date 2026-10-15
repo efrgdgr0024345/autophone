@@ -1,4 +1,4 @@
 <inset xmlns:android="http://schemas.android.com/apk/res/android"
-    android:drawable="@drawable/black_cat_emblem"
-    android:insetLeft="16dp" android:insetTop="16dp"
-    android:insetRight="16dp" android:insetBottom="16dp"/>
+    android:drawable="@drawable/launcher_cat_white"
+    android:insetLeft="16.7%" android:insetTop="16.7%"
+    android:insetRight="16.7%" android:insetBottom="16.7%"/>

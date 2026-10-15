@@ -46,7 +46,7 @@ object BlackCatStyle {
         button.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         button.setTextColor(if (primary) Color.WHITE else INK)
         button.background = round(activity, if (primary) GREEN else FIELD, 12, if (primary) GREEN else LINE, 1)
-        button.minHeight = dp(activity, if (compact) 40 else 46)
+        button.minHeight = dp(activity, 48)
         button.setPadding(dp(activity, 8), 0, dp(activity, 8), 0)
     }
 
@@ -84,6 +84,7 @@ object BlackCatStyle {
 
     @Suppress("DEPRECATION")
     fun applySystemBarInsets(view: View) {
+        if (Build.VERSION.SDK_INT >= 29) view.isForceDarkAllowed = false
         val baseLeft = view.paddingLeft
         val baseTop = view.paddingTop
         val baseRight = view.paddingRight

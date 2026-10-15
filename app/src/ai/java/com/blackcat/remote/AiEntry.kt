@@ -142,7 +142,10 @@ private class AiPanel(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val planner = OpenAiPlanner()
     private val vault = ApiKeyVault(activity.applicationContext)
-    private val dialog = Dialog(activity, android.R.style.Theme_Material_Light_NoActionBar)
+    private val dialog = object : Dialog(activity, android.R.style.Theme_Material_Light_NoActionBar) {
+        @Suppress("DEPRECATION")
+        override fun onBackPressed() { navigateBack() }
+    }
 
     private var confirmation: AlertDialog? = null
     private var job: Job? = null
@@ -164,12 +167,19 @@ private class AiPanel(
     private var oneShotKey = ""
     private var lastTypedCommand: String? = null
     private var lastTypedIndex = -1
+    private var autoSummary: AutoTaskHandoff? = null
+    private var goalExpanded = false
     private val recentGoals = ArrayDeque<String>()
     private val targetPrefs by lazy { activity.getSharedPreferences(TARGET_PREFS, Activity.MODE_PRIVATE) }
     private var selectedTarget = DEFAULT_TARGET
     private var customTarget = ""
 
     private lateinit var goal: EditText
+    private lateinit var goalStage: View
+    private lateinit var goalSummary: TextView
+    private lateinit var goalSummaryRow: LinearLayout
+    private lateinit var manualActionBar: LinearLayout
+    private var manualActionHost: HostSession? = null
     private lateinit var targetLabel: TextView
     private lateinit var buildButton: Button
     private lateinit var autoPlayButton: Button
@@ -339,7 +349,8 @@ private class AiPanel(
         root.addView(buildBottomNav(), matchWrap())
         root.addView(buildStatusBar(), matchWrap())
         val quickControls = LinearLayout(activity).apply {
-            orientation = LinearLayout.HORIZONTAL; setPadding(dp(12), dp(4), dp(12), dp(4))
+            orientation = LinearLayout.HORIZONTAL; isBaselineAligned = false
+            setPadding(dp(12), dp(4), dp(12), dp(4))
         }
         autoPlayButton = actionButton("▶ Auto Play · OFF", true) { openAutoAssist() }
         quickVoiceButton = actionButton("Voice · ON", false) {
@@ -362,6 +373,12 @@ private class AiPanel(
         contentHost.addView(feedbackView, matchMatch())
         contentHost.addView(previewView, matchMatch())
         root.addView(contentHost, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
+        manualActionBar = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL; setPadding(dp(12), dp(6), dp(12), dp(8))
+            background = round(PAPER, 0, LINE, 1)
+            visibility = View.GONE
+        }
+        root.addView(manualActionBar, matchWrap())
         root.addView(buildAppNav(), matchWrap())
 
         applyActiveTab()
@@ -400,7 +417,19 @@ private class AiPanel(
         }
         scroll.addView(body, matchWrap())
 
+        goalSummaryRow = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(12), dp(4), dp(8), dp(4))
+            background = round(PAPER, 14, LINE, 1)
+        }
+        goalSummary = label("", 14f, INK, Typeface.BOLD).apply { maxLines = 1; ellipsize = android.text.TextUtils.TruncateAt.END }
+        goalSummaryRow.addView(goalSummary, LinearLayout.LayoutParams(0, -2, 1f))
+        goalSummaryRow.addView(textButton("Edit goal") {
+            goalExpanded = true; renderAll(); goal.requestFocus()
+        })
+        body.addView(goalSummaryRow, matchWrap(bottom = 8))
         val stage = FrameLayout(activity).apply { clipChildren = false; clipToPadding = false }
+        goalStage = stage
         val card = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(16), dp(15), dp(16), dp(16))
@@ -409,7 +438,7 @@ private class AiPanel(
         stage.addView(card, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         card.addView(label("Goal", 17f, INK, Typeface.BOLD).apply { setPadding(0, 0, 0, dp(8)) })
         goal = input("What do you want to achieve?", 2000, multiline = true).apply {
-            minHeight = dp(96)
+            minHeight = dp(80)
             textSize = 17f
         }
         card.addView(goal, matchWrap())
@@ -533,7 +562,7 @@ private class AiPanel(
                 setOnClickListener { switchTab(tab) }
             }
             tabButtons[tab] = item
-            bar.addView(item, LinearLayout.LayoutParams(0, dp(42), 1f).apply { leftMargin = dp(2); rightMargin = dp(2) })
+            bar.addView(item, LinearLayout.LayoutParams(0, dp(48), 1f).apply { leftMargin = dp(2); rightMargin = dp(2) })
         }
         add(Tab.PLAN, "Plan")
         add(Tab.STEP, "Step")
@@ -567,6 +596,23 @@ private class AiPanel(
         renderAll()
     }
 
+    private fun navigateBack() {
+        confirmation?.dismiss()
+        voice.cancel()
+        if (busy) {
+            cancelWork(); workspace.touch()
+            setStatus("Cancelled. Inspect any partial command on the computer; nothing will resume.")
+        }
+        when (activeTab) {
+            Tab.PREVIEW -> switchTab(Tab.STEP)
+            Tab.STEP, Tab.FEEDBACK -> switchTab(Tab.PLAN)
+            Tab.PLAN -> {
+                hideForNavigation()
+                (activity as? MainActivity)?.navigateHome()
+            }
+        }
+    }
+
     private fun applyActiveTab() {
         if (!::contentHost.isInitialized) return
         planView.visibility = if (activeTab == Tab.PLAN) View.VISIBLE else View.GONE
@@ -589,6 +635,7 @@ private class AiPanel(
         selected = -1
         lastTypedCommand = null
         lastTypedIndex = -1
+        autoSummary = null
         confirmation?.dismiss()
         renderAll()
     }
@@ -604,6 +651,9 @@ private class AiPanel(
             autoPlayButton.isEnabled = commands.isNotEmpty() && !busy && workspace.proposal == null && !transportPaused
         }
         if (!::goal.isInitialized) return
+        goalStage.visibility = if (commands.isEmpty() || goalExpanded) View.VISIBLE else View.GONE
+        goalSummaryRow.visibility = if (commands.isNotEmpty() && !goalExpanded) View.VISIBLE else View.GONE
+        goalSummary.text = goal.text.toString()
         buildButton.isEnabled = !busy && goal.text.isNotBlank() && selectedTarget.isNotBlank()
         cancelButton.visibility = if (busy) View.VISIBLE else View.GONE
         val count = commands.size
@@ -624,6 +674,7 @@ private class AiPanel(
         renderStep()
         renderFeedback()
         renderPreview()
+        renderManualActionBar()
         refreshConnectionState()
     }
 
@@ -666,7 +717,11 @@ private class AiPanel(
         planResult.visibility = View.VISIBLE
         val card = card()
         card.addView(label("Plan", 18f, INK, Typeface.BOLD))
-        if (plan.explanation.isNotBlank()) card.addView(label(plan.explanation, 13f, MUTED).apply { setPadding(0, dp(6), 0, dp(8)) })
+        if (plan.explanation.isNotBlank()) {
+            val explanation = label(plan.explanation, 14f, MUTED).apply { visibility = View.GONE; setPadding(0, dp(6), 0, dp(8)) }
+            card.addView(explanation)
+            card.addView(textButton("About this plan") { explanation.visibility = if (explanation.visibility == View.GONE) View.VISIBLE else View.GONE })
+        }
         if (plan.questions.isNotEmpty()) {
             val box = LinearLayout(activity).apply {
                 orientation = LinearLayout.VERTICAL
@@ -677,21 +732,6 @@ private class AiPanel(
             plan.questions.forEach { box.addView(label("• $it", 13f, INK).apply { setPadding(0, dp(4), 0, 0) }) }
             card.addView(box, matchWrap(top = 4, bottom = 8))
         }
-        if (plan.roadmap.isNotEmpty()) {
-            card.addView(label("Full roadmap", 17f, INK, Typeface.BOLD).apply { setPadding(0, dp(12), 0, dp(6)) })
-            card.addView(textButton(if (roadmapExpanded) "Hide phase details" else "Show all phase details") {
-                roadmapExpanded = !roadmapExpanded
-                renderAll()
-            }, matchWrap())
-            plan.roadmap.forEachIndexed { index, phase ->
-                card.addView(label("${index + 1}. ${phase.title}", 15f, INK, Typeface.BOLD).apply { setPadding(0, dp(8), 0, dp(3)) })
-                if (roadmapExpanded) {
-                    card.addView(label(phase.purpose, 13f, MUTED))
-                    phase.checks.forEach { card.addView(label("• $it", 13f, MUTED).apply { setPadding(dp(6), dp(3), 0, 0) }) }
-                }
-            }
-        }
-        plan.assumptions.forEach { card.addView(label("• $it", 12f, MUTED).apply { setPadding(0, dp(2), 0, 0) }) }
 
         if (commands.isNotEmpty()) {
             card.addView(label("Steps", 13f, MUTED, Typeface.BOLD).apply { setPadding(0, dp(10), 0, dp(4)) })
@@ -722,10 +762,13 @@ private class AiPanel(
                     orientation = LinearLayout.VERTICAL
                     setPadding(dp(10), 0, 0, 0)
                     addView(label(command.title, 14f, INK, Typeface.BOLD))
-                    addView(label(command.command, 13f, INK).apply { typeface = Typeface.MONOSPACE })
+                    addView(label(command.command, 13f, INK).apply {
+                        typeface = Typeface.MONOSPACE
+                        breakStrategy = android.text.Layout.BREAK_STRATEGY_SIMPLE
+                        hyphenationFrequency = android.text.Layout.HYPHENATION_FREQUENCY_NONE
+                    })
                     addView(label("Tap for explanation and details", 11f, MUTED))
-                    addView(label("Check: ${command.expectedResult}", 11f, MUTED).apply { maxLines = 2 })
-                    addView(label("${command.risk.uppercase()} · ${if (command.requiresAdmin) "admin may be required" else "no admin flag"}", 11f, MUTED))
+                    addView(label("${command.risk.uppercase()} risk${if (command.requiresAdmin) " · admin" else ""}", 12f, MUTED))
                     if (index in workspace.confirmedSteps) addView(label("✓ Result confirmed by you", 11f, GREEN))
                 }
                 row.addView(texts, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
@@ -742,6 +785,22 @@ private class AiPanel(
                 matchWrap(top = 10)
             )
         }
+        if (plan.roadmap.isNotEmpty()) {
+            card.addView(label("Full roadmap", 17f, INK, Typeface.BOLD).apply { setPadding(0, dp(12), 0, dp(6)) })
+            card.addView(textButton(if (roadmapExpanded) "Hide phase details" else "Show all phase details") {
+                roadmapExpanded = !roadmapExpanded
+                renderAll()
+            }, matchWrap())
+            if (roadmapExpanded) plan.roadmap.forEachIndexed { index, phase ->
+                card.addView(label("${index + 1}. ${phase.title}", 15f, INK, Typeface.BOLD).apply { setPadding(0, dp(8), 0, dp(3)) })
+                if (roadmapExpanded) {
+                    card.addView(label(phase.purpose, 13f, MUTED))
+                    phase.checks.forEach { card.addView(label("• $it", 13f, MUTED).apply { setPadding(dp(6), dp(3), 0, 0) }) }
+                }
+            }
+        }
+        plan.assumptions.forEach { card.addView(label("• $it", 12f, MUTED).apply { setPadding(0, dp(2), 0, 0) }) }
+
         planResult.addView(card, matchWrap())
     }
 
@@ -783,8 +842,8 @@ private class AiPanel(
         val detail = card()
         detail.addView(label("Step ${selected + 1} of ${commands.size}", 12f, GREEN, Typeface.BOLD))
         detail.addView(label(command.title, 19f, INK, Typeface.BOLD))
-        detail.addView(label(command.explanation, 14f, MUTED).apply { setPadding(0, dp(8), 0, dp(4)) })
         detail.addView(commandBox(command.command), matchWrap(top = 8, bottom = 8))
+        detail.addView(label(command.explanation, 15f, MUTED).apply { setPadding(0, dp(8), 0, dp(4)) })
         infoLine(detail, "Expected result", command.expectedResult)
         infoLine(detail, "Risk", "${command.risk.uppercase()}${if (command.requiresAdmin) " · administrative access may be required" else ""}")
         if (command.warnings.isNotEmpty()) infoLine(detail, "Warnings", command.warnings.joinToString("\n• ", prefix = "• "))
@@ -792,7 +851,6 @@ private class AiPanel(
         detail.addView(label("Destination", 12f, MUTED, Typeface.BOLD).apply { setPadding(0, dp(8), 0, 0) })
         detail.addView(label(target.current()?.label ?: "No ready Bluetooth HID connection", 14f, INK, Typeface.BOLD))
         detail.addView(label("Your approval types this exact command once. Press Enter yourself after checking it.", 12f, MUTED))
-        stepBody.addView(approvalButton(), matchWrap(top = 10))
         stepBody.addView(textButton("Optional full preview") { switchTab(Tab.PREVIEW) }, matchWrap(top = 3))
         stepBody.addView(actionButton("Edit this step", false) { editSelectedStep() }.apply { isEnabled = !busy }, matchWrap(top = 8))
         if (selected > 0) stepBody.addView(textButton("← Previous step") {
@@ -808,6 +866,17 @@ private class AiPanel(
         if (!::feedbackBody.isInitialized) return
         feedbackBody.removeAllViews()
         pageHeading(feedbackBody, "Result", "What happens after the command reaches the computer.")
+        autoSummary?.let { summary ->
+            val result = card()
+            result.addView(label(if (summary.finished) "Auto plan finished" else "Auto stopped", 19f, INK, Typeface.BOLD))
+            result.addView(label("${summary.attemptedCount} task command(s) started · ${summary.remaining.size} remaining.", 14f, MUTED))
+            result.addView(label("Auto may have pressed Enter. Inspect the terminal. Started commands are not queued again; photos are observations, not your confirmation.", 14f, INK))
+            summary.lastAttempted?.let { result.addView(commandBox(it.command), matchWrap(top = 8)) }
+            feedbackBody.addView(result, matchWrap(bottom = 10))
+            if (summary.remaining.isNotEmpty()) feedbackBody.addView(actionButton("Review remaining commands", true) {
+                selected = 0; switchTab(Tab.PLAN)
+            }, matchWrap(bottom = 8))
+        }
         val typed = lastTypedCommand
         if (typed == null) {
             feedbackBody.addView(emptyState(
@@ -903,7 +972,6 @@ private class AiPanel(
                 .setPrimaryClip(ClipData.newPlainText("Linux command", command.command))
             setStatus("Command copied. Nothing was typed.")
         }, matchWrap(top = 8))
-        previewBody.addView(approvalButton(), matchWrap(top = 10))
         previewBody.addView(textButton("Back to step") { switchTab(Tab.STEP) }, matchWrap(top = 3))
     }
 
@@ -952,6 +1020,8 @@ private class AiPanel(
                     lastTypedIndex = -1
                 }
                 rememberGoal(originalGoal)
+                goalExpanded = false
+                autoSummary = null
                 activeTab = Tab.PLAN
                 applyActiveTab()
                 setStatus(if (revise) "Proposed update ready. Review and apply it on Plan."
@@ -992,6 +1062,7 @@ private class AiPanel(
         }
         CommandPolicy.problem(command)?.let { setStatus(it, error = true); return }
         busy = true
+        autoSummary = null
         val operation = ++operationToken
         setStatus("Typing selected text only · Enter excluded")
         renderAll()
@@ -1115,7 +1186,17 @@ private class AiPanel(
                 lastTypedIndex = -1
                 renderAll()
                 planRevision
-            }, onClosed = { autoPanel = null; renderAll() }).also { it.show() }
+            }, onClosed = { autoPanel = null; renderAll() }, onTaskHandoff = { summary ->
+                autoSummary = summary
+                val previous = currentPlan
+                workspace.replace(CommandPlan(if (summary.finished) "Auto reached the end. Review the observed results."
+                    else "Auto stopped. Review the remaining task commands before starting a fresh session.",
+                    previous?.assumptions.orEmpty(), emptyList(), summary.remaining, previous?.roadmap.orEmpty()))
+                selected = if (summary.remaining.isEmpty()) -1 else 0
+                lastTypedCommand = null; lastTypedIndex = -1
+                activeTab = if (summary.attemptedCount > 0) Tab.FEEDBACK else Tab.PLAN
+                applyActiveTab()
+            }).also { it.show() }
     }
 
     private fun dictateGoal() = dictate { transcript ->
@@ -1209,6 +1290,7 @@ private class AiPanel(
     private fun refreshConnectionState() {
         if (!::statusPill.isInitialized) return
         val host = target.current()
+        if (::manualActionBar.isInitialized && host != manualActionHost) renderManualActionBar()
         if (host != null) {
             statusPill.text = "●  READY"
             statusPill.setTextColor(GREEN)
@@ -1233,6 +1315,16 @@ private class AiPanel(
         parent.addView(label(subtitle, 12f, MUTED).apply { setPadding(0, dp(3), 0, dp(10)) })
     }
 
+    private fun renderManualActionBar() {
+        manualActionBar.removeAllViews()
+        manualActionHost = target.current()
+        val visible = activeTab in setOf(Tab.STEP, Tab.PREVIEW) && commands.getOrNull(selected) != null
+        manualActionBar.visibility = if (visible) View.VISIBLE else View.GONE
+        if (!visible) return
+        manualActionBar.addView(label("Type to: ${target.current()?.label ?: "Connect Bluetooth first"}", 13f, INK, Typeface.BOLD))
+        manualActionBar.addView(approvalButton(), matchWrap(top = 6))
+    }
+
     private fun emptyState(title: String, copy: String): View = card().apply {
         addView(label(title, 18f, INK, Typeface.BOLD))
         addView(label(copy, 13f, MUTED).apply { setPadding(0, dp(6), 0, 0) })
@@ -1250,6 +1342,8 @@ private class AiPanel(
         background = round(COMMAND_BG, 13)
         addView(label(command, 14f, COMMAND_TEXT, Typeface.NORMAL).apply {
             typeface = Typeface.MONOSPACE
+            breakStrategy = android.text.Layout.BREAK_STRATEGY_SIMPLE
+            hyphenationFrequency = android.text.Layout.HYPHENATION_FREQUENCY_NONE
             setTextIsSelectable(true)
         })
     }
@@ -1308,7 +1402,7 @@ private class AiPanel(
         textSize = 12f
         setTextColor(GREEN)
         background = ColorDrawable(Color.TRANSPARENT)
-        minHeight = dp(40)
+        minHeight = dp(48)
         minWidth = 0
         setPadding(dp(7), dp(5), dp(7), dp(5))
         setOnClickListener { action() }

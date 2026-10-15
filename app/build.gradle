@@ -9,8 +9,8 @@ android {
         applicationId 'com.blackcat.remote'
         minSdk 28
         targetSdk 35
-        versionCode 15
-        versionName '13.0-adaptive-auto'
+        versionCode 16
+        versionName '14.0-command-flow'
     }
     flavorDimensions 'capability'
     productFlavors {
