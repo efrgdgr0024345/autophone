@@ -4,6 +4,26 @@ Android phone remote that preserves the proven Bluetooth HID keyboard/mouse core
 
 > **UI09 is a physical-test prerelease.** All automated build, policy, unit, lint, APK inspection, CodeQL and provenance gates passed. Real Android-to-computer Bluetooth testing is still required before this version becomes the protected baseline.
 
+## UI13 test download — pinned Auto Play and Voice
+
+Full direct APK download URL:
+
+https://raw.githubusercontent.com/efrgdgr0024345/autophone/dd5e43a7f77ca47e937cbb2dfda63913699edfd2/docs/ui13/install/CatAI-13.apk
+
+Auto Play and Voice ON/OFF stay at the top of the AI/task screens. Plans show exact commands
+with details on tap. Full Auto captures numbered output pages, redisplays smaller slices when
+needed, combines the feedback and automatically updates the remaining plan for the original goal.
+Turning Auto off stops the foreground session; there is no background continuation or replay.
+
+Source: `7db3aed5607687236fb49bf493daf38a38ce357e`. SHA-256: `e87bc0c24f3514a45dbea88cfddd05fb8d4d5f1c83cd7eaed0880e1c2f0a4ea6`.
+VersionCode 15 uses the same signer as UI11/UI12.1 and supports an update install.
+Local checks: 148 Android unit tests, 83 policy/mutation checks, both builds/APK inspection,
+zero Lint errors, CodeQL across 46/46 files with no security-rule findings, and native
+verification of 16 core plus four Auto cases (focused rerun after a software-emulator timeout).
+[Install instructions and limits](docs/ui13/install/README.md), [all 36 rendered screens](docs/ui13/screens/README.md)
+and [physical acceptance](docs/UI13-ADAPTIVE-AUTO-TEST-PLAN.md). Real phone, vision/voice/API
+and Linux execution testing remain required. This is a test candidate; old releases are unchanged.
+
 ## UI12.1 test download — detailed plans and Auto
 
 Full direct APK download URL:

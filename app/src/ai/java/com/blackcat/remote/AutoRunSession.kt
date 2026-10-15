@@ -32,6 +32,33 @@ internal object AutoRunPolicy {
             words.none { '*' in it || '?' in it || it in setOf("/dev/zero", "/dev/random", "/etc/shadow", "/etc/passwd") }
     }
 
+    fun isReadOnly(step: SuggestedCommand): Boolean {
+        if (!canRunReviewed(step)) return false
+        val parts = shellWords(step.command) ?: return false
+        val words = if (parts.firstOrNull() == "sudo") parts.drop(1).dropWhile { it == "-n" } else parts
+        return when (words.firstOrNull()) {
+            "id", "whoami", "uname", "cat", "uptime", "df", "free", "lsblk", "stat", "ls", "getent", "groups", "last", "lastlog", "grep", "test", "aa-status", "sestatus" -> true
+            "systemctl" -> "--failed" in words || words.drop(1).firstOrNull { !it.startsWith('-') } in setOf("status", "show", "is-active", "is-enabled", "list-units", "list-unit-files")
+            "ss" -> words.none { it == "--kill" || (it.startsWith('-') && 'K' in it) }
+            "journalctl" -> words.none { it.startsWith("--vacuum") || it in setOf("--rotate", "--flush", "--sync", "--relinquish-var", "--smart-relinquish-var", "--setup-keys", "--update-catalog") }
+            "ufw" -> words.getOrNull(1) == "status"
+            "sshd" -> "-T" in words || "-t" in words
+            "ip" -> step.command in readOnly
+            else -> false
+        }
+    }
+
+    fun nonInteractive(command: String): String {
+        val words = shellWords(command) ?: return command
+        if (words.firstOrNull() != "sudo") return command
+        return "sudo -n " + words.drop(1).dropWhile { it == "-n" }.joinToString(" ") { "'" + it.replace("'", "'\"'\"'") + "'" }
+    }
+
+    fun identity(command: String): String {
+        val words = shellWords(command) ?: return command
+        return (if (words.firstOrNull() == "sudo") listOf("sudo") + words.drop(1).filter { it != "-n" } else words).joinToString("\u0000")
+    }
+
     private fun shellWords(command: String): List<String>? {
         val result = mutableListOf<String>()
         val word = StringBuilder()
@@ -62,8 +89,9 @@ internal class AutoRunSession(
     var revision = revision
         private set
     val automatic get() = runReadOnly || runAllReviewed
-    fun canRun(step: SuggestedCommand) = if (runAllReviewed) AutoRunPolicy.canRunReviewed(step) else runReadOnly && AutoRunPolicy.canRun(step)
-    private val originallyApproved = steps.map { it.command }.toSet()
+    fun canRun(step: SuggestedCommand) = if (runAllReviewed) collection.owns(step.command) || AutoRunPolicy.canRunReviewed(step) else runReadOnly && AutoRunPolicy.canRun(step)
+    val collection = AutoOutputCollection()
+    val transmitted: List<String> get() = executed.toList()
     private val executed = mutableSetOf<String>()
     var revisions = 0
         private set
@@ -78,7 +106,7 @@ internal class AutoRunSession(
     val current get() = steps.getOrNull(index)
     val active get() = stage !in setOf(AutoStage.STOPPED, AutoStage.FINISHED, AutoStage.BLOCKED)
 
-    init { require(startIndex in steps.indices && steps.size <= PlanCodec.MAX_COMMANDS) }
+    init { require(startIndex in steps.indices && steps.size <= MAX_STEPS) }
 
     fun valid(currentHost: HostSession?, currentRevision: Long) = active &&
         currentHost == host && currentRevision == revision
@@ -88,6 +116,10 @@ internal class AutoRunSession(
         if (!valid(currentHost, currentRevision) || stage != AutoStage.REVIEW_STEP || alreadyApproved) return null
         val enter = canRun(step)
         if (!human && !enter) return null
+        val operation = collection.operation(step.command)
+        val source = operation?.ticket?.original ?: step
+        if (!human && (operation == null || operation.page == 0) && !AutoRunPolicy.isReadOnly(source) &&
+            executed.any { AutoRunPolicy.identity(it) == AutoRunPolicy.identity(source.command) }) return null
         alreadyApproved = true
         stage = AutoStage.TYPING
         return AutoStepApproval(CommandApproval(step.command, host), enter, generation, index)
@@ -100,7 +132,7 @@ internal class AutoRunSession(
 
     fun typed(approval: AutoStepApproval): Boolean {
         if (stage != AutoStage.TYPING || approval.generation != generation || approval.index != index) return false
-        executed.add(approval.text.command)
+        executed.add(collection.original(approval.text.command))
         stage = if (approval.enter) AutoStage.WAITING else AutoStage.MANUAL_ENTER
         return true
     }
@@ -136,14 +168,43 @@ internal class AutoRunSession(
         return true
     }
 
+    fun waitAgain(): Boolean {
+        if (stage != AutoStage.REVIEW_RESULT) return false
+        generation++
+        stage = AutoStage.WAITING
+        return true
+    }
+
+    fun prepareCurrent(newRevision: (List<SuggestedCommand>) -> Long) {
+        if (!runAllReviewed || stage != AutoStage.REVIEW_STEP) return
+        val step = current ?: return
+        val prepared = collection.prepare(step)
+        if (prepared === step) return
+        val updated = steps.toMutableList().apply { set(index, prepared) }
+        revision = newRevision(updated)
+        steps = updated
+        generation++
+    }
+
+    fun insertCollection(step: SuggestedCommand, newRevision: Long): Boolean {
+        if (stage != AutoStage.REVIEW_RESULT || !runAllReviewed || !collection.owns(step.command) || steps.size >= MAX_STEPS) return false
+        steps = steps.take(index + 1) + step + steps.drop(index + 1)
+        revision = newRevision
+        index++
+        generation++
+        alreadyApproved = false
+        stage = AutoStage.REVIEW_STEP
+        return true
+    }
+
     fun block() { generation++; stage = AutoStage.BLOCKED }
     fun stop() { generation++; stage = AutoStage.STOPPED }
 
-    fun canAdopt(candidate: CommandPlan): Boolean = stage == AutoStage.REVIEW_RESULT && runAllReviewed && revisions < 3 &&
-        candidate.questions.isEmpty() && candidate.commands.isNotEmpty() &&
-        index + 1 + candidate.commands.size <= PlanCodec.MAX_COMMANDS && candidate.commands.all {
-            (it.command in originallyApproved || AutoRunPolicy.canRun(it)) && canRun(it) &&
-                (it.command !in executed || AutoRunPolicy.canRun(it))
+    fun canAdopt(candidate: CommandPlan): Boolean = stage == AutoStage.REVIEW_RESULT && runAllReviewed && revisions < MAX_REVISIONS &&
+        candidate.questions.isEmpty() &&
+        index + 1 + candidate.commands.size <= MAX_STEPS && candidate.commands.all {
+            canRun(it) &&
+                (executed.none { previous -> AutoRunPolicy.identity(previous) == AutoRunPolicy.identity(collection.original(it.command)) } || AutoRunPolicy.isReadOnly(it))
         }
 
     fun adopt(candidate: CommandPlan, newRevision: Long): Boolean {
@@ -154,10 +215,10 @@ internal class AutoRunSession(
         index++
         generation++
         alreadyApproved = false
-        stage = AutoStage.REVIEW_STEP
+        stage = if (index >= steps.size) AutoStage.FINISHED else AutoStage.REVIEW_STEP
         return true
     }
-    companion object { const val MAX_CAPTURES = 41 }
+    companion object { const val MAX_CAPTURES = 120; const val MAX_REVISIONS = 12; const val MAX_STEPS = 240 }
 }
 
 internal class AutoStepApproval internal constructor(

@@ -10,7 +10,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 
 internal interface AutoObservationClient {
-    suspend fun observe(goal: String, step: SuggestedCommand, target: String, model: String, key: String, jpeg: ByteArray, preflight: Boolean = false): AutoObservation
+    suspend fun observe(goal: String, step: SuggestedCommand, target: String, model: String, key: String, jpeg: ByteArray, preflight: Boolean = false, collectionContext: String = ""): AutoObservation
     fun cancel()
 }
 
@@ -20,9 +20,9 @@ internal class OpenAiAutoObserver : AutoObservationClient {
     override fun cancel() { connection?.disconnect() }
 
     override suspend fun observe(goal: String, step: SuggestedCommand, target: String, model: String,
-                                 key: String, jpeg: ByteArray, preflight: Boolean): AutoObservation = withContext(Dispatchers.IO) {
+                                 key: String, jpeg: ByteArray, preflight: Boolean, collectionContext: String): AutoObservation = withContext(Dispatchers.IO) {
         require(OpenAiPlanner.validKey(key))
-        val body = AutoObservationCodec.request(goal, step, target, model, jpeg, preflight).toString().toByteArray(Charsets.UTF_8)
+        val body = AutoObservationCodec.request(goal, step, target, model, jpeg, preflight, collectionContext).toString().toByteArray(Charsets.UTF_8)
         currentCoroutineContext().ensureActive()
         val http = URL(OpenAiPlanner.ENDPOINT).openConnection() as HttpsURLConnection
         connection = http

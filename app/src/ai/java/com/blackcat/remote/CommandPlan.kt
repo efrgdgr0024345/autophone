@@ -29,7 +29,18 @@ object PlanCodec {
         Return a useful plain-English explanation, a detailed phased roadmap, assumptions,
         clarification questions, and ordered
         individual shell commands matching the target OS and shell explicitly supplied by the user.
-        If critical context is missing, return questions and an EMPTY commands array.
+        If critical context is missing, return questions and an EMPTY commands array, UNLESS safe
+        read-only diagnostic commands can discover the missing system facts. In a FOREGROUND AUTO
+        SESSION, prefer those diagnostic commands to asking the person for ordinary system data.
+        No requests to scroll or photograph output: the app captures numbered pages automatically.
+        Use noninteractive commands, sudo -n, --no-pager, explicit time/line limits for logs, and
+        package-manager noninteractive confirmation flags. Never request interactive editors or pagers.
+        Auto supports single commands using id, whoami, uname, cat, uptime, df, free, lsblk, ip, ss,
+        systemctl, journalctl, hostnamectl, stat, ls, getent, groups, last, lastlog, apt, apt-get,
+        dnf, pacman, zypper, ufw, firewall-cmd, sshd, sysctl, chmod, chown, cp, install, grep,
+        test, auditctl, aa-status, sestatus. Keep the executable command short (prefer <=200
+        characters) so the app can capture its output. No pipelines, script interpreters or shell
+        metacharacters in Auto commands. Use separate commands for dependencies and verification.
         Always provide the overall roadmap even when clarification blocks executable commands.
         A roadmap phase has a title, purpose and concrete checks: what to do, how to verify it,
         dependencies, safeguards and rollback where relevant. Roadmap checks are explanatory
