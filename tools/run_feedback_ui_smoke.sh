@@ -3,11 +3,20 @@ set -euo pipefail
 task_serial=${ANDROID_SERIAL:-emulator-5554}
 task_output=${1:-app/build/reports/ui12-rendered}
 task_scenario=${2:-all}
-case "$task_scenario" in all|auto) ;; *) exit 2 ;; esac
+case "$task_scenario" in all|auto|layout|timeout) ;; *) exit 2 ;; esac
 mkdir -p "$task_output"
 test "$(adb -s "$task_serial" shell getprop ro.kernel.qemu | tr -d '\r')" = 1
+# Automated Test Device images disable drawing by default. Enable real rendering;
+# do not replace PixelCopy with a mock/drawing fallback.
+adb -s "$task_serial" shell setprop debug.hwui.drawing_enabled 1
 adb -s "$task_serial" install -r -g app/build/outputs/apk/ai/debug/app-ai-debug.apk
 adb -s "$task_serial" install -r -g app/build/outputs/apk/androidTest/ai/debug/app-ai-debug-androidTest.apk
+task_local_hash=$(sha256sum app/build/outputs/apk/ai/debug/app-ai-debug.apk | cut -d ' ' -f 1)
+task_apk_path=$(adb -s "$task_serial" shell pm path com.blackcat.remote | tr -d '\r' | sed 's/^package://')
+task_device_hash=$(adb -s "$task_serial" shell sha256sum "$task_apk_path" | tr -d '\r' | cut -d ' ' -f 1)
+test "$task_local_hash" = "$task_device_hash"
+adb -s "$task_serial" shell dumpsys package com.blackcat.remote > "$task_output/installed-package.txt"
+echo "$task_local_hash" > "$task_output/installed-apk.sha256"
 # The fixture checks the failure path and intercepts the user-triggered enable prompt;
 # it never pairs or sends HID input. Change only this disposable emulator's adapter.
 adb -s "$task_serial" shell svc bluetooth disable
@@ -20,6 +29,9 @@ adb -s "$task_serial" root
 adb -s "$task_serial" wait-for-device
 task_pull_status=0
 adb -s "$task_serial" pull /data/user/0/com.blackcat.remote/files/ui12-rendered/. "$task_output/" || task_pull_status=$?
-if test "$task_status" != 0 || test "$task_pull_status" != 0 || ! grep -q 'UI12_SMOKE_PASS' "$task_output/instrumentation.log" || grep -q 'UI12_SMOKE_FAIL' "$task_output/instrumentation.log"; then
+task_pass_marker=UI12_SMOKE_PASS
+if test "$task_scenario" = layout; then task_pass_marker=UI14_LAYOUT_PASS; fi
+if test "$task_scenario" = timeout; then task_pass_marker=UI14_TIMEOUT_PASS; fi
+if test "$task_status" != 0 || test "$task_pull_status" != 0 || ! grep -q "$task_pass_marker" "$task_output/instrumentation.log" || grep -q 'UI12_SMOKE_FAIL' "$task_output/instrumentation.log"; then
   exit 1
 fi

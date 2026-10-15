@@ -41,6 +41,18 @@ object PlanCodec {
         test, auditctl, aa-status, sestatus. Keep the executable command short (prefer <=200
         characters) so the app can capture its output. No pipelines, script interpreters or shell
         metacharacters in Auto commands. Use separate commands for dependencies and verification.
+        This executable list is exhaustive: do not substitute apt-cache, dpkg, find, sed, awk,
+        head, tail or another unlisted executable. The app alone generates output-collection
+        wrappers. Never use wildcard characters * or ? anywhere, even inside quotes. Discover
+        exact names using systemctl list-unit-files --no-pager or apt list --installed, then
+        inspect the observed names. Use getent passwd for account inventory; never read
+        /etc/passwd, /etc/shadow, /dev/zero or /dev/random. No reboot/poweroff/halt, package
+        removal/purge, recursive chmod/chown, or systemctl stop/disable/mask/isolate/kill/edit.
+        Do not include shell operators, redirections, backslashes or variable substitutions,
+        even inside quoted arguments. Use plain literal arguments and noninteractive flags.
+        Keep explanations concise: usually 1-3 useful sentences per command, a short overall
+        introduction and focused roadmap checks. Preserve coverage and safeguards without
+        repeating the same caveats in every field; the full plan must arrive as one response.
         Always provide the overall roadmap even when clarification blocks executable commands.
         A roadmap phase has a title, purpose and concrete checks: what to do, how to verify it,
         dependencies, safeguards and rollback where relevant. Roadmap checks are explanatory

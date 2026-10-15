@@ -1,0 +1,18 @@
+Black Cat | Linux CAMERA DEMO
+
+demo@linux:~$ (b=/tmp/bc-1f881ad92c5ad05599d8641c; printf '\nBC1f881ad92
+c5ad05599d8641c_P2_5_8 BEGIN\n'; sed -n '5,8p' "$b/o"; printf '\nBC1f881
+ad92c5ad05599d8641c_P2_5 8 END _'; tr -d '\n' <"$b/s"; if [ "$(awk ‘'END{p
+rint NR}' <"$b/o")" -gt 8 ]; then echo _MORE; else echo _DONE; fi)
+BC1f881ad92c5ad05599d8641c_P2_5_ 8 BEGIN
+
+05 network access is not needed for this check
+
+06 no system settings changed
+
+07 checking installed demo package
+
+08 ERROR: demo service package is incompatible with this host
+BC1f881ad92c5ad05599d8641c_P2_5_ 8 END 0 MORE
+
+demo@linux:~$

@@ -1,0 +1,19 @@
+Black Cat | Linux CAMERA DEMO
+
+demo@linux:~$ (b=/tmp/bc-1f881ad92c5ad05599d8641c; printf '\nBC1f881ad92
+c5ad05599d8641c_P1_1_4 BEGIN\n'; sed -n '1,4p' "$b/o"; printf '\nBC1f881
+ad92c5ad05599d8641c_ P11 4 END '; tr -d '\n' <"$b/s"; if [ "$(awk ‘END{p
+rint NR}' <"$b/o")" -gt 4 ]; then echo _MORE; else echo _DONE; fi)
+BC1f881ad92c5ad05599d8641c_P1_1 4 BEGIN
+
+01 demo-service: starting read-only compatibility check
+
+02 host configuration loaded
+
+03 data directory readable
+
+04 port check completed
+
+BC1f881ad92c5ad05599d8641c_P1_1 4 END _0 MORE
+
+demo@linux:~$

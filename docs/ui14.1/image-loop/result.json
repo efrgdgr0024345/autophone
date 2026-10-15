@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "observations": 14,
+  "commands_executed": 13,
+  "plan_revisions": 1,
+  "injected_vision_frames": true,
+  "app_openai_network_tested": false,
+  "physical_bluetooth_tested": false
+}

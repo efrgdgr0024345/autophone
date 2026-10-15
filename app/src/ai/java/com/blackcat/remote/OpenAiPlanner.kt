@@ -26,7 +26,7 @@ class OpenAiPlanner {
             http.requestMethod = "POST"
             http.instanceFollowRedirects = false
             http.connectTimeout = 10000
-            http.readTimeout = 60000
+            http.readTimeout = READ_TIMEOUT_MS
             http.useCaches = false
             http.doOutput = true
             http.setRequestProperty("Authorization", "Bearer $key")
@@ -69,6 +69,10 @@ class OpenAiPlanner {
 
     companion object {
         const val ENDPOINT = "https://api.openai.com/v1/responses"
+        // A live 17-command plan took 90 seconds. Keep a bounded, cancellable window
+        // for detailed plans; the outer deadline also covers the connection allowance.
+        const val READ_TIMEOUT_MS = 180000
+        const val REQUEST_TIMEOUT_MS = 195000L
         fun validKey(key: String) = key.startsWith("sk-") && key.length in 20..512 && key.all { it.code in 33..126 }
 
         internal fun failureMessage(code: Int, errorCode: String): String = when (code) {

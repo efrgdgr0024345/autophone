@@ -1,0 +1,23 @@
+{
+  "diagnostic": "identical planning request with extended host-only deadline",
+  "http": 200,
+  "elapsed_seconds": 90.4,
+  "returned_model": "gpt-6.1-sol",
+  "status": "completed",
+  "usage": {
+    "input_tokens": 1556,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 1553
+    },
+    "output_tokens": 3449,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 5005
+  },
+  "production_deadline_seconds": 60,
+  "host_deadline_seconds": 150,
+  "commands": 17,
+  "roadmap_phases": 10
+}

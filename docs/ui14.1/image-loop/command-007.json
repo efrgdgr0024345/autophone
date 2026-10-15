@@ -1,0 +1,1 @@
+{"command":"rm -- \/tmp\/bc-1f881ad92c5ad05599d8641c\/r \/tmp\/bc-1f881ad92c5ad05599d8641c\/s \/tmp\/bc-1f881ad92c5ad05599d8641c\/o && rmdir -- \/tmp\/bc-1f881ad92c5ad05599d8641c && printf '\\nBC1f881ad92c5ad05599d8641c_CLEAN_0\\n'"}

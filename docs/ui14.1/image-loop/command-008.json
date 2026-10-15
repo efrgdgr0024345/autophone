@@ -1,0 +1,1 @@
+{"command":"(umask 077; b=\/tmp\/bc-5eb29063a698a7965d15546d; mkdir \"$b\" && { { env TERM=dumb PAGER=cat SYSTEMD_PAGER=cat cat \/etc\/os-release <\/dev\/null; echo $? >\"$b\/s\"; } 2>&1 | { head -c 1048576 >\"$b\/r\"; cat >\/dev\/null; }; LC_ALL=C cat -v \"$b\/r\" | fold -w 64 >\"$b\/o\"; printf '\\nBC5eb29063a698a7965d15546d_CAP_'; cat \"$b\/s\"; })"}

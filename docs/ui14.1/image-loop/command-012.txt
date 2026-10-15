@@ -1,0 +1,6 @@
+
+BC5eb29063a698a7965d15546d_P3_9_12_BEGIN
+SUPPORT_URL="https://www.debian.org/support"
+BUG_REPORT_URL="https://bugs.debian.org/"
+
+BC5eb29063a698a7965d15546d_P3_9_12_END_0_DONE

@@ -82,11 +82,15 @@ def verify_api_contract(ai: Path) -> None:
     for client, name in ((planner, 'planner'), (analyzer, 'photo')):
         require_contract(client, (
             'as HttpsURLConnection', 'http.instanceFollowRedirects = false',
-            'http.requestMethod = "POST"', 'http.connectTimeout = 10000', 'http.readTimeout = 60000',
+            'http.requestMethod = "POST"', 'http.connectTimeout = 10000',
+            'http.readTimeout = READ_TIMEOUT_MS' if name == 'planner' else 'http.readTimeout = 60000',
             'http.useCaches = false', 'currentCoroutineContext().ensureActive()',
             'out.size() + count > 262144', 'body.fill(0)', 'http.disconnect()',
             'if (connection === http) connection = null',
         ), name + ' HTTPS/cancellation')
+        if name == 'planner':
+            require_contract(client, ('const val READ_TIMEOUT_MS = 180000',
+                                      'const val REQUEST_TIMEOUT_MS = 195000L'), 'bounded detailed-plan deadline')
         for forbidden in ('HidManager', 'CommandTarget', 'sendKeyboard(', 'SharedPreferences',
                           'FileOutputStream', 'HostnameVerifier', 'TrustManager', 'SSLContext', 'android.util.Log'):
             assert forbidden not in client, f'API client crossed privacy/transport boundary: {forbidden}'

@@ -1,0 +1,8 @@
+{
+  "terminal_state": "shell_prompt",
+  "page_state": "unreadable",
+  "scenario": "clipped",
+  "passed": true,
+  "revision_needed": true,
+  "outcome": "error"
+}

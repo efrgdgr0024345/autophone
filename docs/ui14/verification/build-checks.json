@@ -1,0 +1,26 @@
+{
+  "ai": {
+    "unit": {
+      "tests": 134,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "lint": {
+      "errors": 0,
+      "warnings": 67
+    }
+  },
+  "offline": {
+    "unit": {
+      "tests": 27,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "lint": {
+      "errors": 0,
+      "warnings": 21
+    }
+  }
+}

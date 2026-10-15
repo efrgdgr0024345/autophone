@@ -1,0 +1,27 @@
+{
+  "status": "completed",
+  "model": "gpt-6.1-sol",
+  "usage": {
+    "input_tokens": 2082,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 2079
+    },
+    "output_tokens": 141,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2223
+  },
+  "output": [
+    {
+      "type": "message",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "{\n  \"terminal_state\": \"shell_prompt\",\n  \"page_text\": \"\",\n  \"page_state\": \"none\",\n  \"observed_command\": \"\",\n  \"page_marker\": \"\",\n  \"exit_code\": \"\",\n  \"explanation\": \"A clearly visible idle shell prompt is ready for a new command. Preflight appears complete; the service failure has not yet been diagnosed. Next, collect the service status and relevant logs. The photo alone does not establish keyboard focus.\",\n  \"visible_evidence\": [\n    \"demo@linux:~$\"\n  ],\n  \"revision_needed\": false,\n  \"outcome\": \"appears_complete\"\n}"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+Black Cat | Linux CAMERA DEMO
+
+06 no system settings changed
+
+07 checking installed demo package
+
+08 ERROR: demo service package is incompatible with this host
+BC1f881ad92c5ad05599d8641c_P1_1 8 END _0 MORE
+
+demo@linux:~$

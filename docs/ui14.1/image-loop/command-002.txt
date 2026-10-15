@@ -1,0 +1,12 @@
+
+BC1f881ad92c5ad05599d8641c_P1_1_8_BEGIN
+01 demo-service: starting read-only compatibility check
+02 host configuration loaded
+03 data directory readable
+04 port check completed
+05 network access is not needed for this check
+06 no system settings changed
+07 checking installed demo package
+08 ERROR: demo service package is incompatible with this host
+
+BC1f881ad92c5ad05599d8641c_P1_1_8_END_0_MORE

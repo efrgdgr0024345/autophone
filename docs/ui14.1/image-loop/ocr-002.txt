@@ -1,0 +1,10 @@
+Black Cat | Linux CAMERA DEMO
+
+demo@linux:~$ (umask 077; b=/tmp/bc-1f881ad92c5ad05599d8641c; mkdir "$b"
+&& { { env TERM=dumb PAGER=cat SYSTEMD_PAGER=cat cat /tmp/blackcat-imag
+e-demo.log </dev/null; echo $? >"$b/s"; } 2>&1 | { head -c 1048576 >"$b/
+r"; cat >/dev/null; }; LC_ALL=C cat -v "$b/r" | fold -w 64 >"$b/o"; prin
+tf '\nBC1f881ad92c5ad05599d8641c_CAP_'; cat "$b/s"; })
+BC1f881ad92c5ad05599d8641c_CAP_0
+
+demo@linux:~$

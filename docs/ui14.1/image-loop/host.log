@@ -1,0 +1,67 @@
+{"needs_review": "request-001.json", "kind": "observation"}
+{"test_provider": "tesseract/scripted", "reply": "reply-001.json", "live_openai": false}
+{"review_delivered": "reply-001.json"}
+{"executed": "command-001.json", "exit_code": 0, "output_chars": 34, "clipped": false}
+{"needs_review": "request-002.json", "kind": "observation"}
+{"test_provider": "tesseract/scripted", "reply": "reply-002.json", "live_openai": false}
+{"review_delivered": "reply-002.json"}
+{"executed": "command-002.json", "exit_code": 0, "output_chars": 397, "clipped": true}
+{"needs_review": "request-003.json", "kind": "observation"}
+{"test_provider": "tesseract/scripted", "reply": "reply-003.json", "live_openai": false}
+{"review_delivered": "reply-003.json"}
+{"executed": "command-003.json", "exit_code": 0, "output_chars": 223, "clipped": false}
+{"needs_review": "request-004.json", "kind": "observation"}
+{"test_provider": "tesseract/scripted", "reply": "reply-004.json", "live_openai": false}
+{"review_delivered": "reply-004.json"}
+{"executed": "command-004.json", "exit_code": 0, "output_chars": 261, "clipped": false}
+{"needs_review": "request-005.json", "kind": "observation"}
+{"test_provider": "tesseract/scripted", "reply": "reply-005.json", "live_openai": false}
+{"review_delivered": "reply-005.json"}
+{"executed": "command-005.json", "exit_code": 0, "output_chars": 332, "clipped": false}
+{"needs_review": "request-006.json", "kind": "observation"}
+{"test_provider": "tesseract/scripted", "reply": "reply-006.json", "live_openai": false}
+{"review_delivered": "reply-006.json"}
+{"executed": "command-006.json", "exit_code": 0, "output_chars": 201, "clipped": false}
+{"needs_review": "request-007.json", "kind": "observation"}
+{"test_provider": "tesseract/scripted", "reply": "reply-007.json", "live_openai": false}
+{"review_delivered": "reply-007.json"}
+{"executed": "command-007.json", "exit_code": 0, "output_chars": 36, "clipped": false}
+{"needs_review": "request-008.json", "kind": "observation"}
+{"test_provider": "tesseract/scripted", "reply": "reply-008.json", "live_openai": false}
+{"review_delivered": "reply-008.json"}
+{"needs_review": "request-009.json", "kind": "plan"}
+{"test_provider": "tesseract/scripted", "reply": "reply-009.json", "live_openai": false}
+{"review_delivered": "reply-009.json"}
+{"executed": "command-008.json", "exit_code": 0, "output_chars": 34, "clipped": false}
+{"needs_review": "request-010.json", "kind": "observation"}
+{"test_provider": "tesseract/scripted", "reply": "reply-010.json", "live_openai": false}
+{"review_delivered": "reply-010.json"}
+{"executed": "command-009.json", "exit_code": 0, "output_chars": 286, "clipped": true}
+{"needs_review": "request-011.json", "kind": "observation"}
+{"test_provider": "tesseract/scripted", "reply": "reply-011.json", "live_openai": false}
+{"review_delivered": "reply-011.json"}
+{"executed": "command-010.json", "exit_code": 0, "output_chars": 192, "clipped": false}
+{"needs_review": "request-012.json", "kind": "observation"}
+{"test_provider": "tesseract/scripted", "reply": "reply-012.json", "live_openai": false}
+{"review_delivered": "reply-012.json"}
+{"executed": "command-011.json", "exit_code": 0, "output_chars": 181, "clipped": false}
+{"needs_review": "request-013.json", "kind": "observation"}
+{"test_provider": "tesseract/scripted", "reply": "reply-013.json", "live_openai": false}
+{"review_delivered": "reply-013.json"}
+{"executed": "command-012.json", "exit_code": 0, "output_chars": 176, "clipped": false}
+{"needs_review": "request-014.json", "kind": "observation"}
+{"test_provider": "tesseract/scripted", "reply": "reply-014.json", "live_openai": false}
+{"review_delivered": "reply-014.json"}
+{"executed": "command-013.json", "exit_code": 0, "output_chars": 36, "clipped": false}
+{"needs_review": "request-015.json", "kind": "observation"}
+{"test_provider": "tesseract/scripted", "reply": "reply-015.json", "live_openai": false}
+{"review_delivered": "reply-015.json"}
+{
+  "passed": true,
+  "observations": 14,
+  "commands_executed": 13,
+  "plan_revisions": 1,
+  "injected_vision_frames": true,
+  "app_openai_network_tested": false,
+  "physical_bluetooth_tested": false
+}

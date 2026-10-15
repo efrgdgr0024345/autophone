@@ -1,0 +1,55 @@
+UI12_SMOKE_START
+PASS: 320 dp / font 1.0: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: System Back returns Step to Plan, then Home, while preserving the draft without input or replay
+PASS: 320 dp / font 1.0: Auto controls stay visible and opening setup sends no request/input
+PASS: 360 dp / font 1.0: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 360 dp / font 1.0: Auto controls stay visible and opening setup sends no request/input
+PASS: 390 dp / font 1.0: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 390 dp / font 1.0: Auto controls stay visible and opening setup sends no request/input
+PASS: 412 dp / font 1.0: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 412 dp / font 1.0: Auto controls stay visible and opening setup sends no request/input
+PASS: 320 dp / font 1.3: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 320 dp / font 1.3: Auto controls stay visible and opening setup sends no request/input
+PASS: 360 dp / font 1.3: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 360 dp / font 1.3: Auto controls stay visible and opening setup sends no request/input
+PASS: 390 dp / font 1.3: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 390 dp / font 1.3: Auto controls stay visible and opening setup sends no request/input
+PASS: 412 dp / font 1.3: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 412 dp / font 1.3: Auto controls stay visible and opening setup sends no request/input
+PASS: 320 dp / font 2.0: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 320 dp / font 2.0: Auto controls stay visible and opening setup sends no request/input
+PASS: 360 dp / font 2.0: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 360 dp / font 2.0: Auto controls stay visible and opening setup sends no request/input
+PASS: 390 dp / font 2.0: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 390 dp / font 2.0: Auto controls stay visible and opening setup sends no request/input
+PASS: 412 dp / font 2.0: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 412 dp / font 2.0: Auto controls stay visible and opening setup sends no request/input
+PASS: Packaged adaptive launcher icon is drawn by Android; no reference mock substituted
+
+UI14_LAYOUT_PASS 26
+PASS: 320 dp / font 1.0: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: System Back returns Step to Plan, then Home, while preserving the draft without input or replay
+PASS: 320 dp / font 1.0: Auto controls stay visible and opening setup sends no request/input
+PASS: 360 dp / font 1.0: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 360 dp / font 1.0: Auto controls stay visible and opening setup sends no request/input
+PASS: 390 dp / font 1.0: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 390 dp / font 1.0: Auto controls stay visible and opening setup sends no request/input
+PASS: 412 dp / font 1.0: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 412 dp / font 1.0: Auto controls stay visible and opening setup sends no request/input
+PASS: 320 dp / font 1.3: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 320 dp / font 1.3: Auto controls stay visible and opening setup sends no request/input
+PASS: 360 dp / font 1.3: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 360 dp / font 1.3: Auto controls stay visible and opening setup sends no request/input
+PASS: 390 dp / font 1.3: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 390 dp / font 1.3: Auto controls stay visible and opening setup sends no request/input
+PASS: 412 dp / font 1.3: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 412 dp / font 1.3: Auto controls stay visible and opening setup sends no request/input
+PASS: 320 dp / font 2.0: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 320 dp / font 2.0: Auto controls stay visible and opening setup sends no request/input
+PASS: 360 dp / font 2.0: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 360 dp / font 2.0: Auto controls stay visible and opening setup sends no request/input
+PASS: 390 dp / font 2.0: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 390 dp / font 2.0: Auto controls stay visible and opening setup sends no request/input
+PASS: 412 dp / font 2.0: exact command wraps, goal collapses, Auto/Voice and single send action remain visible
+PASS: 412 dp / font 2.0: Auto controls stay visible and opening setup sends no request/input
+PASS: Packaged adaptive launcher icon is drawn by Android; no reference mock substituted

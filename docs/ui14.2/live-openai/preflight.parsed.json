@@ -1,0 +1,8 @@
+{
+  "terminal_state": "shell_prompt",
+  "page_state": "none",
+  "scenario": "preflight",
+  "passed": true,
+  "revision_needed": false,
+  "outcome": "appears_complete"
+}

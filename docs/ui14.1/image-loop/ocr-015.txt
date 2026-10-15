@@ -1,0 +1,10 @@
+Black Cat | Linux CAMERA DEMO
+
+demo@linux:~$ rm -- /tmp/bc-5eb29063a698a7965d15546d/r /tmp/bc-5eb29063a
+698a7965d15546d/s /tmp/bc-5eb29063a698a7965d15546d/o && rmdir -- /tmp/bc
+-5eb29063a698a7965d15546d && printf '\nBC5eb29063a698a7965d15546d_CLEAN_
+0\n'
+
+BC5eb29063a698a7965d15546d_CLEAN_0
+
+demo@linux:~$

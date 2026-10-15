@@ -1,0 +1,8 @@
+
+BC1f881ad92c5ad05599d8641c_P3_9_12_BEGIN
+09 package was built for a different Linux distribution
+10 do not reinstall until the host distribution is identified
+11 read /etc/os-release to identify the installed distribution
+12 account identity will not explain this compatibility error
+
+BC1f881ad92c5ad05599d8641c_P3_9_12_END_0_MORE

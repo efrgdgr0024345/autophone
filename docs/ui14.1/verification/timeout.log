@@ -1,0 +1,5 @@
+UI12_SMOKE_START
+PASS: A real TimeoutCancellationException during feedback turns Auto OFF, explains the error, clears camera/key state and never queues the attempted task again
+
+UI14_TIMEOUT_PASS 1
+PASS: A real TimeoutCancellationException during feedback turns Auto OFF, explains the error, clears camera/key state and never queues the attempted task again
