@@ -1,0 +1,12 @@
+Black Cat | Linux CAMERA DEMO
+
+demo@linux:~$ (b=/tmp/bc-5eb29063a698a7965d15546d; printf '\nBC5eb29063a
+698a7965d15546d_P3_9 12 BEGIN\n'; sed -n '9,12p' "$b/o"; printf '\nBC5eb
+29063a698a7965d15546d_P3_9 12 END_'; tr -d '\n' <"$b/s"; if [ "$(awk 'EN
+D{print NR}' <"$b/o")" -gt 12 ]; then echo _MORE; else echo _DONE; fi)
+BC5eb29063a698a7965d15546d_P3_9 12 BEGIN
+SUPPORT_URL="https://www.debian.org/support"
+BUG_REPORT_URL="https://bugs.debian.org/"
+BC5eb29063a698a7965d15546d_P3_9 12 END 0 DONE
+
+demo@linux:~$

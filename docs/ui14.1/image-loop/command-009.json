@@ -1,0 +1,1 @@
+{"command":"(b=\/tmp\/bc-5eb29063a698a7965d15546d; printf '\\nBC5eb29063a698a7965d15546d_P1_1_8_BEGIN\\n'; sed -n '1,8p' \"$b\/o\"; printf '\\nBC5eb29063a698a7965d15546d_P1_1_8_END_'; tr -d '\\n' <\"$b\/s\"; if [ \"$(awk 'END{print NR}' <\"$b\/o\")\" -gt 8 ]; then echo _MORE; else echo _DONE; fi)"}

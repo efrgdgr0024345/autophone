@@ -1,0 +1,125 @@
+{
+  "build_source": "d16c23efb33ffd63a8f920b2de6242a5e178be0e",
+  "version_code": 17,
+  "version_name": "14.1-timeout-recovery",
+  "application_id": "com.blackcat.remote",
+  "rollback": "5a6968d4ffe8e8b28e4bdb021bbb9ffda17489f7",
+  "signer_sha256": "fc5c0b42b9da40c2507d8f2e77ed92db9e023740aa1a44d1a3b2c14a6e9f4764",
+  "apks": {
+    "CatBT-14.1.apk": {
+      "sha256": "d42dae1251a9c254a03a181862b89fc7846fc12caee78e836ab8dfdfd12a8221",
+      "bytes": 5027237
+    },
+    "CatAI-14.1.apk": {
+      "sha256": "f21a79a7486f3f3f0d9abaa35d246adbbecc72b09cc5fe83aba19e4d1cdd10f6",
+      "bytes": 5385477
+    }
+  },
+  "unit_tests": {
+    "ai": 134,
+    "offline": 27,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "policy_mutation_tests": 83,
+  "planner_contract_tests": 40,
+  "artwork_decode_tests": 1,
+  "catalog": {
+    "commands": 212,
+    "categories": 13,
+    "topics": 63
+  },
+  "lint": {
+    "errors": 0,
+    "ai_warnings": 67,
+    "offline_warnings": 21
+  },
+  "apk_inspection": "passed; exact permissions, identity, non-debuggable, matching certificate, no test bridge in shipping DEX",
+  "codeql": {
+    "version": "2.27.2",
+    "suite": "java-security-and-quality",
+    "source_files": 48,
+    "security_findings": 0,
+    "quality_notes": 22
+  },
+  "native": {
+    "runtime": "Android 12 / API 31 AOSP ATD x86_64; software CPU emulation; real PixelCopy",
+    "full_smoke_checks_passed": 21,
+    "layout_checks_passed": 26,
+    "widths_dp": [
+      320,
+      360,
+      390,
+      412
+    ],
+    "font_scales": [
+      1,
+      1.3,
+      2
+    ],
+    "screens": 38,
+    "matrix_screens": 36,
+    "native_icon_render": true,
+    "installed_apk_sha256": "f21a79a7486f3f3f0d9abaa35d246adbbecc72b09cc5fe83aba19e4d1cdd10f6",
+    "timeout_regression_checks_passed": 1
+  },
+  "image_loop": {
+    "status": "passed",
+    "vision": "Tesseract with scripted demo planner; not OpenAI",
+    "image_delivery": "test observer-boundary injection after actual Camera2 JPEG capture",
+    "physical_hid": false,
+    "test_driver_sha256": "ddc8ee1d0b7280cafb2e4ba9b58da89fb7bf30b06c7cf8f4866cf828e77f5bde",
+    "result": {
+      "passed": true,
+      "observations": 14,
+      "commands_executed": 13,
+      "plan_revisions": 1,
+      "injected_vision_frames": true,
+      "app_openai_network_tested": false,
+      "physical_bluetooth_tested": false
+    },
+    "host_process_restarts": 0,
+    "manual_provider_replies": 0,
+    "commands_replayed": 0,
+    "collection_temp_directories_removed": true
+  },
+  "live_openai": {
+    "authenticated_requests_run": false,
+    "runtime_secret_present": false,
+    "saved_binding_reported": false,
+    "unauthenticated_connectivity_http_status": 401,
+    "paid_planning_vision_audio": "not run"
+  },
+  "limitations": [
+    "No physical phone/computer Bluetooth or camera acceptance.",
+    "API35 attempted images failed with framework/SystemUI issues, not passed coverage.",
+    "ATD has no normal system IME/launcher; soft keyboard, dictation, audio and launcher grid remain physical checks.",
+    "Video camera stream injection attempt failed; separate observer-boundary injection must not be described as a camera-sensor feed."
+  ],
+  "publication": {
+    "baseline_promoted": false,
+    "merged": false,
+    "new_apk_bytes_copied_without_rebuild": true,
+    "supersedes": "UI14; extended testing exposed its unhandled timeout state"
+  },
+  "previous_attempts": [
+    {
+      "version": "UI14",
+      "result": "failed",
+      "reason": "Scripted planner assertion failed on JSON slash escaping; a subsequent timeout left Auto ON. Fixed and regression-tested in UI14.1."
+    },
+    {
+      "version": "UI14.1",
+      "result": "failed expected-completion image test",
+      "reason": "Single-pass OCR misread a visible zero. App stopped safely after bounded retries; the test-only provider now uses separate bounded OCR passes on the same JPEG, without token/digit repair."
+    }
+  ],
+  "cloud_configuration": {
+    "install_script_saved": true,
+    "startup_instructions_saved": true,
+    "secret_requirement": "BLACKCAT_TEST_API_KEY -> api.openai.com",
+    "latest_draft_requires_publish": true,
+    "fresh_task_restore_verified": false
+  }
+}

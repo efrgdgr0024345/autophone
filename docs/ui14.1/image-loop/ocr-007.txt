@@ -1,0 +1,16 @@
+Black Cat | Linux CAMERA DEMO
+
+demo@linux:~$ (b=/tmp/bc-1f881ad92c5ad05599d8641c; printf '\nBC1f881ad92
+c5ad05599d8641c_P4_13_16 BEGIN\n'; sed -n '13,16p' "$b/o"; printf '\nBC1
+#881ad92c5ad05599d8641c_P4_13_16 END_'; tr -d '\n' <"$b/s"; if [ "$(awk
+"END{print NR}' <"$b/o")" -gt 16 ]; then echo _MORE; else echo _DONE; fi
+)
+
+BC1f881ad92c5ad05599d8641c_P4_13_16 BEGIN
+
+13 preserve service configuration and recovery access
+
+14 END: collect OS evidence before selecting any repair
+BC1f881ad92c5ad05599d8641c_P4_13_16 END_0 DONE
+
+demo@linux:~$

@@ -1,0 +1,8 @@
+
+BC1f881ad92c5ad05599d8641c_P1_1_4_BEGIN
+01 demo-service: starting read-only compatibility check
+02 host configuration loaded
+03 data directory readable
+04 port check completed
+
+BC1f881ad92c5ad05599d8641c_P1_1_4_END_0_MORE

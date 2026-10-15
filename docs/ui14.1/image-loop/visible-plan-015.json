@@ -1,0 +1,56 @@
+{
+  "commands": [
+    {
+      "title": "Capture · Inspect service diagnostic log",
+      "command": "(umask 077; b=\/tmp\/bc-1f881ad92c5ad05599d8641c; mkdir \"$b\" && { { env TERM=dumb PAGER=cat SYSTEMD_PAGER=cat cat \/tmp\/blackcat-image-demo.log <\/dev\/null; echo $? >\"$b\/s\"; } 2>&1 | { head -c 1048576 >\"$b\/r\"; cat >\/dev\/null; }; LC_ALL=C cat -v \"$b\/r\" | fold -w 64 >\"$b\/o\"; printf '\\nBC1f881ad92c5ad05599d8641c_CAP_'; cat \"$b\/s\"; })"
+    },
+    {
+      "title": "Read output · page 1 · Inspect service diagnostic log",
+      "command": "(b=\/tmp\/bc-1f881ad92c5ad05599d8641c; printf '\\nBC1f881ad92c5ad05599d8641c_P1_1_8_BEGIN\\n'; sed -n '1,8p' \"$b\/o\"; printf '\\nBC1f881ad92c5ad05599d8641c_P1_1_8_END_'; tr -d '\\n' <\"$b\/s\"; if [ \"$(awk 'END{print NR}' <\"$b\/o\")\" -gt 8 ]; then echo _MORE; else echo _DONE; fi)"
+    },
+    {
+      "title": "Read output · page 1 · Inspect service diagnostic log",
+      "command": "(b=\/tmp\/bc-1f881ad92c5ad05599d8641c; printf '\\nBC1f881ad92c5ad05599d8641c_P1_1_4_BEGIN\\n'; sed -n '1,4p' \"$b\/o\"; printf '\\nBC1f881ad92c5ad05599d8641c_P1_1_4_END_'; tr -d '\\n' <\"$b\/s\"; if [ \"$(awk 'END{print NR}' <\"$b\/o\")\" -gt 4 ]; then echo _MORE; else echo _DONE; fi)"
+    },
+    {
+      "title": "Read output · page 2 · Inspect service diagnostic log",
+      "command": "(b=\/tmp\/bc-1f881ad92c5ad05599d8641c; printf '\\nBC1f881ad92c5ad05599d8641c_P2_5_8_BEGIN\\n'; sed -n '5,8p' \"$b\/o\"; printf '\\nBC1f881ad92c5ad05599d8641c_P2_5_8_END_'; tr -d '\\n' <\"$b\/s\"; if [ \"$(awk 'END{print NR}' <\"$b\/o\")\" -gt 8 ]; then echo _MORE; else echo _DONE; fi)"
+    },
+    {
+      "title": "Read output · page 3 · Inspect service diagnostic log",
+      "command": "(b=\/tmp\/bc-1f881ad92c5ad05599d8641c; printf '\\nBC1f881ad92c5ad05599d8641c_P3_9_12_BEGIN\\n'; sed -n '9,12p' \"$b\/o\"; printf '\\nBC1f881ad92c5ad05599d8641c_P3_9_12_END_'; tr -d '\\n' <\"$b\/s\"; if [ \"$(awk 'END{print NR}' <\"$b\/o\")\" -gt 12 ]; then echo _MORE; else echo _DONE; fi)"
+    },
+    {
+      "title": "Read output · page 4 · Inspect service diagnostic log",
+      "command": "(b=\/tmp\/bc-1f881ad92c5ad05599d8641c; printf '\\nBC1f881ad92c5ad05599d8641c_P4_13_16_BEGIN\\n'; sed -n '13,16p' \"$b\/o\"; printf '\\nBC1f881ad92c5ad05599d8641c_P4_13_16_END_'; tr -d '\\n' <\"$b\/s\"; if [ \"$(awk 'END{print NR}' <\"$b\/o\")\" -gt 16 ]; then echo _MORE; else echo _DONE; fi)"
+    },
+    {
+      "title": "Clear temporary output · Inspect service diagnostic log",
+      "command": "rm -- \/tmp\/bc-1f881ad92c5ad05599d8641c\/r \/tmp\/bc-1f881ad92c5ad05599d8641c\/s \/tmp\/bc-1f881ad92c5ad05599d8641c\/o && rmdir -- \/tmp\/bc-1f881ad92c5ad05599d8641c && printf '\\nBC1f881ad92c5ad05599d8641c_CLEAN_0\\n'"
+    },
+    {
+      "title": "Capture · Identify Linux distribution from feedback",
+      "command": "(umask 077; b=\/tmp\/bc-5eb29063a698a7965d15546d; mkdir \"$b\" && { { env TERM=dumb PAGER=cat SYSTEMD_PAGER=cat cat \/etc\/os-release <\/dev\/null; echo $? >\"$b\/s\"; } 2>&1 | { head -c 1048576 >\"$b\/r\"; cat >\/dev\/null; }; LC_ALL=C cat -v \"$b\/r\" | fold -w 64 >\"$b\/o\"; printf '\\nBC5eb29063a698a7965d15546d_CAP_'; cat \"$b\/s\"; })"
+    },
+    {
+      "title": "Read output · page 1 · Identify Linux distribution from feedback",
+      "command": "(b=\/tmp\/bc-5eb29063a698a7965d15546d; printf '\\nBC5eb29063a698a7965d15546d_P1_1_8_BEGIN\\n'; sed -n '1,8p' \"$b\/o\"; printf '\\nBC5eb29063a698a7965d15546d_P1_1_8_END_'; tr -d '\\n' <\"$b\/s\"; if [ \"$(awk 'END{print NR}' <\"$b\/o\")\" -gt 8 ]; then echo _MORE; else echo _DONE; fi)"
+    },
+    {
+      "title": "Read output · page 1 · Identify Linux distribution from feedback",
+      "command": "(b=\/tmp\/bc-5eb29063a698a7965d15546d; printf '\\nBC5eb29063a698a7965d15546d_P1_1_4_BEGIN\\n'; sed -n '1,4p' \"$b\/o\"; printf '\\nBC5eb29063a698a7965d15546d_P1_1_4_END_'; tr -d '\\n' <\"$b\/s\"; if [ \"$(awk 'END{print NR}' <\"$b\/o\")\" -gt 4 ]; then echo _MORE; else echo _DONE; fi)"
+    },
+    {
+      "title": "Read output · page 2 · Identify Linux distribution from feedback",
+      "command": "(b=\/tmp\/bc-5eb29063a698a7965d15546d; printf '\\nBC5eb29063a698a7965d15546d_P2_5_8_BEGIN\\n'; sed -n '5,8p' \"$b\/o\"; printf '\\nBC5eb29063a698a7965d15546d_P2_5_8_END_'; tr -d '\\n' <\"$b\/s\"; if [ \"$(awk 'END{print NR}' <\"$b\/o\")\" -gt 8 ]; then echo _MORE; else echo _DONE; fi)"
+    },
+    {
+      "title": "Read output · page 3 · Identify Linux distribution from feedback",
+      "command": "(b=\/tmp\/bc-5eb29063a698a7965d15546d; printf '\\nBC5eb29063a698a7965d15546d_P3_9_12_BEGIN\\n'; sed -n '9,12p' \"$b\/o\"; printf '\\nBC5eb29063a698a7965d15546d_P3_9_12_END_'; tr -d '\\n' <\"$b\/s\"; if [ \"$(awk 'END{print NR}' <\"$b\/o\")\" -gt 12 ]; then echo _MORE; else echo _DONE; fi)"
+    },
+    {
+      "title": "Clear temporary output · Identify Linux distribution from feedback",
+      "command": "rm -- \/tmp\/bc-5eb29063a698a7965d15546d\/r \/tmp\/bc-5eb29063a698a7965d15546d\/s \/tmp\/bc-5eb29063a698a7965d15546d\/o && rmdir -- \/tmp\/bc-5eb29063a698a7965d15546d && printf '\\nBC5eb29063a698a7965d15546d_CLEAN_0\\n'"
+    }
+  ]
+}

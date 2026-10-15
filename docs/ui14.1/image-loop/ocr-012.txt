@@ -1,0 +1,19 @@
+Black Cat | Linux CAMERA DEMO
+
+demo@linux:~$ (b=/tmp/bc-5eb29063a698a7965d15546d; printf '\nBC5eb29063a
+698a7965d15546d_P1_1 4 BEGIN\n'; sed -n '1,4p' "$b/o"; printf '\nBC5eb29
+063a698a7965d15546d_ P11 4 END _'; tr -d '\n' <"$b/s"; if [ "$(awk ‘'END{p
+rint NR}' <"$b/o")" -gt 4 ]; then echo _MORE; else echo _DONE; fi)
+BC5eb29063a698a7965d15546d_P1_1 4 BEGIN
+
+PRETTY_NAME="Debian GNU/Linux 13 (trixie)"
+
+NAME="Debian GNU/Linux"
+
+VERSION_ID="13"
+
+VERSION="13 (trixie)"
+
+BC5eb29063a698a7965d15546d_P1_1 4 END _0 MORE
+
+demo@linux:~$

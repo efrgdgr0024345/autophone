@@ -1,0 +1,18 @@
+Black Cat | Linux CAMERA DEMO
+
+demo@linux:~$ (b=/tmp/bc-1f881ad92c5ad05599d8641c; printf '\nBC1f881ad92
+c5ad05599d8641c_P3_9 12 BEGIN\n'; sed -n '9,12p' "$b/o"; printf '\nBC1f8
+81ad92c5ad05599d8641c_P3_9 12 END_'; tr -d '\n' <"$b/s"; if [ "$(awk 'EN
+D{print NR}' <"$b/o")" -gt 12 ]; then echo _MORE; else echo _DONE; fi)
+BC1f881ad92c5ad05599d8641c_P3_9 12 BEGIN
+
+09 package was built for a different Linux distribution
+
+10 do not reinstall until the host distribution is identified
+
+11 read /etc/os-release to identify the installed distribution
+
+12 account identity will not explain this compatibility error
+BC1f881ad92c5ad05599d8641c_P3_9 12 END 0 MORE
+
+demo@linux:~$
