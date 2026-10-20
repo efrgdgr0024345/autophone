@@ -1,0 +1,9 @@
+{
+  "draft_callbacks": 2,
+  "commands_executed": false,
+  "displayable_code_received": true,
+  "phone_transport_tested": false,
+  "production_stream_parser_passed": true,
+  "commands": 2,
+  "phases": 2
+}

@@ -1,0 +1,27 @@
+UI12_SMOKE_START
+PASS: Natural language returns OS-scoped topics and opening a topic creates no command approval
+PASS: Visible OS selector changes compatibility scope; Kali references appear without network, typing or plan edits
+PASS: Actual SSE parser renders progressive explanation and monospace command cards while the previous workspace remains intact and approvals stay disabled
+PASS: Cancellation discards the live draft and rejects a late callback without replacing the old plan
+PASS: Live plan 320 dp / font 1.0 retains visible Cancel, Auto/Voice and separate command formatting
+PASS: Live plan 320 dp / font 2.0 retains visible Cancel, Auto/Voice and separate command formatting
+PASS: Live plan 360 dp / font 1.0 retains visible Cancel, Auto/Voice and separate command formatting
+PASS: Live plan 360 dp / font 2.0 retains visible Cancel, Auto/Voice and separate command formatting
+PASS: Live plan 390 dp / font 1.0 retains visible Cancel, Auto/Voice and separate command formatting
+PASS: Live plan 390 dp / font 2.0 retains visible Cancel, Auto/Voice and separate command formatting
+PASS: Live plan 412 dp / font 1.0 retains visible Cancel, Auto/Voice and separate command formatting
+PASS: Live plan 412 dp / font 2.0 retains visible Cancel, Auto/Voice and separate command formatting
+
+UI17_SEARCH_STREAM_PASS 12
+PASS: Natural language returns OS-scoped topics and opening a topic creates no command approval
+PASS: Visible OS selector changes compatibility scope; Kali references appear without network, typing or plan edits
+PASS: Actual SSE parser renders progressive explanation and monospace command cards while the previous workspace remains intact and approvals stay disabled
+PASS: Cancellation discards the live draft and rejects a late callback without replacing the old plan
+PASS: Live plan 320 dp / font 1.0 retains visible Cancel, Auto/Voice and separate command formatting
+PASS: Live plan 320 dp / font 2.0 retains visible Cancel, Auto/Voice and separate command formatting
+PASS: Live plan 360 dp / font 1.0 retains visible Cancel, Auto/Voice and separate command formatting
+PASS: Live plan 360 dp / font 2.0 retains visible Cancel, Auto/Voice and separate command formatting
+PASS: Live plan 390 dp / font 1.0 retains visible Cancel, Auto/Voice and separate command formatting
+PASS: Live plan 390 dp / font 2.0 retains visible Cancel, Auto/Voice and separate command formatting
+PASS: Live plan 412 dp / font 1.0 retains visible Cancel, Auto/Voice and separate command formatting
+PASS: Live plan 412 dp / font 2.0 retains visible Cancel, Auto/Voice and separate command formatting

@@ -51,6 +51,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
     private var timeoutOnly = false
     private var learningOnly = false
     private var workflowsOnly = false
+    private var searchStreamOnly = false
 
     override fun onCreate(arguments: Bundle?) {
         super.onCreate(arguments)
@@ -59,6 +60,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         imageRunId = arguments?.getString("demoRunId").orEmpty()
         learningOnly = arguments?.getString("scenario") == "learning"
         workflowsOnly = arguments?.getString("scenario") == "workflows"
+        searchStreamOnly = arguments?.getString("scenario") == "search-stream"
         timeoutOnly = arguments?.getString("scenario") == "timeout"
         imageAuto = arguments?.getString("scenario") == "image-auto" || injectedImages
         layoutOnly = arguments?.getString("scenario") == "layout"
@@ -97,6 +99,12 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                 decor.isShown && decor.isAttachedToWindow && decor.isLaidOut && SystemClock.uptimeMillis() - stableSince >= 2000
             }
             startupSettled = true
+            if (searchStreamOnly) {
+                captureSearchAndStreaming()
+                result.putString("stream", "\nUI17_SEARCH_STREAM_PASS ${checks.size}\n" + checks.joinToString("\n"))
+                finish(Activity.RESULT_OK, result)
+                return
+            }
             if (workflowsOnly) {
                 captureFullKaliWorkflows()
                 result.putString("stream", "\nUI16_WORKFLOWS_PASS ${checks.size}\n" + checks.joinToString("\n"))
@@ -829,6 +837,9 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
             (field(library, "search") as EditText).setText("git add")
             check((field(library, "level") as Enum<*>).name == "CLI_LIST")
             check(field(library, "cliPage") == 0)
+        }
+        await("asynchronous scoped command search") { descendants(screen.window!!.decorView).any { it.isShown && it.contentDescription == "git add" } }
+        onMain {
             nav("git add")
             check(selections == 0)
             pass("The complete Kali command directory paginates and filters in scope; selecting a subcommand sends nothing")
@@ -1107,6 +1118,134 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         File(targetContext.filesDir, "ui15-learning-metrics.json").writeText(
             org.json.JSONObject().put("cold_open_ms_software_emulator", loadMillis).put("checks", checks.size)
                 .put("phone_network_used", false).put("physical_hid_tested", false).toString(2))
+    }
+
+    private fun captureSearchAndStreaming() {
+        lateinit var library: LinuxCommandLibraryPanel
+        lateinit var screen: Dialog
+        var selections = 0
+        onMain {
+            activity.getSharedPreferences("blackcat_ai_ui", Activity.MODE_PRIVATE).edit().putString("target_system", "Ubuntu Linux / Bash").apply()
+            library = LinuxCommandLibraryPanel(activity, field(activity, "hid") as HidManager, onSelectForPlan = { selections++ })
+            library.show(); screen = field(library, "dialog") as Dialog
+        }
+        await("offline search index", timeoutMillis = 60000) { (field(library, "items") as List<*>).size == 467 }
+        onMain { (field(library, "search") as EditText).setText("I want to check all internet connections") }
+        await("natural language topic results") { texts(screen).any { it.contains("matching topics") } }
+        screenshot("search-stream-01-topics", screen)
+        onMain {
+            val hits = field(library, "searchHits") as List<*>
+            check(hits.isNotEmpty() && selections == 0)
+            val topic = (hits.first() as OfflineCommandSearch.Hit).topic
+            descendants(screen.window!!.decorView).first { it.isClickable && it.contentDescription == topic }.performClick()
+            check(field(library, "searchTopic") == topic)
+            pass("Natural language returns OS-scoped topics and opening a topic creates no command approval")
+        }
+        screenshot("search-stream-02-topic-commands", screen)
+        onMain {
+            invoke(library, "navigateBack")
+            (field(library, "search") as EditText).setText("nmap")
+        }
+        await("Ubuntu scope nmap search") { (field(library, "resultKey") as String).endsWith("\nnmap") }
+        onMain {
+            check((field(library, "searchHits") as List<*>).none { (it as OfflineCommandSearch.Hit).title == "nmap" })
+            findButton(screen, "Search OS:").performClick()
+        }
+        // Exercise the visible OS chooser, not a synthetic preference write.
+        onMain {
+            val chooser = field(library, "osChooser") as AlertDialog
+            chooser.listView.performItemClick(chooser.listView.getChildAt(0), 0, 0)
+        }
+        await("Kali scope nmap search") { (field(library, "resultKey") as String) == "Kali Linux\nnmap" }
+        screenshot("search-stream-03-kali-scope", screen)
+        onMain {
+            check((field(library, "searchHits") as List<*>).any { (it as OfflineCommandSearch.Hit).title == "nmap" })
+            check(selections == 0)
+            pass("Visible OS selector changes compatibility scope; Kali references appear without network, typing or plan edits")
+            library.dismiss()
+            val type = Class.forName("com.blackcat.remote.AiPanel")
+            panel = type.declaredConstructors.single().apply { isAccessible = true }.newInstance(activity, field(activity, "hid") as HidManager, {})
+            invoke(panel, "show"); dialog = field(panel, "dialog") as Dialog
+            dialog.window!!.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            (field(panel, "goal") as EditText).setText("Check local internet connections")
+            workspace().replace(CommandPlan("Previous plan", emptyList(), emptyList(), listOf(
+                SuggestedCommand("Previous step", "id", "Read account.", "low", false, "Account facts", emptyList()))))
+            setField(panel, "busy", true); setField(panel, "liveDraft", PlanStreamDraft()); setField(panel, "liveUpdating", "step 1: local network")
+            (field(panel, "livePlan") as LivePlanView).reset()
+            (field(panel, "livePlan") as LivePlanView).update(PlanStreamDraft(), "step 1: local network")
+            invoke(panel, "renderAll")
+        }
+        val operation = field(panel, "operationToken") as Long
+        val revision = workspace().revision
+        val showDraft = panel.javaClass.getDeclaredMethod("showLiveDraft", PlanStreamDraft::class.java, Long::class.javaPrimitiveType, Long::class.javaPrimitiveType).apply { isAccessible = true }
+        val proposal = """{"explanation":"First, we will inspect local connections without changing your network settings. Each command has its own explanation.","roadmap":[{"title":"Inspect connections","purpose":"Identify listeners and active sessions.","checks":["Read the output before choosing changes."]}],"assumptions":[],"decision":{"mode":"commands","questions":[],"commands":[{"title":"Check connections","command":"ss -tupn","explanation":"Show active TCP and UDP connections and their processes, where permitted.","risk":"low","requires_admin":false,"expected_result":"A bounded list of current connections.","warnings":[]},{"title":"Check interface addresses","command":"ip -brief address","explanation":"Show addresses assigned to this computer's network interfaces.","risk":"low","requires_admin":false,"expected_result":"Interface names and addresses.","warnings":[]}]}}"""
+        fun event(type: String, key: String, value: Any) = "data: " + org.json.JSONObject().put("type", type).put(key, value).apply {
+            if (type.endsWith(".delta")) { put("output_index", 0); put("content_index", 0) }
+        }.toString() + "\n\n"
+        val finalResponse = org.json.JSONObject().put("status", "completed").put("output", org.json.JSONArray().put(org.json.JSONObject()
+            .put("type", "message").put("content", org.json.JSONArray().put(org.json.JSONObject().put("type", "output_text").put("text", proposal)))))
+        val wire = proposal.chunked(90).joinToString("") { event("response.output_text.delta", "delta", it) } + event("response.completed", "response", finalResponse)
+        var captured = false
+        val input = object : java.io.ByteArrayInputStream(wire.toByteArray()) {
+            override fun read(buffer: ByteArray, offset: Int, length: Int): Int { Thread.sleep(15); return super.read(buffer, offset, minOf(64, length)) }
+        }
+        val parsed = kotlinx.coroutines.runBlocking {
+            PlanResponseStream.read(input) { draft ->
+                onMain {
+                    showDraft.invoke(panel, draft, operation, revision)
+                    check(workspace().plan!!.commands.single().command == "id")
+                    check(!findButton(dialog, "▶ Auto Play").isEnabled)
+                    check(descendants(dialog.window!!.decorView).filterIsInstance<Button>().none { it.isShown && it.isEnabled && it.text.contains("Approve") })
+                }
+                if (!captured && draft.commands.isNotEmpty() && draft.commands.first().command.isNotEmpty()) {
+                    screenshot("search-stream-04-live-draft", dialog); captured = true
+                }
+            }
+        }
+        check(captured && parsed.commands.size == 2)
+        onMain {
+            check(texts(dialog).any { it.contains("LIVE DRAFT") })
+            check(texts(dialog).any { it == "ss -tupn" })
+            pass("Actual SSE parser renders progressive explanation and monospace command cards while the previous workspace remains intact and approvals stay disabled")
+            findButton(dialog, "Edit goal").performClick()
+            check((field(panel, "goalStage") as View).isShown)
+            showDraft.invoke(panel, PlanStreamDraft("STALE DRAFT MUST NOT APPEAR"), operation, revision)
+            check(field(panel, "liveDraft") == null)
+            check(workspace().plan!!.commands.single().command == "id")
+            check(texts(dialog).none { it.contains("STALE DRAFT") })
+            pass("Cancellation discards the live draft and rejects a late callback without replacing the old plan")
+            workspace().replace(parsed); setField(panel, "goalExpanded", false); invoke(panel, "renderAll")
+        }
+        screenshot("search-stream-05-validated-plan", dialog)
+        val original = android.content.res.Configuration(activity.resources.configuration)
+        val metrics = activity.resources.displayMetrics
+        for (width in listOf(320, 360, 390, 412)) for (scale in listOf(1f, 2f)) {
+            onMain {
+                invoke(panel, "dismiss")
+                val config = android.content.res.Configuration(original).apply { fontScale = scale }
+                activity.resources.updateConfiguration(config, metrics)
+                val type = Class.forName("com.blackcat.remote.AiPanel")
+                panel = type.declaredConstructors.single().apply { isAccessible = true }.newInstance(activity, field(activity, "hid") as HidManager, {})
+                invoke(panel, "show"); dialog = field(panel, "dialog") as Dialog
+                dialog.window!!.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                dialog.window!!.setLayout((width * metrics.density).toInt(), (780 * metrics.density).toInt())
+                (field(panel, "goal") as EditText).setText("Inspect current network connections")
+                setField(panel, "busy", true); setField(panel, "liveDraft", PlanDraftPreview.read(proposal))
+                val live = field(panel, "livePlan") as LivePlanView
+                live.reset(); live.update(PlanDraftPreview.read(proposal), "local network")
+                invoke(panel, "renderAll")
+                live.followLatest()
+            }
+            screenshot("search-stream-matrix-$width-${(scale * 100).toInt()}", dialog)
+            onMain {
+                fullyVisible(findButton(dialog, "Cancel"), 48)
+                fullyVisible(findButton(dialog, "▶ Auto Play"), 48)
+                check((field(panel, "planView") as View).height >= (80 * metrics.density).toInt())
+                check(descendants(field(panel, "livePlan") as View).filterIsInstance<TextView>().any { it.typeface == android.graphics.Typeface.MONOSPACE })
+                pass("Live plan $width dp / font $scale retains visible Cancel, Auto/Voice and separate command formatting")
+            }
+        }
+        onMain { invoke(panel, "dismiss"); activity.resources.updateConfiguration(original, metrics) }
     }
 
     private fun workspace() = field(panel, "workspace") as PlanWorkspace

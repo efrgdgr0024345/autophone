@@ -58,7 +58,7 @@ def verify(root=ROOT, schema=True):
  assert d['workflow_support']==rebuilt['workflow_support'],'Incomplete or altered tool/command workflow coverage'
  for key,value in rebuilt['counts'].items():
   if key.startswith('workflow_'):assert counts[key]==value,'Wrong workflow coverage count'
- for name in ['OfflineLearningCatalog.kt','LinuxCommandLibraryPanel.kt','OfflineWorkflows.kt','OfflineCommandComposer.kt']:
+ for name in ['OfflineLearningCatalog.kt','LinuxCommandLibraryPanel.kt','OfflineWorkflows.kt','OfflineCommandComposer.kt','OfflineCommandSearch.kt']:
   source=(root/'app/src/main/java/com/blackcat/remote'/name).read_text()
   assert not any(x in source for x in ['HttpsURLConnection','URL(','ProcessBuilder(','Runtime.getRuntime','KEYCODE_ENTER'])
  assert d['safety']['offline_phone_network'] is False and d['safety']['auto_command_policy_changed'] is False

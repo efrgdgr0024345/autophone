@@ -62,6 +62,7 @@ class OpenAiTransportTest {
         }
         override fun getResponseCode(): Int { reply.fault?.let { throw it }; return reply.code }
         override fun getErrorStream() = ByteArrayInputStream(reply.error.toByteArray())
+        override fun getContentType() = "text/event-stream; charset=utf-8"
         override fun getInputStream(): InputStream = if (!reply.blocked) ByteArrayInputStream(reply.body.toByteArray())
             else object : InputStream() {
                 override fun read(): Int {
@@ -79,7 +80,7 @@ class OpenAiTransportTest {
     private fun plan() = JSONObject().put("explanation", "Inspect first.").put("roadmap", JSONArray()).put("assumptions", JSONArray())
         .put("decision", JSONObject().put("mode", "commands").put("questions", JSONArray()).put("commands", JSONArray().put(command())))
     private fun step() = SuggestedCommand("Check", "id", "Inspect.", "low", false, "Account information.", emptyList())
-    private fun verifiedTransport(reply: Reply, path: String = "/v1/responses", post: Boolean = true) {
+    private fun verifiedTransport(reply: Reply, path: String = "/v1/responses", post: Boolean = true, stream: Boolean = false) {
         val connection = reply.connection
         assertEquals(path, connection.url.path)
         assertEquals(if (post) "POST" else "GET", connection.requestMethod)
@@ -95,7 +96,7 @@ class OpenAiTransportTest {
             assertEquals(if (isPlanner) 180000 else 60000, connection.readTimeout)
             if (isPlanner) assertTrue(OpenAiPlanner.REQUEST_TIMEOUT_MS >= connection.connectTimeout + connection.readTimeout)
             assertFalse(body.getBoolean("store"))
-            assertFalse(body.getBoolean("stream"))
+            assertEquals(stream, body.getBoolean("stream"))
             assertTrue(body.getJSONObject("text").getJSONObject("format").getBoolean("strict"))
             assertEquals("none", body.getString("tool_choice"))
         }
@@ -105,6 +106,18 @@ class OpenAiTransportTest {
         val result = OpenAiPlanner().propose("Inspect this synthetic host", "Linux", PlanCodec.DEFAULT_MODEL, KEY)
         assertEquals("id", result.commands.single().command)
         verifiedTransport(reply)
+    }
+    @Test fun streamedPlannerUsesTheSameSchemaAndDeliversDisplayOnlyDrafts() = runBlocking {
+        val text = plan().toString()
+        val delta = JSONObject().put("type", "response.output_text.delta").put("output_index", 0).put("content_index", 0).put("delta", text)
+        val end = JSONObject().put("type", "response.completed").put("response", JSONObject(response(plan())))
+        val reply = queue(Reply(body = "data: $delta\n\ndata: $end\n\n"))
+        val drafts = mutableListOf<PlanStreamDraft>()
+        val result = OpenAiPlanner().propose("Inspect", "Linux", PlanCodec.DEFAULT_MODEL, KEY) { drafts += it }
+        assertEquals("id", result.commands.single().command)
+        assertEquals("id", drafts.last().commands.single().command)
+        assertEquals("text/event-stream", reply.connection.getRequestProperty("Accept"))
+        verifiedTransport(reply, stream = true)
     }
     @Test fun observerSendsActualImageBytesAndParsesAllCollectionFields() = runBlocking {
         val value = JSONObject().put("observed_command", "id").put("terminal_state", "shell_prompt").put("outcome", "appears_complete")
@@ -165,6 +178,18 @@ class OpenAiTransportTest {
         try { job.await(); fail("Cancelled request returned") } catch (_: CancellationException) { }
         job.join()
         verifiedTransport(reply)
+    }
+    @Test fun streamingCancellationClosesTheReaderWithoutPublishingADraftOrAPlan() = runBlocking {
+        val reply = queue(Reply(blocked = true))
+        val client = OpenAiPlanner()
+        var drafts = 0
+        val job = async { client.propose("Inspect", "Linux", PlanCodec.DEFAULT_MODEL, KEY) { drafts++ } }
+        withContext(Dispatchers.IO) { assertTrue(reply.reading.await(3, TimeUnit.SECONDS)) }
+        job.cancel(); client.cancel()
+        try { job.await(); fail("Cancelled stream returned") } catch (_: CancellationException) { }
+        job.join()
+        assertEquals(0, drafts)
+        verifiedTransport(reply, stream = true)
     }
     @Test fun explicitKeyCheckUsesMetadataOnlyAndValidatesTheModelIdentity() = runBlocking {
         val reply = queue(Reply(body = JSONObject().put("object", "model").put("id", PlanCodec.DEFAULT_MODEL).toString()))

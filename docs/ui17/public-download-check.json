@@ -1,0 +1,23 @@
+{
+  "utc": "2026-10-20T23:06:57.379319+00:00",
+  "artifact_commit": "ebd126d85c1bdae3c15dbd599445a8bb63c39a11",
+  "results": [
+    {
+      "name": "CatAI-17.apk",
+      "url": "https://raw.githubusercontent.com/efrgdgr0024345/autophone/ebd126d85c1bdae3c15dbd599445a8bb63c39a11/docs/ui17/install/CatAI-17.apk",
+      "http": 200,
+      "bytes": 6490241,
+      "sha256": "2607ba4985e06372bdcb6ca4029e330631f45c927acdc217950599bf078d4bdc",
+      "content_type": "application/octet-stream"
+    },
+    {
+      "name": "CatBT-17.apk",
+      "url": "https://raw.githubusercontent.com/efrgdgr0024345/autophone/ebd126d85c1bdae3c15dbd599445a8bb63c39a11/docs/ui17/install/CatBT-17.apk",
+      "http": 200,
+      "bytes": 6097893,
+      "sha256": "6417e0ba478a32f08ed051e2dc14b5cb13aa96829e51da94d9b44c170a966c5e",
+      "content_type": "application/octet-stream"
+    }
+  ],
+  "passed": true
+}
