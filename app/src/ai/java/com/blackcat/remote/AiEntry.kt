@@ -159,6 +159,12 @@ private class AiPanel(
     private val currentPlan get() = workspace.plan
     private val planRevision get() = workspace.revision
     private var operationToken = 0L
+    private var liveDraft: PlanStreamDraft? = null
+    private var liveUpdating: String? = null
+    private var followStream = true
+    private var streamCommandCount = 0
+    private lateinit var livePlan: LivePlanView
+    private lateinit var liveHost: LinearLayout
     private var feedbackDraft = ""
     private val voice = VoiceFeedbackController(activity)
     private var photoPanel: PhotoFeedbackPanel? = null
@@ -321,6 +327,8 @@ private class AiPanel(
         job?.cancel()
         job = null
         busy = false
+        liveDraft = null
+        if (::livePlan.isInitialized) livePlan.reset()
     }
 
     private fun suspendForBackground() {
@@ -407,7 +415,12 @@ private class AiPanel(
     }
 
     private fun buildPlanView(): View {
-        val scroll = ScrollView(activity).apply {
+        val scroll = object : ScrollView(activity) {
+            override fun dispatchTouchEvent(event: android.view.MotionEvent): Boolean {
+                if (event.actionMasked == android.view.MotionEvent.ACTION_MOVE) followStream = false
+                return super.dispatchTouchEvent(event)
+            }
+        }.apply {
             isFillViewport = true
             overScrollMode = View.OVER_SCROLL_IF_CONTENT_SCROLLS
         }
@@ -516,6 +529,14 @@ private class AiPanel(
         recentSection.addView(recentScroll, matchWrap())
         body.addView(recentSection, matchWrap(top = 10))
 
+        liveHost = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL; visibility = View.GONE }
+        livePlan = LivePlanView(activity)
+        liveHost.addView(livePlan, matchWrap())
+        liveHost.addView(actionButton("Follow latest step", false) {
+            followStream = true
+            livePlan.followLatest()
+        }, matchWrap(top = 8))
+        body.addView(liveHost, matchWrap(top = 10))
         planResult = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
             visibility = View.GONE
@@ -648,8 +669,9 @@ private class AiPanel(
             autoPlayButton.isEnabled = commands.isNotEmpty() && !busy && workspace.proposal == null && !transportPaused
         }
         if (!::goal.isInitialized) return
-        goalStage.visibility = if (commands.isEmpty() || goalExpanded) View.VISIBLE else View.GONE
-        goalSummaryRow.visibility = if (commands.isNotEmpty() && !goalExpanded) View.VISIBLE else View.GONE
+        goalStage.visibility = if (liveDraft == null && (commands.isEmpty() || goalExpanded)) View.VISIBLE else View.GONE
+        goalSummaryRow.visibility = if (liveDraft != null || (commands.isNotEmpty() && !goalExpanded)) View.VISIBLE else View.GONE
+        liveHost.visibility = if (liveDraft != null) View.VISIBLE else View.GONE
         goalSummary.text = goal.text.toString()
         buildButton.isEnabled = !busy && goal.text.isNotBlank() && selectedTarget.isNotBlank()
         cancelButton.visibility = if (busy) View.VISIBLE else View.GONE
@@ -995,8 +1017,20 @@ private class AiPanel(
         busy = true
         val requestRevision = workspace.touch()
         val operation = ++operationToken
-        setStatus("Waiting for OpenAI · nothing is being typed")
+        liveDraft = PlanStreamDraft()
+        liveUpdating = if (revise) commands.getOrNull(selected)?.let { "step ${selected + 1}: ${it.title}" } else null
+        followStream = true
+        streamCommandCount = 0
+        livePlan.reset()
+        livePlan.update(liveDraft!!, liveUpdating)
+        activeTab = Tab.PLAN
+        applyActiveTab()
+        goal.clearFocus()
+        (activity.getSystemService(Activity.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager)
+            ?.hideSoftInputFromWindow(goal.windowToken, 0)
+        setStatus(if (revise) "Updating the plan · live draft" else "Building your plan · live draft")
         renderAll()
+        liveHost.post { if (operation == operationToken && busy) liveHost.requestRectangleOnScreen(android.graphics.Rect(0, 0, liveHost.width, dp(130)), false) }
 
         job = scope.launch {
             try {
@@ -1008,7 +1042,13 @@ private class AiPanel(
                     openSettings()
                     return@launch
                 }
-                val plan = withTimeout(OpenAiPlanner.REQUEST_TIMEOUT_MS) { planner.propose(requestedGoal, requestedTarget, requestedModel, key) }
+                val plan = withTimeout(OpenAiPlanner.REQUEST_TIMEOUT_MS) {
+                    planner.propose(requestedGoal, requestedTarget, requestedModel, key) { draft ->
+                        withContext(Dispatchers.Main.immediate) {
+                            showLiveDraft(draft, operation, requestRevision)
+                        }
+                    }
+                }
                 if (operation != operationToken || planRevision != requestRevision) return@launch
                 if (revise) workspace.stage(requestRevision, plan) else {
                     workspace.replace(plan)
@@ -1033,9 +1073,17 @@ private class AiPanel(
             } catch (_: Exception) {
                 setStatus("Request or key retrieval failed. Nothing was typed.", error = true)
             } finally {
-                if (operation == operationToken) { busy = false; renderAll() }
+                if (operation == operationToken) { busy = false; liveDraft = null; renderAll() }
             }
         }
+    }
+
+    private fun showLiveDraft(draft: PlanStreamDraft, operation: Long, revision: Long) {
+        if (operation != operationToken || revision != planRevision || !busy || !dialog.isShowing || transportPaused) return
+        liveDraft = draft
+        livePlan.update(draft, liveUpdating)
+        if (followStream && draft.commands.size > streamCommandCount) livePlan.followLatest()
+        streamCommandCount = draft.commands.size
     }
 
     /** This visible button is the only command approval; there is no second modal. */

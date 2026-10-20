@@ -9,8 +9,8 @@ android {
         applicationId 'com.blackcat.remote'
         minSdk 28
         targetSdk 35
-        versionCode 20
-        versionName '16.0-full-kali-workflows'
+        versionCode 21
+        versionName '17.0-search-streaming'
     }
     flavorDimensions 'capability'
     productFlavors {
