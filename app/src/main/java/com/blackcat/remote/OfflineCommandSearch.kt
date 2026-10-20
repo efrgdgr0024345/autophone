@@ -88,7 +88,6 @@ internal class OfflineCommandSearch(private val data: OfflineLearningData) {
     }
 
     companion object {
-        private val separators = Regex("[^\\p{L}\\p{N}_.+/-]+")
         @Volatile private var cached: Pair<OfflineLearningData, OfflineCommandSearch>? = null
         fun forData(data: OfflineLearningData): OfflineCommandSearch = cached?.takeIf { it.first === data }?.second
             ?: synchronized(this) {
@@ -97,7 +96,29 @@ internal class OfflineCommandSearch(private val data: OfflineLearningData) {
         val SYSTEMS = listOf("Kali Linux", "Ubuntu Linux", "Debian Linux", "Linux Mint", "Fedora Linux",
             "Red Hat Enterprise Linux", "Rocky Linux", "AlmaLinux", "openSUSE Linux", "Arch Linux", "Alpine Linux")
         fun initialSystem(target: String): String = SYSTEMS.firstOrNull { target.contains(it, true) } ?: target
-        private fun normalize(value: String) = separators.replace(value.lowercase(Locale.ROOT), " ").trim()
+        private fun normalize(value: String): String {
+            val lower = value.lowercase(Locale.ROOT)
+            return buildString(lower.length) {
+                var gap = false
+                var index = 0
+                while (index < lower.length) {
+                    val cp = Character.codePointAt(lower, index)
+                    index += Character.charCount(cp)
+                    val allowed = if (cp < 128) cp in 97..122 || cp in 48..57 || cp.toChar() in "_.+/-"
+                        else when (Character.getType(cp)) {
+                            Character.UPPERCASE_LETTER.toInt(), Character.LOWERCASE_LETTER.toInt(),
+                            Character.TITLECASE_LETTER.toInt(), Character.MODIFIER_LETTER.toInt(),
+                            Character.OTHER_LETTER.toInt(), Character.DECIMAL_DIGIT_NUMBER.toInt(),
+                            Character.LETTER_NUMBER.toInt(), Character.OTHER_NUMBER.toInt() -> true
+                            else -> false
+                        }
+                    if (allowed) {
+                        if (gap && isNotEmpty()) append(' ')
+                        appendCodePoint(cp); gap = false
+                    } else gap = isNotEmpty()
+                }
+            }
+        }
         private fun words(value: String) = normalize(value).split(' ').filter { it.length >= 2 }.map {
             when (it) { "connections", "connected", "connection" -> "connections"; "files" -> "file";
                 "processes" -> "process"; "ports" -> "port"; "services" -> "service"; "errors" -> "error"; else -> it }

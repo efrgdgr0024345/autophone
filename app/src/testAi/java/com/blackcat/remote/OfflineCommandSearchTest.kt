@@ -53,4 +53,10 @@ class OfflineCommandSearchTest {
         assertEquals(concise.map { it.id }.toSet(), conversational.map { it.id }.toSet())
         assertEquals(concise.map { it.topic }.toSet(), conversational.map { it.topic }.toSet())
     }
+    @Test fun unicodeWordsAndSupplementaryLettersRemainSearchableAlongsideCommandPunctuation() {
+        val card = LinuxCommandItem("unicode-reference", "Reference", "Text", "Inspect café Ⅳ 𝟚 𐐀", "id",
+            "Read the current account.", "Account information.", LinuxCommandRisk.LOW, false, "Most Linux distributions", emptyList())
+        val extended = OfflineLearningData(data.commands + card, data.tools, data.entries, data.lessons, data.notes, data.sources, data.workflows)
+        assertTrue(OfflineCommandSearch(extended).search("CAFÉ Ⅳ 𝟚 𐐀!", "Ubuntu Linux").any { it.id == card.id })
+    }
 }
