@@ -32,7 +32,9 @@ internal object PlanResponseStream {
         suspend fun dispatch() {
             if (data.isEmpty()) return
             if (++events > 20000) throw PlanException("API stream exceeded its limit. Your plan was kept.")
-            val event = try { JSONObject(data.toString()) } catch (_: Exception) {
+            val payload = data.toString()
+            if (!withinDepth(payload, 16)) throw PlanException("API stream nesting exceeded its limit. Your plan was kept.")
+            val event = try { JSONObject(payload) } catch (_: Exception) {
                 throw PlanException("Invalid API stream. Your plan was kept; nothing was typed.")
             }
             data.setLength(0)
@@ -58,7 +60,6 @@ internal object PlanResponseStream {
                 "response.completed" -> {
                     val response = event.getJSONObject("response")
                     // The final response is the authority, never a repaired prefix or a delta.
-                    val plan = PlanCodec.parseResponse(response.toString())
                     val output = response.getJSONArray("output")
                     val finalText = buildString {
                         for (i in 0 until output.length()) {
@@ -72,6 +73,8 @@ internal object PlanResponseStream {
                         }
                     }
                     if (finalText != text.toString()) throw PlanException("Incomplete stream. Your plan was kept; nothing was typed.")
+                    if (!withinDepth(finalText, 8)) throw PlanException("Plan nesting exceeded its limit. Your plan was kept.")
+                    val plan = PlanCodec.parseResponse(response.toString())
                     onDraft(PlanDraftPreview.read(finalText))
                     completed = plan
                 }
@@ -111,10 +114,36 @@ internal object PlanResponseStream {
           catch (_: org.json.JSONException) { throw PlanException("Invalid API stream. Your plan was kept; nothing was typed.") }
         finally { text.setLength(0); data.setLength(0) }
     }
+
+    /** Lexical depth bound before JSONObject recursion; braces inside strings do not count. */
+    private fun withinDepth(value: String, maximum: Int): Boolean {
+        var depth = 0; var quoted = false; var escaped = false
+        for (c in value) {
+            if (quoted) {
+                if (escaped) escaped = false
+                else if (c == '\\') escaped = true
+                else if (c == '"') quoted = false
+            } else when (c) {
+                '"' -> quoted = true
+                '{', '[' -> { depth++; if (depth > maximum) return false }
+                '}', ']' -> depth--
+            }
+        }
+        return true
+    }
 }
 
 /** Tokenizes an unfinished JSON prefix for presentation only, without inventing missing commands. */
 internal object PlanDraftPreview {
+    private val limits = buildMap {
+        put("explanation", 6000)
+        repeat(16) { put("roadmap[$it].title", 160); put("roadmap[$it].purpose", 1500) }
+        repeat(PlanCodec.MAX_COMMANDS) {
+            put("decision.commands[$it].title", 160); put("decision.commands[$it].command", 512)
+            put("decision.commands[$it].explanation", 2000)
+        }
+        repeat(8) { put("decision.questions[$it]", 1000) }
+    }
     private data class Frame(val array: Boolean, val path: String, var key: String? = null, var index: Int = 0)
     fun read(prefix: String): PlanStreamDraft {
         if (prefix.length > PlanResponseStream.MAX_TEXT) return PlanStreamDraft()
@@ -129,7 +158,10 @@ internal object PlanDraftPreview {
         fun consumed() { stack.lastOrNull()?.let { if (it.array) it.index++ else it.key = null } }
         while (i < prefix.length) {
             when (val char = prefix[i++]) {
-                '{', '[' -> stack.add(Frame(char == '[', path()))
+                '{', '[' -> {
+                    if (stack.size >= 8) return PlanStreamDraft()
+                    stack.add(Frame(char == '[', path()))
+                }
                 '}', ']' -> { if (stack.isEmpty()) return PlanStreamDraft(); stack.removeAt(stack.lastIndex); consumed() }
                 '"' -> {
                     val value = StringBuilder()
@@ -151,8 +183,14 @@ internal object PlanDraftPreview {
                         } else if (!c.isISOControl()) value.append(c)
                     }
                     val parent = stack.lastOrNull() ?: continue
-                    if (!parent.array && parent.key == null) parent.key = value.toString()
-                    else { values[path()] = value.toString(); consumed() }
+                    if (!parent.array && parent.key == null) {
+                        if (value.length > 64) return PlanStreamDraft()
+                        parent.key = value.toString()
+                    } else {
+                        val field = path()
+                        limits[field]?.let { values[field] = value.toString().take(it) }
+                        consumed()
+                    }
                 }
                 ':', ',', ' ', '\r', '\n', '\t' -> Unit
                 else -> { while (i < prefix.length && prefix[i] !in ",]} \n\r\t") i++; consumed() }

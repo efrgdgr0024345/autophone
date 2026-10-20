@@ -101,4 +101,15 @@ class PlanResponseStreamTest {
         assertTrue(text.length < PlanResponseStream.MAX_TEXT)
         assertEquals(40, PlanResponseStream.read(bytes(wire)) {}.commands.size)
     }
+    @Test fun deeplyNestedOrUnboundedKeyPrefixesStopBeforeRecursiveParsingOrPathGrowth() {
+        val prefix = """{"explanation":"Do not keep invalid drafts","unknown":""" + "[".repeat(4096)
+        assertTrue(PlanDraftPreview.read(prefix).explanation.isEmpty())
+        val longKey = """{"explanation":"Do not keep invalid drafts","""" + "x".repeat(1000) + "\":\"value\"}"
+        assertTrue(PlanDraftPreview.read(longKey).explanation.isEmpty())
+        val text = proposal().toString()
+        val outer = "data: {\"type\":\"response.in_progress\",\"unknown\":" + "[".repeat(64) + "0" + "]".repeat(64) + "}\n\n"
+        rejected(outer + delta(text) + completion(text))
+        val nestedPlan = "{\"unknown\":" + "[".repeat(4096) + "0" + "]".repeat(4096) + "}"
+        rejected(delta(nestedPlan) + completion(nestedPlan))
+    }
 }
