@@ -1,0 +1,64 @@
+[
+  {
+    "id": "kali-project.json",
+    "url": "https://gitlab.com/api/v4/projects/kalilinux%2Fdocumentation%2Fkali-tools",
+    "http_status": 200,
+    "bytes": 1137,
+    "sha256": "2fd84108d4760a64eb9ee53b1f52bdd94a971a67f1f4a2a352e041b65a40ec4b",
+    "retrieved_at_utc": "2026-10-20T07:42:44.997483+00:00"
+  },
+  {
+    "id": "kali-tree.json",
+    "url": "https://gitlab.com/api/v4/projects/kalilinux%2Fdocumentation%2Fkali-tools/repository/tree?ref=main&per_page=100",
+    "http_status": 200,
+    "bytes": 11845,
+    "sha256": "c3ccbd30e297bc6d5318fd6ec80ebe77678c69c8fa5fd27b7da73fe3c2511c30",
+    "retrieved_at_utc": "2026-10-20T07:42:45.346249+00:00"
+  },
+  {
+    "id": "coreutils.texi",
+    "url": "https://raw.githubusercontent.com/coreutils/coreutils/master/doc/coreutils.texi",
+    "http_status": 200,
+    "bytes": 684410,
+    "sha256": "75d3f2d0f663bd56a6fdc3d62d5814849f57031352ae8b777a704d4e0032ac9e",
+    "retrieved_at_utc": "2026-10-20T07:42:45.725502+00:00"
+  },
+  {
+    "id": "bashref.texi",
+    "url": "https://raw.githubusercontent.com/bminor/bash/master/doc/bashref.texi",
+    "http_status": 404,
+    "failure_type": "HTTPError"
+  },
+  {
+    "id": "util-linux-tree.json",
+    "url": "https://api.github.com/repos/util-linux/util-linux/git/trees/master?recursive=1",
+    "http_status": 200,
+    "bytes": 1058809,
+    "sha256": "ab2506b6f3506d5cff7e022b1083bb4d21fd92e427c336390e85b7e0920688fa",
+    "retrieved_at_utc": "2026-10-20T07:42:46.520804+00:00"
+  },
+  {
+    "id": "iproute2-tree.json",
+    "url": "https://api.github.com/repos/iproute2/iproute2/git/trees/main?recursive=1",
+    "http_status": 200,
+    "bytes": 175901,
+    "sha256": "2c280059bf4a60e060356d31786ec8603b5c140c80743eb482f61b2bac89e8d5",
+    "retrieved_at_utc": "2026-10-20T07:42:46.995137+00:00"
+  },
+  {
+    "id": "systemd-tree.json",
+    "url": "https://api.github.com/repos/systemd/systemd/git/trees/main?recursive=1",
+    "http_status": 200,
+    "bytes": 2016694,
+    "sha256": "60eb39b8ca236db3baa9f7e3aff656bd22af839e945a422b451b3ccd3e1aeb52",
+    "retrieved_at_utc": "2026-10-20T07:42:47.945708+00:00"
+  },
+  {
+    "id": "findutils.texi",
+    "url": "https://raw.githubusercontent.com/Distrotech/findutils/master/doc/find.texi",
+    "http_status": 200,
+    "bytes": 221064,
+    "sha256": "8c760c956704c62cbaaa99d1a64e460f5cf0328eb45037b3cfef1b24c77d62c4",
+    "retrieved_at_utc": "2026-10-20T07:42:48.504041+00:00"
+  }
+]

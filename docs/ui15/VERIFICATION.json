@@ -1,0 +1,298 @@
+{
+  "build_source": "4e7ed2e60b5a44bab96bdf29decdba4e62d1d457",
+  "rollback": "871d777f5268b0db38fdbd43d5269c91206b0a5a",
+  "version_code": 19,
+  "version_name": "15.0-offline-kali-learning",
+  "application_id": "com.blackcat.remote",
+  "unit_tests": {
+    "ai": {
+      "tests": 140,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "offline": {
+      "tests": 27,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "lint": {
+    "ai": {
+      "Error": 0,
+      "Warning": 70
+    },
+    "offline": {
+      "Error": 0,
+      "Warning": 24
+    }
+  },
+  "apks": {
+    "CatAI-15.apk": {
+      "sha256": "09fa61eeb2371499f03c3cbe8cc34f2973f01da780fb187c64201931baf88e73",
+      "bytes": 6150069
+    },
+    "CatBT-15.apk": {
+      "sha256": "2603c877c60f29dbb013957b62b64be241185ede26d84acd3de3fb93c9448f2d",
+      "bytes": 5790833
+    }
+  },
+  "signer_sha256": "fc5c0b42b9da40c2507d8f2e77ed92db9e023740aa1a44d1a3b2c14a6e9f4764",
+  "codeql": {
+    "app_source_files": 50,
+    "security_findings": 0,
+    "quality_notes": 24,
+    "coverage_note": "All 50 app Kotlin files extracted. CLI denominator also includes the unbuilt historical docs/ui14.2/live-openai/ProductionCodecCheck.java host helper."
+  },
+  "catalog": {
+    "schema_version": 2,
+    "json_sha256": "f11c6b5c54240e21415638cc4e0f66a6d5deb885a6f1c13252b8f77911b9edb8",
+    "asset_gzip_sha256": "69aca31b6ebd123da14a40f7c3bd0c735582b8886dea6a713f7e9ad3acc77640",
+    "json_bytes": 6247414,
+    "asset_bytes": 711596,
+    "counts": {
+      "tool_or_package_groups": 824,
+      "kali_package_sections": 1561,
+      "documented_entries_total": 3667,
+      "documented_cli_entries": 3448,
+      "distinct_binary_names": 3133,
+      "builtin_only_entries": 53,
+      "shell_builtin_names": 61,
+      "subcommand_entries": 262,
+      "service_unit_references": 139,
+      "manual_reference_entries": 80,
+      "source_documents": 1871,
+      "command_example_entries": 467,
+      "distinct_command_example_lines": 465,
+      "legacy_example_entries": 212,
+      "added_example_entries": 255,
+      "lessons": 35,
+      "lesson_steps": 184,
+      "learning_paths": 5,
+      "workflow_templates": 1,
+      "observed_help_invocations": 2519,
+      "example_categories": 14,
+      "example_topics": 89
+    }
+  },
+  "policy_mutation_tests": 83,
+  "catalog_mutation_tests": 7,
+  "planner_contract_tests": 40,
+  "artwork_decode_tests": 1,
+  "linux_lesson_execution": {
+    "passed": true,
+    "operations": 32,
+    "results": [
+      {
+        "lesson": "workspace",
+        "command_id": "learn-2bf97a84a154ed8f",
+        "exit": 0
+      },
+      {
+        "lesson": "workspace",
+        "command_id": "learn-f48fd5ed0a131f4f",
+        "exit": 0
+      },
+      {
+        "lesson": "workspace",
+        "command_id": "learn-f64c0abc3dfed4ed",
+        "exit": 0
+      },
+      {
+        "lesson": "workspace",
+        "command_id": "learn-b629d51f5c2f2f1c",
+        "exit": 0
+      },
+      {
+        "lesson": "workspace",
+        "command_id": "learn-f8d446ce065589eb",
+        "exit": 0
+      },
+      {
+        "lesson": "sample-view",
+        "command_id": "learn-5684ddb57658307d",
+        "exit": 0
+      },
+      {
+        "lesson": "sample-view",
+        "command_id": "learn-57e509f3b111389c",
+        "exit": 0
+      },
+      {
+        "lesson": "sample-view",
+        "command_id": "learn-3dc9039c2589d855",
+        "exit": 0
+      },
+      {
+        "lesson": "sample-view",
+        "command_id": "learn-24bd178e4af54b51",
+        "exit": 0
+      },
+      {
+        "lesson": "sample-view",
+        "command_id": "learn-0374fb6feff855f5",
+        "exit": 0
+      },
+      {
+        "lesson": "sample-filter",
+        "command_id": "learn-a1b0ff64abb5abd7",
+        "exit": 0
+      },
+      {
+        "lesson": "sample-filter",
+        "command_id": "learn-e955781b0a76757d",
+        "exit": 0
+      },
+      {
+        "lesson": "sample-filter",
+        "command_id": "learn-ad1ff684e60c1ac8",
+        "exit": 0
+      },
+      {
+        "lesson": "sample-filter",
+        "command_id": "learn-4e1e07af9f8a9f07",
+        "exit": 0
+      },
+      {
+        "lesson": "sample-filter",
+        "command_id": "learn-f47b83cea6051cb6",
+        "exit": 0
+      },
+      {
+        "lesson": "sample-copy",
+        "command_id": "learn-1c53ed10c2ec58c6",
+        "exit": 0
+      },
+      {
+        "lesson": "sample-copy",
+        "command_id": "learn-46b05a54d65a73d0",
+        "exit": 0
+      },
+      {
+        "lesson": "sample-copy",
+        "command_id": "learn-f57ee0746c234f01",
+        "exit": 0
+      },
+      {
+        "lesson": "sample-copy",
+        "command_id": "learn-7d615daeae3bd31b",
+        "exit": 0
+      },
+      {
+        "lesson": "workspace-cleanup",
+        "command_id": "learn-b629d51f5c2f2f1c",
+        "exit": 0
+      },
+      {
+        "lesson": "workspace-cleanup",
+        "command_id": "learn-7d615daeae3bd31b",
+        "exit": 0
+      },
+      {
+        "lesson": "workspace-cleanup",
+        "command_id": "learn-74a75c14c9bfe743",
+        "exit": 0
+      },
+      {
+        "lesson": "workspace-cleanup",
+        "command_id": "learn-e5790f4878257363",
+        "exit": 0
+      },
+      {
+        "lesson": "workspace-cleanup",
+        "command_id": "learn-44974d918c9962a4",
+        "exit": 0
+      },
+      {
+        "lesson": "git-practice",
+        "command_id": "learn-e7005d72c0e91c8e",
+        "exit": 0,
+        "path_substitution": "owned temporary repository"
+      },
+      {
+        "lesson": "git-practice",
+        "command_id": "learn-66787e50a26d3f2e",
+        "exit": 0,
+        "path_substitution": "owned temporary repository"
+      },
+      {
+        "lesson": "git-practice",
+        "command_id": "learn-f0623c62e4238812",
+        "exit": 0,
+        "path_substitution": "owned temporary repository"
+      },
+      {
+        "lesson": "git-practice",
+        "command_id": "learn-3495fde71b11a5d9",
+        "exit": 0,
+        "path_substitution": "owned temporary repository"
+      },
+      {
+        "lesson": "git-practice",
+        "command_id": "learn-e333ee6c37f56620",
+        "exit": 0,
+        "path_substitution": "owned temporary repository"
+      },
+      {
+        "lesson": "git-practice",
+        "command_id": "learn-dc5b693328498bcb",
+        "exit": 0,
+        "path_substitution": "owned temporary repository"
+      },
+      {
+        "lesson": "git-practice",
+        "command_id": "learn-5c782020c5de6519",
+        "exit": 0,
+        "path_substitution": "owned temporary repository"
+      },
+      {
+        "lesson": "git-practice",
+        "command_id": "learn-6a72cbaa4f4c5e06",
+        "exit": 0,
+        "path_substitution": "owned temporary repository"
+      }
+    ],
+    "network_used": false,
+    "physical_phone_tested": false,
+    "scope": "Whitelisted private sample text and Git staging lessons; not all catalogue commands or inventory tools were executed.",
+    "practice_directories_cleaned": true
+  },
+  "native": {
+    "learning": {
+      "checks": 11,
+      "screenshots": 22,
+      "exact_apk_hash_match": true,
+      "fixture_source": "281d43550a79cd4fd26d406fe6f01eed9f4078ae"
+    },
+    "native": {
+      "checks": 22,
+      "screenshots": 38,
+      "exact_apk_hash_match": true,
+      "fixture_source": "4e7ed2e60b5a44bab96bdf29decdba4e62d1d457"
+    },
+    "timeout": {
+      "checks": 1,
+      "screenshots": 1,
+      "exact_apk_hash_match": true,
+      "fixture_source": "4e7ed2e60b5a44bab96bdf29decdba4e62d1d457"
+    },
+    "layout": {
+      "checks": 26,
+      "screenshots": 37,
+      "exact_apk_hash_match": true,
+      "fixture_source": "4e7ed2e60b5a44bab96bdf29decdba4e62d1d457"
+    },
+    "total_checks": 60,
+    "total_screenshots": 98,
+    "runtime": "API31 Android12 AOSP ATD x86_64; software CPU; real PixelCopy",
+    "provider_boundary": "Synthetic planner/observer/HID for regression; real Camera2 capture. No physical Bluetooth or continuous live OpenAI phone loop."
+  },
+  "live_openai_requests_this_update": false,
+  "publication": {
+    "copied_exact_tested_apk_bytes_without_rebuild": true,
+    "prior_apks_unchanged": true,
+    "baseline_promoted": false,
+    "merged": false
+  }
+}

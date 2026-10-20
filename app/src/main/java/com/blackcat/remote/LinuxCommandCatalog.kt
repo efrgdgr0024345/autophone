@@ -53,12 +53,16 @@ object LinuxCommandCatalog {
                 GZIPInputStream(ByteArrayInputStream(compressed))
                     .bufferedReader(Charsets.UTF_8)
                     .use { reader ->
-                        parse(reader.readText()).also { loaded ->
-                            require(loaded.size >= MIN_EXPECTED_COMMANDS) {
-                                "Offline Linux command data is incomplete."
-                            }
-                            cached = loaded
+                        val legacy = parse(reader.readText())
+                        val expanded = OfflineLearningCatalog.load(context).commands
+                        require(legacy.size >= MIN_EXPECTED_COMMANDS && expanded.size >= legacy.size) {
+                            "Offline Linux command data is incomplete."
                         }
+                        val byId = expanded.associateBy { it.id }
+                        require(legacy.all { byId[it.id]?.command == it.command }) {
+                            "The preserved offline command references changed."
+                        }
+                        expanded.also { cached = it }
                     }
             }
         }

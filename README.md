@@ -4,6 +4,39 @@ Android phone remote that preserves the proven Bluetooth HID keyboard/mouse core
 
 > **UI09 is a physical-test prerelease.** All automated build, policy, unit, lint, APK inspection, CodeQL and provenance gates passed. Real Android-to-computer Bluetooth testing is still required before this version becomes the protected baseline.
 
+## UI15 test download — offline Kali and linked Linux lessons
+
+Full direct APK download URL (no ZIP):
+
+https://raw.githubusercontent.com/efrgdgr0024345/autophone/ae9d55436b450aa878432c59917f110840bd039c/docs/ui15/install/CatAI-15.apk
+
+Plain JSON catalogue, with totals and source metadata:
+
+https://raw.githubusercontent.com/efrgdgr0024345/autophone/4e7ed2e60b5a44bab96bdf29decdba4e62d1d457/catalog/offline-catalog.json
+
+Kali now has a dedicated offline menu. The expanded library includes **3,448
+CLI invocations, 824 tool/package groups, 467 command cards and 35 lessons with
+184 linked steps**. Guided tool discovery connects availability, local documentation
+and observed help; lessons link prerequisites, expected results, verification,
+troubleshooting and cleanup. Browsing uses bundled data with no API/account requirement.
+
+Research covers 1,871 pinned online documents plus separately labelled Bash builtin
+help. These are documented snapshot counts. The [catalogue guide](catalog/README.md),
+[learning design](catalog/LEARNING-DESIGN.md) and [JSON manifest](catalog/MANIFEST.json)
+explain provenance, counts, reproducible generation and later camera/voice integration.
+
+All 167 unit tests, 90 policy/catalogue mutations, 40 planner contracts, 60 native
+emulator checks and 32 selected Linux practice operations passed. Lint: zero errors;
+CodeQL: zero security findings, 24 quality notes. Full [verification](docs/ui15/README.md),
+[new learning screens](docs/ui15/learning-screens/README.md), [workflow captures](docs/ui15/screens/README.md)
+and [width/font gallery](docs/ui15/layout-matrix/README.md) are available.
+
+Version code 19; APK source `4e7ed2e60b5a44bab96bdf29decdba4e62d1d457`.
+SHA-256: `09fa61eeb2371499f03c3cbe8cc34f2973f01da780fb187c64201931baf88e73`.
+Original signer, Bluetooth/manual input, AI/Auto behavior and permission sets are
+retained. [Install details and offline APK](docs/ui15/install/README.md).
+Physical phone/computer acceptance remains required; previous APKs are preserved.
+
 ## UI14.2 test download — live API fixes and clearer controls
 
 Full direct APK download URL (no ZIP):

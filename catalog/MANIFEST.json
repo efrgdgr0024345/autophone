@@ -1,0 +1,31 @@
+{
+  "schema_version": 2,
+  "json_sha256": "f11c6b5c54240e21415638cc4e0f66a6d5deb885a6f1c13252b8f77911b9edb8",
+  "asset_gzip_sha256": "69aca31b6ebd123da14a40f7c3bd0c735582b8886dea6a713f7e9ad3acc77640",
+  "json_bytes": 6247414,
+  "asset_bytes": 711596,
+  "counts": {
+    "tool_or_package_groups": 824,
+    "kali_package_sections": 1561,
+    "documented_entries_total": 3667,
+    "documented_cli_entries": 3448,
+    "distinct_binary_names": 3133,
+    "builtin_only_entries": 53,
+    "shell_builtin_names": 61,
+    "subcommand_entries": 262,
+    "service_unit_references": 139,
+    "manual_reference_entries": 80,
+    "source_documents": 1871,
+    "command_example_entries": 467,
+    "distinct_command_example_lines": 465,
+    "legacy_example_entries": 212,
+    "added_example_entries": 255,
+    "lessons": 35,
+    "lesson_steps": 184,
+    "learning_paths": 5,
+    "workflow_templates": 1,
+    "observed_help_invocations": 2519,
+    "example_categories": 14,
+    "example_topics": 89
+  }
+}

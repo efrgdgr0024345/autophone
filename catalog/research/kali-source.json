@@ -1,0 +1,10 @@
+{
+  "id": "kali-tools-archive",
+  "url": "https://gitlab.com/api/v4/projects/37823983/repository/archive.tar.gz?sha=179168ddb65e49b2f78728921b8935a7faad9895",
+  "upstream_url": "https://gitlab.com/kalilinux/documentation/kali-tools",
+  "commit": "179168ddb65e49b2f78728921b8935a7faad9895",
+  "sha256": "c90d53014fccb2116da9d06f42265dea71e4a209fe6df1006b5f87585de1e0c7",
+  "bytes": 13787832,
+  "markdown_files": 824,
+  "retrieved_at_utc": "2026-10-20T07:43:31.157608+00:00"
+}

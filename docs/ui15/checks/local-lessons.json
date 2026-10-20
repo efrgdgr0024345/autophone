@@ -1,0 +1,178 @@
+{
+  "passed": true,
+  "operations": 32,
+  "results": [
+    {
+      "lesson": "workspace",
+      "command_id": "learn-2bf97a84a154ed8f",
+      "exit": 0
+    },
+    {
+      "lesson": "workspace",
+      "command_id": "learn-f48fd5ed0a131f4f",
+      "exit": 0
+    },
+    {
+      "lesson": "workspace",
+      "command_id": "learn-f64c0abc3dfed4ed",
+      "exit": 0
+    },
+    {
+      "lesson": "workspace",
+      "command_id": "learn-b629d51f5c2f2f1c",
+      "exit": 0
+    },
+    {
+      "lesson": "workspace",
+      "command_id": "learn-f8d446ce065589eb",
+      "exit": 0
+    },
+    {
+      "lesson": "sample-view",
+      "command_id": "learn-5684ddb57658307d",
+      "exit": 0
+    },
+    {
+      "lesson": "sample-view",
+      "command_id": "learn-57e509f3b111389c",
+      "exit": 0
+    },
+    {
+      "lesson": "sample-view",
+      "command_id": "learn-3dc9039c2589d855",
+      "exit": 0
+    },
+    {
+      "lesson": "sample-view",
+      "command_id": "learn-24bd178e4af54b51",
+      "exit": 0
+    },
+    {
+      "lesson": "sample-view",
+      "command_id": "learn-0374fb6feff855f5",
+      "exit": 0
+    },
+    {
+      "lesson": "sample-filter",
+      "command_id": "learn-a1b0ff64abb5abd7",
+      "exit": 0
+    },
+    {
+      "lesson": "sample-filter",
+      "command_id": "learn-e955781b0a76757d",
+      "exit": 0
+    },
+    {
+      "lesson": "sample-filter",
+      "command_id": "learn-ad1ff684e60c1ac8",
+      "exit": 0
+    },
+    {
+      "lesson": "sample-filter",
+      "command_id": "learn-4e1e07af9f8a9f07",
+      "exit": 0
+    },
+    {
+      "lesson": "sample-filter",
+      "command_id": "learn-f47b83cea6051cb6",
+      "exit": 0
+    },
+    {
+      "lesson": "sample-copy",
+      "command_id": "learn-1c53ed10c2ec58c6",
+      "exit": 0
+    },
+    {
+      "lesson": "sample-copy",
+      "command_id": "learn-46b05a54d65a73d0",
+      "exit": 0
+    },
+    {
+      "lesson": "sample-copy",
+      "command_id": "learn-f57ee0746c234f01",
+      "exit": 0
+    },
+    {
+      "lesson": "sample-copy",
+      "command_id": "learn-7d615daeae3bd31b",
+      "exit": 0
+    },
+    {
+      "lesson": "workspace-cleanup",
+      "command_id": "learn-b629d51f5c2f2f1c",
+      "exit": 0
+    },
+    {
+      "lesson": "workspace-cleanup",
+      "command_id": "learn-7d615daeae3bd31b",
+      "exit": 0
+    },
+    {
+      "lesson": "workspace-cleanup",
+      "command_id": "learn-74a75c14c9bfe743",
+      "exit": 0
+    },
+    {
+      "lesson": "workspace-cleanup",
+      "command_id": "learn-e5790f4878257363",
+      "exit": 0
+    },
+    {
+      "lesson": "workspace-cleanup",
+      "command_id": "learn-44974d918c9962a4",
+      "exit": 0
+    },
+    {
+      "lesson": "git-practice",
+      "command_id": "learn-e7005d72c0e91c8e",
+      "exit": 0,
+      "path_substitution": "owned temporary repository"
+    },
+    {
+      "lesson": "git-practice",
+      "command_id": "learn-66787e50a26d3f2e",
+      "exit": 0,
+      "path_substitution": "owned temporary repository"
+    },
+    {
+      "lesson": "git-practice",
+      "command_id": "learn-f0623c62e4238812",
+      "exit": 0,
+      "path_substitution": "owned temporary repository"
+    },
+    {
+      "lesson": "git-practice",
+      "command_id": "learn-3495fde71b11a5d9",
+      "exit": 0,
+      "path_substitution": "owned temporary repository"
+    },
+    {
+      "lesson": "git-practice",
+      "command_id": "learn-e333ee6c37f56620",
+      "exit": 0,
+      "path_substitution": "owned temporary repository"
+    },
+    {
+      "lesson": "git-practice",
+      "command_id": "learn-dc5b693328498bcb",
+      "exit": 0,
+      "path_substitution": "owned temporary repository"
+    },
+    {
+      "lesson": "git-practice",
+      "command_id": "learn-5c782020c5de6519",
+      "exit": 0,
+      "path_substitution": "owned temporary repository"
+    },
+    {
+      "lesson": "git-practice",
+      "command_id": "learn-6a72cbaa4f4c5e06",
+      "exit": 0,
+      "path_substitution": "owned temporary repository"
+    }
+  ],
+  "network_used": false,
+  "physical_phone_tested": false,
+  "scope": "Whitelisted private sample text and Git staging lessons; not all catalogue commands or inventory tools were executed.",
+  "practice_directories_cleaned": true
+}
