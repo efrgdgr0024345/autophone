@@ -1064,14 +1064,16 @@ private class AiPanel(
                 setStatus(if (revise) "Proposed update ready. Review and apply it on Plan."
                     else if (commands.isEmpty()) "OpenAI needs clarification." else "Plan ready · choose one step")
             } catch (_: TimeoutCancellationException) {
-                planner.cancel()
-                setStatus("OpenAI request timed out. Nothing was typed.", error = true)
+                if (operation == operationToken) {
+                    planner.cancel()
+                    setStatus("OpenAI request timed out. Nothing was typed.", error = true)
+                }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: PlanException) {
-                setStatus(e.message ?: "OpenAI request failed.", error = true)
+                if (operation == operationToken) setStatus(e.message ?: "OpenAI request failed.", error = true)
             } catch (_: Exception) {
-                setStatus("Request or key retrieval failed. Nothing was typed.", error = true)
+                if (operation == operationToken) setStatus("Request or key retrieval failed. Nothing was typed.", error = true)
             } finally {
                 if (operation == operationToken) { busy = false; liveDraft = null; renderAll() }
             }
