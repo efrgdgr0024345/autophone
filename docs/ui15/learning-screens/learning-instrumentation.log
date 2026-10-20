@@ -1,0 +1,25 @@
+UI12_SMOKE_START
+PASS: Cold bundled catalogue loads 467 examples, 824 tool groups and 3448 CLI references without network or selection
+PASS: Kali has a dedicated offline menu and source-filtered tool directory
+PASS: Tool browsing is paginated instead of creating thousands of phone views
+PASS: Tool discovery links availability to local documentation without scanning or typing
+PASS: CLI references show documented options while creating no command approval
+PASS: Lesson Next changes only the explanation; expected evidence and stop guidance remain visible
+PASS: Offline lesson 320 dp / font 1.0: no cat above task, readable viewport and visible single disabled approval
+PASS: Offline lesson 320 dp / font 2.0: no cat above task, readable viewport and visible single disabled approval
+PASS: Offline lesson 412 dp / font 1.0: no cat above task, readable viewport and visible single disabled approval
+PASS: Offline lesson 412 dp / font 2.0: no cat above task, readable viewport and visible single disabled approval
+PASS: Closing a loading library cancels its UI scope without selecting, typing or reopening
+
+UI15_LEARNING_PASS 11
+PASS: Cold bundled catalogue loads 467 examples, 824 tool groups and 3448 CLI references without network or selection
+PASS: Kali has a dedicated offline menu and source-filtered tool directory
+PASS: Tool browsing is paginated instead of creating thousands of phone views
+PASS: Tool discovery links availability to local documentation without scanning or typing
+PASS: CLI references show documented options while creating no command approval
+PASS: Lesson Next changes only the explanation; expected evidence and stop guidance remain visible
+PASS: Offline lesson 320 dp / font 1.0: no cat above task, readable viewport and visible single disabled approval
+PASS: Offline lesson 320 dp / font 2.0: no cat above task, readable viewport and visible single disabled approval
+PASS: Offline lesson 412 dp / font 1.0: no cat above task, readable viewport and visible single disabled approval
+PASS: Offline lesson 412 dp / font 2.0: no cat above task, readable viewport and visible single disabled approval
+PASS: Closing a loading library cancels its UI scope without selecting, typing or reopening

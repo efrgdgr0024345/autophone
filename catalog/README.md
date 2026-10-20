@@ -33,6 +33,10 @@ links an application/package collection to executable, subcommand or manual refe
 `learning_paths` joins related lessons. `workflow_templates` describes literal-name
 substitution for availability and documentation discovery, without inflating example counts.
 
+The example `tool_id` is a descriptive family label (such as `apt`), not a
+foreign key into the tool/package directory; inventory records use `tool_ids` and
+`entry_ids` for validated directory links.
+
 Each example includes an exact command, explanation, expected output, risk, privilege,
 compatibility, shell profiles, prerequisites, expected network effect, state-change scope,
 verification, troubleshooting, cleanup and lesson/source links. Each lesson has a goal,
@@ -69,10 +73,16 @@ presented as an `openssl format-options` subcommand. Dotted utility names and sh
 manual sections are preserved. Short factual metadata/labels retain upstream attribution;
 complete third-party manuals are not redistributed.
 
+[Learning-flow design](LEARNING-DESIGN.md) explains the implemented sequence and
+proposes goal-first suggestions, target profiles, evidence per step and explicit
+remaining-plan changes for later camera/voice integration.
+
 ## Reproduce or edit
 
 The app never downloads the catalogue. The public JSON and compressed bundled asset
 are generated together; catalogue browsing has no API or account requirement.
+The app asset uses the opaque `.catalog` suffix to preserve its gzip bytes through
+AAPT packaging. APK inspection checks both compressed and decompressed hashes.
 
 ```bash
 # Optional: reproduce this exact pinned documentation snapshot outside the checkout.

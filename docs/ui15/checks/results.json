@@ -1,0 +1,50 @@
+[
+  {
+    "check": "check_policy.py",
+    "exit": 0
+  },
+  {
+    "check": "check_mobile_ui.py",
+    "exit": 0
+  },
+  {
+    "check": "check_feedback_ui.py",
+    "exit": 0
+  },
+  {
+    "check": "check_auto_ui.py",
+    "exit": 0
+  },
+  {
+    "check": "check_offline_catalog.py",
+    "exit": 0
+  },
+  {
+    "check": "check_learning_catalog.py",
+    "exit": 0
+  },
+  {
+    "check": "test_policy.py",
+    "exit": 0
+  },
+  {
+    "check": "test_mobile_ui.py",
+    "exit": 0
+  },
+  {
+    "check": "test_feedback_ui.py",
+    "exit": 0
+  },
+  {
+    "check": "test_auto_ui.py",
+    "exit": 0
+  },
+  {
+    "check": "test_learning_catalog.py",
+    "exit": 0
+  },
+  {
+    "check": "test_artwork.py",
+    "exit": 0
+  }
+]
