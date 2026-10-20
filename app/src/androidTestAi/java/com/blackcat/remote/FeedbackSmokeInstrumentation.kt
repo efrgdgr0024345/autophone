@@ -1214,7 +1214,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
             check(workspace().plan!!.commands.single().command == "id")
             check(texts(dialog).none { it.contains("STALE DRAFT") })
             pass("Cancellation discards the live draft and rejects a late callback without replacing the old plan")
-            workspace().replace(parsed); invoke(panel, "renderAll")
+            workspace().replace(parsed); setField(panel, "goalExpanded", false); invoke(panel, "renderAll")
         }
         screenshot("search-stream-05-validated-plan", dialog)
         val original = android.content.res.Configuration(activity.resources.configuration)
