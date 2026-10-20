@@ -34,6 +34,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
 /**
@@ -65,6 +67,17 @@ class LinuxCommandLibraryPanel(
     )
 
     private var items = emptyList<LinuxCommandItem>()
+    private lateinit var searchIndex: OfflineCommandSearch
+    private var searchOs = OfflineCommandSearch.initialSystem(activity.getSharedPreferences("blackcat_ai_ui", Activity.MODE_PRIVATE)
+        .getString("target_system", "Ubuntu Linux / Bash") ?: "Ubuntu Linux / Bash")
+    private lateinit var osButton: Button
+    private var osChooser: AlertDialog? = null
+    private var searchTopic: String? = null
+    private var searchPage = 0
+    private var searchJob: Job? = null
+    private var searchToken = 0L
+    private var resultKey = ""
+    private var searchHits = emptyList<OfflineCommandSearch.Hit>()
     private var level = Level.CATEGORIES
     private var detailReturnLevel = Level.COMMANDS
     private var selectedCategory = ""
@@ -110,6 +123,7 @@ class LinuxCommandLibraryPanel(
             }
         }
         dialog.setOnDismissListener {
+            osChooser?.dismiss()
             composer?.dismiss()
             confirmation?.dismiss()
             target.close()
@@ -136,12 +150,13 @@ class LinuxCommandLibraryPanel(
                 val data = withContext(Dispatchers.IO) {
                     val loaded = OfflineLearningCatalog.load(activity.applicationContext)
                     LinuxCommandCatalog.load(activity.applicationContext)
-                    loaded
+                    loaded to OfflineCommandSearch(loaded)
                 }
                 if (!dialog.isShowing) return@launch
-                learning = data
-                items = data.commands
-                countBadge.text = "${items.size} examples · ${data.tools.size} tool groups · no API · no network"
+                learning = data.first
+                searchIndex = data.second
+                items = learning.commands
+                countBadge.text = "${items.size} examples · ${learning.tools.size} tool groups · no API · no network"
                 render()
             } catch (cancelled: CancellationException) { throw cancelled }
               catch (_: Exception) {
@@ -283,9 +298,9 @@ class LinuxCommandLibraryPanel(
             gravity = Gravity.CENTER_VERTICAL
         }
         search = EditText(activity).apply {
-            hint = "Search Wi-Fi, disk space, ports, memory…"
+            hint = "Ask: check all internet connections…"
             isSingleLine = true
-            filters = arrayOf(InputFilter.LengthFilter(100))
+            filters = arrayOf(InputFilter.LengthFilter(200))
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
             imeOptions = EditorInfo.IME_ACTION_SEARCH or EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING
             importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
@@ -315,6 +330,22 @@ class LinuxCommandLibraryPanel(
             leftMargin = dp(7)
         })
         panel.addView(row)
+        osButton = lessonButton("Search OS: $searchOs ▾") {
+            osChooser?.dismiss()
+            osChooser = AlertDialog.Builder(activity).setTitle("Search commands for this OS")
+                .setItems(OfflineCommandSearch.SYSTEMS.toTypedArray()) { _, index ->
+                    searchOs = OfflineCommandSearch.SYSTEMS[index]
+                    if (!searchOs.contains("Kali", true)) kaliToolsOnly = false
+                    osButton.text = "Search OS: $searchOs ▾"
+                    searchTopic = null; searchPage = 0; resultKey = ""; searchToken++; searchJob?.cancel()
+                    if (search.text.isNotBlank()) level = Level.SEARCH
+                    render()
+                }.setNegativeButton("Cancel", null).show().apply {
+                    window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    setOnDismissListener { if (osChooser === this) osChooser = null }
+                }
+        }
+        panel.addView(osButton, matchWrap(top = 6))
 
         val quick = HorizontalScrollView(activity).apply {
             isHorizontalScrollBarEnabled = false
@@ -363,6 +394,7 @@ class LinuxCommandLibraryPanel(
                 before: Int,
                 count: Int
             ) {
+                searchTopic = null; searchPage = 0; resultKey = ""; searchToken++; searchJob?.cancel()
                 if (level == Level.TOOLS || level == Level.CLI_LIST) {
                     toolPage = 0; cliPage = 0; render(); return
                 }
@@ -448,6 +480,7 @@ class LinuxCommandLibraryPanel(
         contentBody.addView(intro, matchWrap(bottom = 8))
 
         contentBody.addView(navigationRow("Kali Linux", "System readiness, local inspection and tool discovery", "Kali") {
+            searchOs = "Kali Linux"; osButton.text = "Search OS: $searchOs ▾"; resultKey = ""
             selectedCategory = "Kali Linux"; selectedTopic = ""; selectedLesson = null; level = Level.TOPICS; render()
         }, matchWrap(bottom = 7))
         contentBody.addView(navigationRow("Guided lessons", "Checks, explanations, verification and cleanup", learning.lessons.size.toString()) {
@@ -541,37 +574,48 @@ class LinuxCommandLibraryPanel(
 
     private fun renderSearch() {
         val query = search.text?.toString().orEmpty()
-        val results = LinuxCommandCatalog.search(items, query)
-        val intro = pageIntro(
-            if (results.isEmpty()) "No matches" else "${results.size} search results",
-            if (results.isEmpty()) {
-                "Try a task such as “network status”, “disk space”, “CPU temperature”, “ports”, or “failed services”."
-            } else {
-                "Results include titles, command text, explanations, topics, and helpful synonyms."
-            }
-        )
-        contentBody.addView(intro, matchWrap(bottom = 8))
-        results.forEach { item ->
-            contentBody.addView(commandRow(item) {
-                detailReturnLevel = Level.SEARCH
-                selectedItem = item
-                selectedLesson = null
-                level = Level.DETAIL
+        val hits = rankedSearch(query) ?: return
+        val groups = hits.groupBy { it.topic }
+        contentBody.addView(pageIntro(searchTopic ?: "${groups.size} matching topics · ${hits.size} results",
+            "$searchOs · local task matching, no AI download. Availability depends on installed packages. Kali-only references require Kali scope."), matchWrap(bottom = 8))
+        if (hits.isEmpty()) contentBody.addView(pageIntro("No matches in this OS scope", "Try “show listening ports” or “find disk space”. You can change the search OS above."), matchWrap(bottom = 8))
+        if (searchTopic == null) {
+            groups.forEach { (topic, values) -> contentBody.addView(navigationRow(topic,
+                "${values.size} matches · ${values.take(3).joinToString(", ") { it.title }}", "Open") {
+                searchTopic = topic; searchPage = 0; render(); scrollTop()
+            }, matchWrap(bottom = 7)) }
+            contentBody.addView(pageIntro("Best matches", "Task phrases and command names are ranked across the full eligible catalogue. These are reference matches, not verified installed commands."), matchWrap(top = 8, bottom = 8))
+        } else contentBody.addView(lessonButton("All matching topics") { searchTopic = null; searchPage = 0; render(); scrollTop() }, matchWrap(bottom = 8))
+        val results = if (searchTopic == null) hits else groups[searchTopic].orEmpty()
+        searchPage = searchPage.coerceIn(0, ((results.size - 1).coerceAtLeast(0)) / 40)
+        results.drop(searchPage * 40).take(40).forEach { hit ->
+            contentBody.addView(navigationRow(hit.title, "${hit.kind.name.lowercase()} · ${hit.summary}", "Open") {
+                when (hit.kind) {
+                    OfflineCommandSearch.Kind.EXAMPLE -> { detailReturnLevel = Level.SEARCH; selectedItem = learning.commandById[hit.id]; selectedLesson = null; level = Level.DETAIL }
+                    OfflineCommandSearch.Kind.COMMAND -> { selectedCli = learning.entryById[hit.id]; selectedTool = null; allFlags = false; level = Level.CLI }
+                    OfflineCommandSearch.Kind.TOOL -> { selectedTool = learning.toolById[hit.id]; entryPage = 0; level = Level.TOOL }
+                }
                 render()
             }, matchWrap(bottom = 7))
         }
-        val clean = query.trim().lowercase(java.util.Locale.ROOT)
-        if (clean.length >= 2) {
-            val matches = learning.entries.filter { it.invocation.lowercase(java.util.Locale.ROOT).contains(clean) }.take(30)
-            if (matches.isNotEmpty()) contentBody.addView(pageIntro("Documented command references", "Up to 30 matches. References do not approve or run a command."), matchWrap(top = 8, bottom = 8))
-            matches.forEach { entry -> contentBody.addView(navigationRow(entry.invocation, entry.kind.replace('_', ' '), "Info") {
-                selectedCli = entry; selectedTool = null; allFlags = false; level = Level.CLI; render()
-            }, matchWrap(bottom = 7)) }
-            val tools = learning.tools.filter { it.name.lowercase(java.util.Locale.ROOT).contains(clean) }.take(20)
-            tools.forEach { tool -> contentBody.addView(navigationRow(tool.name, "Tool/package collection", "Tool") {
-                selectedTool = tool; entryPage = 0; level = Level.TOOL; render()
-            }, matchWrap(bottom = 7)) }
+        pager(searchPage, results.size) { searchPage = it; render(); scrollTop() }
+    }
+
+    private fun rankedSearch(query: String, os: String = searchOs): List<OfflineCommandSearch.Hit>? {
+        val key = "$os\n$query"
+        if (resultKey == key) return searchHits
+        contentBody.addView(pageIntro("Searching offline…", "Matching this task to commands and topics for $searchOs."), matchWrap(bottom = 8))
+        if (searchJob?.isActive != true) {
+            val token = ++searchToken
+            searchJob = scope.launch {
+                delay(180)
+                val hits = withContext(Dispatchers.Default) { searchIndex.search(query, os) }
+                if (token == searchToken && dialog.isShowing) {
+                    searchHits = hits; resultKey = key; searchJob = null; render()
+                }
+            }
         }
+        return null
     }
 
     private fun lessonButton(title: String, action: () -> Unit): Button = Button(activity).apply {
@@ -635,8 +679,10 @@ class LinuxCommandLibraryPanel(
     private var kaliToolsOnly = false
     private fun renderTools() {
         val query = search.text.toString().trim()
+        val matches = if (query.isBlank()) null else (rankedSearch(query, if (kaliToolsOnly) "Kali Linux" else searchOs) ?: return)
+            .filter { it.kind == OfflineCommandSearch.Kind.TOOL }.map { it.id }.toSet()
         val tools = learning.tools.filter { (!kaliToolsOnly || "kali" in it.distributions) &&
-            (query.isBlank() || it.name.contains(query, true) || it.summary.contains(query, true) || it.packages.any { p -> p.contains(query, true) }) }
+            (matches == null || it.id in matches) }
         toolPage = toolPage.coerceIn(0, ((tools.size - 1).coerceAtLeast(0)) / 40)
         contentBody.addView(pageIntro(if (kaliToolsOnly) "Kali Linux tool directory" else "Tool and app directory",
             "${tools.size} tool/package groups. References include documented binaries and subcommands; versions describe the source snapshot."), matchWrap(bottom = 8))
@@ -708,9 +754,11 @@ class LinuxCommandLibraryPanel(
 
     private fun renderCliDirectory() {
         val query = search.text.toString().trim()
+        val matches = if (query.isBlank()) null else (rankedSearch(query, if (kaliToolsOnly) "Kali Linux" else searchOs) ?: return)
+            .filter { it.kind == OfflineCommandSearch.Kind.COMMAND }.map { it.id }.toSet()
         val entries = learning.entries.filter { it.id in learning.workflows.commands &&
             (!kaliToolsOnly || it.id in learning.workflows.kaliEntryIds) &&
-            (query.isBlank() || it.invocation.contains(query, true) || it.summary.contains(query, true) || it.toolIds.any { t -> t.contains(query, true) }) }
+            (matches == null || it.id in matches) }
             .sortedBy { it.invocation }
         cliPage = cliPage.coerceIn(0, ((entries.size - 1).coerceAtLeast(0)) / 40)
         contentBody.addView(pageIntro(if (kaliToolsOnly) "All Kali command workflows" else "All command workflows",
@@ -1081,6 +1129,7 @@ class LinuxCommandLibraryPanel(
 
     private fun navigateBack() {
         when {
+            level == Level.SEARCH && searchTopic != null -> { searchTopic = null; searchPage = 0; render(); scrollTop() }
             level == Level.CLI -> { level = if (selectedTool != null) Level.TOOL else Level.CLI_LIST; render() }
             level == Level.CLI_LIST -> { search.text.clear(); level = if (kaliToolsOnly) Level.TOPICS else Level.CATEGORIES; render() }
             level == Level.PACKAGES -> { level = Level.TOOL; render() }
