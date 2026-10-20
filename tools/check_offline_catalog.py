@@ -119,7 +119,10 @@ def verify() -> None:
         "CommandApproval",
         "ApprovedCommandSender.send",
         "press Enter yourself",
-        "LinuxCommandCatalog.search",
+        "OfflineCommandSearch(loaded)",
+        "searchIndex.search(query, os)",
+        "searchTopic",
+        "token == searchToken",
     ):
         assert required in panel, f"Offline mobile flow missing: {required}"
     for forbidden in (
@@ -159,7 +162,8 @@ def verify() -> None:
         ROOT / "app/src/ai/java/com/blackcat/remote/AiEntry.kt"
     ).read_text(encoding="utf-8")
     assert "Browse Offline Linux Library" in online_entry, "AI build needs a visible offline-mode entry"
-    assert online_entry.count("LinuxCommandLibraryPanel(activity, manager, onClosed = { libraryPanel = null }, onSelectForPlan") == 1, "Offline library selection entry changed"
+    assert online_entry.count("opened = LinuxCommandLibraryPanel(activity, manager, onClosed = {") == 1, "Offline library selection entry changed"
+    assert "if (libraryPanel === opened) libraryPanel = null" in online_entry, "Late library close must not clear a newly opened panel"
     assert "workspace.append(SuggestedCommand(item.title, item.command" in online_entry, "Library selection must update local plan data only"
 
     from check_learning_catalog import verify as verify_learning
