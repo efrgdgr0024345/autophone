@@ -798,7 +798,15 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
             library.show()
             screen = field(library, "dialog") as Dialog
         }
-        await("cold offline learning data", timeoutMillis = 60000) { (field(library, "items") as List<*>).size == 467 }
+        try {
+            await("cold offline learning data", timeoutMillis = 60000) { (field(library, "items") as List<*>).size == 467 }
+        } catch (error: IllegalStateException) {
+            // Report a packaged-asset/parser failure directly if the UI dismissed
+            // its loading view. Do not warm the cache before measuring cold open.
+            OfflineLearningCatalog.load(targetContext)
+            LinuxCommandCatalog.load(targetContext)
+            throw error
+        }
         val loadMillis = SystemClock.elapsedRealtime() - started
         onMain {
             val data = field(library, "learning") as OfflineLearningData
