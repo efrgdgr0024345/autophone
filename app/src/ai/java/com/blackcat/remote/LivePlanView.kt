@@ -54,15 +54,15 @@ internal class LivePlanView(context: Context) : LinearLayout(context) {
     }
 
     fun update(draft: PlanStreamDraft, updating: String?) {
-        status.text = when {
+        status.show(when {
             draft.commands.isNotEmpty() -> "Drafting step ${draft.commands.size}…"
             updating != null -> "Updating $updating…"
             draft.phases.isNotEmpty() -> "Organizing the plan…"
             else -> "Building your plan…"
-        }
-        explanation.text = draft.explanation
+        })
+        explanation.show(draft.explanation)
         phaseToggle.visibility = if (draft.phases.isEmpty()) GONE else VISIBLE
-        phaseToggle.text = "Roadmap · ${draft.phases.size} phases · show / hide"
+        phaseToggle.show("Roadmap · ${draft.phases.size} phases · show / hide")
         if (commands.isEmpty() && draft.commands.isNotEmpty()) phaseHost.visibility = GONE
         while (phases.size < draft.phases.size) {
             val box = LinearLayout(context).apply { orientation = VERTICAL; setPadding(0, dp(10), 0, 0) }
@@ -72,8 +72,8 @@ internal class LivePlanView(context: Context) : LinearLayout(context) {
             phases += title to purpose
         }
         draft.phases.forEachIndexed { index, phase ->
-            phases[index].first.text = "${index + 1}. ${phase.first}"
-            phases[index].second.text = phase.second
+            phases[index].first.show("${index + 1}. ${phase.first}")
+            phases[index].second.show(phase.second)
         }
         while (commands.size < draft.commands.size) {
             val box = LinearLayout(context).apply {
@@ -94,13 +94,13 @@ internal class LivePlanView(context: Context) : LinearLayout(context) {
             commands += Row(title, code, why)
         }
         draft.commands.forEachIndexed { i, command ->
-            commands[i].title.text = "${i + 1}. ${command.title}"
+            commands[i].title.show("${i + 1}. ${command.title}")
             commands[i].title.setTextColor(if (i == draft.commands.lastIndex) green else ink)
-            commands[i].code.text = command.command
+            commands[i].code.show(command.command)
             commands[i].code.visibility = if (command.command.isEmpty()) GONE else VISIBLE
-            commands[i].explanation.text = command.explanation
+            commands[i].explanation.show(command.explanation)
         }
-        question.text = draft.questions.joinToString("\n\n") { "Question: $it" }
+        question.show(draft.questions.joinToString("\n\n") { "Question: $it" })
     }
 
     fun reset() {
@@ -119,6 +119,7 @@ internal class LivePlanView(context: Context) : LinearLayout(context) {
         if (bold) setTypeface(typeface, Typeface.BOLD)
         setLineSpacing(dp(2).toFloat(), 1f)
     }
+    private fun TextView.show(value: String) { if (text.toString() != value) text = value }
     private fun dp(value: Int) = (value * resources.displayMetrics.density).toInt()
     private fun shape(color: Int, radius: Int) = GradientDrawable().apply {
         setColor(color); cornerRadius = dp(radius).toFloat()
