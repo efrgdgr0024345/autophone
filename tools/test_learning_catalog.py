@@ -13,7 +13,7 @@ class LearningIntegrityTests(unittest.TestCase):
    for name in ['OfflineLearningCatalog.kt','LinuxCommandLibraryPanel.kt']:shutil.copy2(ROOT/'app/src/main/java/com/blackcat/remote'/name,src/name)
    data=json.loads((dst/'catalog/offline-catalog.json').read_text());change(data)
    raw=(json.dumps(data,ensure_ascii=False,indent=2)+'\n').encode();packed=gzip.compress(raw,mtime=0)
-   (dst/'catalog/offline-catalog.json').write_bytes(raw);(assets/'offline_learning_v2.json.gz').write_bytes(packed)
+   (dst/'catalog/offline-catalog.json').write_bytes(raw);(assets/'offline_learning_v2.catalog').write_bytes(packed)
    manifest=json.loads((dst/'catalog/MANIFEST.json').read_text());manifest.update(json_sha256=hashlib.sha256(raw).hexdigest(),asset_gzip_sha256=hashlib.sha256(packed).hexdigest(),counts=data['counts']);(dst/'catalog/MANIFEST.json').write_text(json.dumps(manifest))
    with self.assertRaises(AssertionError):verify(dst,schema=False)
  def test_dangling_next_step(self):self.mutate(lambda d:d['lessons'][0]['steps'][0]['transitions'][0].update(next_step_id='missing'))

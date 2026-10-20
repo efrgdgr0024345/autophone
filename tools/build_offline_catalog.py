@@ -96,6 +96,6 @@ def main():
  data['counts']['example_categories']=len(taxonomy)
  data['counts']['example_topics']=sum(len(c['topics']) for c in taxonomy)
  dest=ROOT/'catalog/offline-catalog.json';raw=(json.dumps(data,ensure_ascii=False,indent=2)+'\n').encode();dest.write_bytes(raw)
- compressed=gzip.compress(raw,compresslevel=9,mtime=0);asset=ROOT/'app/src/main/assets/offline_learning_v2.json.gz';asset.write_bytes(compressed)
+ compressed=gzip.compress(raw,compresslevel=9,mtime=0);asset=ROOT/'app/src/main/assets/offline_learning_v2.catalog';asset.write_bytes(compressed)
  manifest={'schema_version':2,'json_sha256':hashlib.sha256(raw).hexdigest(),'asset_gzip_sha256':hashlib.sha256(compressed).hexdigest(),'json_bytes':len(raw),'asset_bytes':len(compressed),'counts':data['counts']};(ROOT/'catalog/MANIFEST.json').write_text(json.dumps(manifest,indent=2)+'\n');print(json.dumps(manifest,indent=2))
 if __name__=='__main__':main()

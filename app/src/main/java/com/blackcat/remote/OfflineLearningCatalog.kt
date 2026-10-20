@@ -25,7 +25,7 @@ internal class OfflineLearningData(val commands: List<LinuxCommandItem>, val too
 
 /** Bundled reference data only. No download, process, sender, approval or persistent user state. */
 internal object OfflineLearningCatalog {
-    const val ASSET = "offline_learning_v2.json.gz"
+    const val ASSET = "offline_learning_v2.catalog"
     private const val MAX_JSON_BYTES = 12_000_000
     @Volatile private var cached: OfflineLearningData? = null
 

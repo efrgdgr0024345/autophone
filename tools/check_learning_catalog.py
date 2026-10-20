@@ -4,7 +4,7 @@ import base64,csv,gzip,hashlib,io,json,re,shlex
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 def verify(root=ROOT, schema=True):
- raw=(root/'catalog/offline-catalog.json').read_bytes();d=json.loads(raw);m=json.loads((root/'catalog/MANIFEST.json').read_text());asset=(root/'app/src/main/assets/offline_learning_v2.json.gz').read_bytes()
+ raw=(root/'catalog/offline-catalog.json').read_bytes();d=json.loads(raw);m=json.loads((root/'catalog/MANIFEST.json').read_text());asset=(root/'app/src/main/assets/offline_learning_v2.catalog').read_bytes()
  assert gzip.decompress(asset)==raw,'Bundled asset differs from public JSON'
  assert hashlib.sha256(raw).hexdigest()==m['json_sha256'];assert hashlib.sha256(asset).hexdigest()==m['asset_gzip_sha256']
  if schema:
