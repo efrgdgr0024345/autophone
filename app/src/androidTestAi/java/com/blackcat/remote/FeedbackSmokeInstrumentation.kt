@@ -788,6 +788,12 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         }
     }
     private fun captureOfflineLearning() {
+        // Exercise the Android JSON implementation too; expose an asset/parser failure
+        // directly instead of reporting only the loading screen's eventual timeout.
+        kotlinx.coroutines.runBlocking(kotlinx.coroutines.Dispatchers.IO) {
+            OfflineLearningCatalog.load(targetContext)
+            LinuxCommandCatalog.load(targetContext)
+        }
         lateinit var library: LinuxCommandLibraryPanel
         lateinit var screen: Dialog
         var selected = 0

@@ -929,7 +929,7 @@ class LinuxCommandLibraryPanel(
         background = round(COMMAND_BG, 13, 0xff315246.toInt(), 1)
         addView(text(command, 14f, COMMAND_TEXT).apply {
             typeface = Typeface.MONOSPACE
-            breakStrategy = android.graphics.text.LineBreaker.BREAK_STRATEGY_SIMPLE
+            breakStrategy = android.text.Layout.BREAK_STRATEGY_SIMPLE
             hyphenationFrequency = android.text.Layout.HYPHENATION_FREQUENCY_NONE
             setTextIsSelectable(true)
         })
