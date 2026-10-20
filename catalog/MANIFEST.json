@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
-  "json_sha256": "f11c6b5c54240e21415638cc4e0f66a6d5deb885a6f1c13252b8f77911b9edb8",
-  "asset_gzip_sha256": "69aca31b6ebd123da14a40f7c3bd0c735582b8886dea6a713f7e9ad3acc77640",
-  "json_bytes": 6247414,
-  "asset_bytes": 711596,
+  "json_sha256": "bd2200b81d3565fb90001f7003a279ca9f5d1a1883e377603eb51a4cea142ae4",
+  "asset_gzip_sha256": "20ca0321d63e662541cdf14b79d323e1594bf4b744fbc7598ce82c1b972e3c4b",
+  "json_bytes": 9298234,
+  "asset_bytes": 942053,
   "counts": {
     "tool_or_package_groups": 824,
     "kali_package_sections": 1561,
@@ -26,6 +26,13 @@
     "workflow_templates": 1,
     "observed_help_invocations": 2519,
     "example_categories": 14,
-    "example_topics": 89
+    "example_topics": 89,
+    "workflow_kali_tools": 820,
+    "workflow_kali_commands": 3055,
+    "workflow_supported_kali_tools": 820,
+    "workflow_supported_kali_commands": 3055,
+    "workflow_package_only_kali_groups": 38,
+    "workflow_all_supported_tools": 824,
+    "workflow_all_supported_commands": 3448
   }
 }

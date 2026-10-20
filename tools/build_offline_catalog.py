@@ -2,6 +2,7 @@
 """Build the public JSON and its byte-identical gzipped Android asset. No network or execution."""
 import base64, collections, csv, gzip, hashlib, io, json, re, shlex
 from pathlib import Path
+from kali_workflows import build_support
 ROOT=Path(__file__).resolve().parents[1]
 BASE_SHA='7c579dc600f4073187800b948893feb2a2231f5a1af91429a50a82ff9880ae35'
 def slug(s):return re.sub(r'[^a-z0-9]+','-',s.lower()).strip('-')
@@ -95,6 +96,7 @@ def main():
  data['taxonomy']=taxonomy
  data['counts']['example_categories']=len(taxonomy)
  data['counts']['example_topics']=sum(len(c['topics']) for c in taxonomy)
+ build_support(data)
  dest=ROOT/'catalog/offline-catalog.json';raw=(json.dumps(data,ensure_ascii=False,indent=2)+'\n').encode();dest.write_bytes(raw)
  compressed=gzip.compress(raw,compresslevel=9,mtime=0);asset=ROOT/'app/src/main/assets/offline_learning_v2.catalog';asset.write_bytes(compressed)
  manifest={'schema_version':2,'json_sha256':hashlib.sha256(raw).hexdigest(),'asset_gzip_sha256':hashlib.sha256(compressed).hexdigest(),'json_bytes':len(raw),'asset_bytes':len(compressed),'counts':data['counts']};(ROOT/'catalog/MANIFEST.json').write_text(json.dumps(manifest,indent=2)+'\n');print(json.dumps(manifest,indent=2))

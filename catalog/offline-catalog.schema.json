@@ -17,7 +17,8 @@
     "research",
     "safety",
     "reference_inventory",
-    "taxonomy"
+    "taxonomy",
+    "workflow_support"
   ],
   "properties": {
     "schema_version": {
@@ -292,6 +293,88 @@
               "manual_reference"
             ]
           }
+        }
+      }
+    },
+    "workflow_support": {
+      "type": "object",
+      "required": [
+        "version",
+        "coverage",
+        "command_workflows",
+        "tool_workflows",
+        "templates"
+      ],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "coverage": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "command_workflows": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "entry_id",
+              "executable",
+              "invocation_tokens",
+              "manual_topic",
+              "discovery_commands",
+              "task_builder",
+              "automatic_execution"
+            ],
+            "properties": {
+              "automatic_execution": {
+                "const": false
+              },
+              "discovery_commands": {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 4,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[ -~]{1,512}$"
+                }
+              }
+            }
+          }
+        },
+        "tool_workflows": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "tool_id",
+              "package_names",
+              "command_entry_ids",
+              "mode",
+              "automatic_execution"
+            ],
+            "properties": {
+              "automatic_execution": {
+                "const": false
+              },
+              "mode": {
+                "enum": [
+                  "commands_and_packages",
+                  "commands",
+                  "package_only"
+                ]
+              }
+            }
+          }
+        },
+        "templates": {
+          "type": "array",
+          "minItems": 2
         }
       }
     }
