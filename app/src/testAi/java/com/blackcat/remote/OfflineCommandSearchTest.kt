@@ -47,4 +47,10 @@ class OfflineCommandSearchTest {
         assertEquals(hits, index.search("network", "Kali Linux"))
         assertTrue(hits.all { it.id in data.commandById || it.id in data.entryById || it.id in data.toolById })
     }
+    @Test fun conversationalCheckDoesNotAddUnrelatedTopicsJustContainingThatVerb() {
+        val concise = index.search("internet connections", "Kali Linux")
+        val conversational = index.search("I want to check all internet connections", "Kali Linux")
+        assertEquals(concise.map { it.id }.toSet(), conversational.map { it.id }.toSet())
+        assertEquals(concise.map { it.topic }.toSet(), conversational.map { it.topic }.toSet())
+    }
 }

@@ -36,13 +36,14 @@ internal class OfflineCommandSearch(private val data: OfflineLearningData) {
     /** All matching topics/results are retained; the UI paginates instead of silently truncating. */
     fun search(query: String, os: String): List<Hit> {
         val clean = normalize(query.take(200))
-        val terms = words(clean) - STOP
+        val original = words(clean) - STOP
+        val terms = (original - READ_ACTIONS).ifEmpty { original }
         val raw = query.trim().lowercase(Locale.ROOT)
         if (raw.isEmpty() || (terms.isEmpty() && documents.none { it.name == raw })) return emptyList()
         val intents = INTENTS.filter { intent -> terms.any { it in intent.words } }
         val expanded = terms + intents.flatMap { it.related }
         val preferred = intents.flatMap { it.preferred }.toSet()
-        val inspect = terms.any { it in setOf("check", "show", "list", "view", "inspect", "see", "find", "connections") }
+        val inspect = original.any { it in READ_ACTIONS || it == "connections" }
         return documents.asSequence().filter { compatible(it, os) }.mapNotNull { d ->
             val exact = if (clean.isEmpty()) d.name == raw else d.cleanTitle == clean || d.cleanName == clean
             val matched = terms.count { it in d.words || it == d.cleanName }
@@ -102,6 +103,7 @@ internal class OfflineCommandSearch(private val data: OfflineLearningData) {
                 "processes" -> "process"; "ports" -> "port"; "services" -> "service"; "errors" -> "error"; else -> it }
         }.toSet()
         private val STOP = setOf("i", "want", "to", "the", "all", "my", "me", "a", "an", "is", "are", "how", "can", "please", "do", "of", "on", "with", "and", "for", "what", "this", "computer", "system")
+        private val READ_ACTIONS = setOf("check", "show", "list", "view", "inspect", "see", "find", "read", "display", "tell")
         private fun intent(trigger: String, related: String, preferred: String) = Intent(words(trigger), words(related), preferred.split(' ').toSet())
         private val INTENTS = listOf(
             intent("internet connections network networking sockets port", "network connections socket port listening tcp udp interface address route", "ss ip netstat lsof nmcli"),
