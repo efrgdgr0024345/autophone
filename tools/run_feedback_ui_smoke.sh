@@ -19,7 +19,11 @@ adb -s "$task_serial" shell dumpsys package com.blackcat.remote > "$task_output/
 echo "$task_local_hash" > "$task_output/installed-apk.sha256"
 # The fixture checks the failure path and intercepts the user-triggered enable prompt;
 # it never pairs or sends HID input. Change only this disposable emulator's adapter.
-adb -s "$task_serial" shell svc bluetooth disable
+# Some API31 ATD images kill the svc process when disabling an already-off adapter.
+# Keep the verified off state; only request a transition when it is actually needed.
+task_bluetooth_on=$(adb -s "$task_serial" shell settings get global bluetooth_on | tr -d '\r')
+if test "$task_bluetooth_on" != 0; then adb -s "$task_serial" shell svc bluetooth disable; fi
+test "$(adb -s "$task_serial" shell settings get global bluetooth_on | tr -d '\r')" = 0
 task_status=0
 adb -s "$task_serial" shell am instrument -e scenario "$task_scenario" -w com.blackcat.remote.test/com.blackcat.remote.FeedbackSmokeInstrumentation > "$task_output/instrumentation.log" 2>&1 || task_status=$?
 cat "$task_output/instrumentation.log"
