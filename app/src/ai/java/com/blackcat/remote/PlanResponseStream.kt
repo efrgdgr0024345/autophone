@@ -138,7 +138,8 @@ internal object PlanDraftPreview {
                             if (i >= prefix.length) break
                             when (val escape = prefix[i++]) {
                                 '"', '\\', '/' -> value.append(escape)
-                                'n', 'r', 't' -> value.append(' ')
+                                'n', 'r' -> value.append('\n')
+                                't' -> value.append(' ')
                                 'b', 'f' -> Unit
                                 'u' -> {
                                     if (i + 4 > prefix.length) { i = prefix.length; break }

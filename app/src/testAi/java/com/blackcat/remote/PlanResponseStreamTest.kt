@@ -43,6 +43,7 @@ class PlanResponseStreamTest {
         assertEquals("id", drafts.last().commands.single().command)
     }
     @Test fun prefixesKeepProseCodeAndPhasesSeparateWithoutRepairingExecutablePlans() {
+        assertTrue(PlanDraftPreview.read(proposal().toString()).explanation.contains("\nExplain clearly."))
         val prefix = """{"explanation":"Friendly \\""" // unfinished escape stays display-only
         assertTrue(PlanDraftPreview.read(prefix).commands.isEmpty())
         val text = """{"explanation":"Say \"hello\".","roadmap":[{"title":"Read","purpose":"Learn"}],"decision":{"mode":"commands","commands":[{"title":"Who","command":"printf 'a'","explanation":"Read \\ output"},{"title":"Next","command":"un"""
