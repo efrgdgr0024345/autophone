@@ -1,0 +1,20 @@
+[
+  {
+    "url": "https://raw.githubusercontent.com/efrgdgr0024345/autophone/c8d2d738feb99073af6661bb766905b9b0cb712f/docs/ui16/install/CatAI-16.apk",
+    "status": 200,
+    "sha256": "a1048f88c6e8cfdc31f9a4d4162b6906d3e9feb6bed0316b6ccfcec616ed8820",
+    "bytes": 6419201
+  },
+  {
+    "url": "https://raw.githubusercontent.com/efrgdgr0024345/autophone/c8d2d738feb99073af6661bb766905b9b0cb712f/docs/ui16/install/CatBT-16.apk",
+    "status": 200,
+    "sha256": "9ab7bbdc385547e7661f98ee5feaad57d44f29ffa8676462094bf7e196cf73a6",
+    "bytes": 6058529
+  },
+  {
+    "url": "https://raw.githubusercontent.com/efrgdgr0024345/autophone/11b82c595fddec9904717a2b865daa42b8d77600/catalog/offline-catalog.json",
+    "status": 200,
+    "sha256": "2f0cfbae60e570501bd11420fd9f583707f6dc7722e2a459f864ea462d6304b6",
+    "bytes": 9453394
+  }
+]

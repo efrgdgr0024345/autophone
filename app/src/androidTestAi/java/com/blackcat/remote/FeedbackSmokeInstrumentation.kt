@@ -50,6 +50,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
     private var imageRunId = ""
     private var timeoutOnly = false
     private var learningOnly = false
+    private var workflowsOnly = false
 
     override fun onCreate(arguments: Bundle?) {
         super.onCreate(arguments)
@@ -57,6 +58,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         injectedImages = arguments?.getString("scenario") == "image-injected"
         imageRunId = arguments?.getString("demoRunId").orEmpty()
         learningOnly = arguments?.getString("scenario") == "learning"
+        workflowsOnly = arguments?.getString("scenario") == "workflows"
         timeoutOnly = arguments?.getString("scenario") == "timeout"
         imageAuto = arguments?.getString("scenario") == "image-auto" || injectedImages
         layoutOnly = arguments?.getString("scenario") == "layout"
@@ -95,6 +97,12 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                 decor.isShown && decor.isAttachedToWindow && decor.isLaidOut && SystemClock.uptimeMillis() - stableSince >= 2000
             }
             startupSettled = true
+            if (workflowsOnly) {
+                captureFullKaliWorkflows()
+                result.putString("stream", "\nUI16_WORKFLOWS_PASS ${checks.size}\n" + checks.joinToString("\n"))
+                finish(Activity.RESULT_OK, result)
+                return
+            }
             if (learningOnly) {
                 captureOfflineLearning()
                 result.putString("stream", "\nUI15_LEARNING_PASS ${checks.size}\n" + checks.joinToString("\n"))
@@ -787,6 +795,151 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                 "Synthetic observation: the fixture terminal appears ready.", listOf("Synthetic visible evidence fixture."), false)
         }
     }
+    private fun captureFullKaliWorkflows() {
+        val data = OfflineLearningCatalog.load(targetContext)
+        check(data.workflows.kaliToolIds.size == 820 && data.workflows.kaliEntryIds.size == 3055)
+        for (id in data.workflows.kaliEntryIds) {
+            val entry = data.entryById[id]!!
+            val guide = OfflineWorkflows.commandGuide(data, entry)
+            check(guide.commands.size in 3..4 && guide.commands.all { CommandPolicy.problem(it.command) == null })
+            check(OfflineWorkflows.prepare(entry, listOf("literal argument")).risk == LinuxCommandRisk.HIGH)
+        }
+        for (id in data.workflows.kaliToolIds) {
+            val tool = data.toolById[id]!!
+            check(tool.packages.isNotEmpty())
+            check(OfflineWorkflows.packageGuide(tool, tool.packages.first()).commands.size == 3)
+        }
+        pass("Android production parser and preparation cover all 820 Kali tools and 3055 commands without executing inventoried programs")
+        lateinit var library: LinuxCommandLibraryPanel
+        lateinit var screen: Dialog
+        var selections = 0
+        onMain {
+            library = LinuxCommandLibraryPanel(activity, field(activity, "hid") as HidManager, onSelectForPlan = { selections++ })
+            library.show(); screen = field(library, "dialog") as Dialog
+        }
+        await("full workflow library") { (field(library, "items") as List<*>).size == 467 }
+        fun nav(title: String) = descendants(screen.window!!.decorView).first {
+            it.isShown && it.isClickable && it.contentDescription?.toString() == title
+        }.performClick()
+        onMain { nav("Kali Linux"); nav("All Kali command workflows") }
+        screenshot("workflows-01-kali-command-list", screen)
+        onMain {
+            scrollBottom(screen); findButton(screen, "Next page").performClick()
+            check(field(library, "cliPage") == 1)
+            (field(library, "search") as EditText).setText("git add")
+            check((field(library, "level") as Enum<*>).name == "CLI_LIST")
+            check(field(library, "cliPage") == 0)
+            nav("git add")
+            check(selections == 0)
+            pass("The complete Kali command directory paginates and filters in scope; selecting a subcommand sends nothing")
+            findButton(screen, "Learn this command").performClick()
+            val step = (field(library, "selectedLesson") as OfflineLesson).steps.first()
+            check((field(library, "guideCommands") as Map<*, *>)[step.commandId].let { (it as LinuxCommandItem).command } == "command -v git")
+        }
+        screenshot("workflows-02-subcommand-guide", screen)
+        onMain { findButton(screen, "Build a task command").performClick() }
+        val composer = field(library, "composer") as OfflineCommandComposer
+        val editor = field(composer, "dialog") as Dialog
+        onMain {
+            findButton(editor, "Add argument").performClick()
+            (field(composer, "arguments") as List<*>).let { (it[0] as EditText).setText("a file's name") }
+            findButton(editor, "Add argument").performClick()
+            (field(composer, "arguments") as List<*>).let { (it[1] as EditText).setText("\$(id); echo literal") }
+            check((field(composer, "preview") as TextView).text.toString() == "git add 'a file'\\''s name' '\$(id); echo literal'")
+            check(field(library, "busy") == false && field(library, "confirmation") == null && selections == 0)
+            pass("Task builder preserves spaces, apostrophes and shell symbols as literal arguments without approval or input")
+        }
+        screenshot("workflows-03-literal-argument-builder", editor)
+        onMain {
+            val input = (field(composer, "arguments") as List<*>)[1] as EditText
+            input.setText("x".repeat(513))
+            check(!(field(composer, "review") as Button).isEnabled)
+            input.setText("literal")
+            findButton(editor, "Review exact command").performClick()
+            check((field(library, "selectedItem") as LinuxCommandItem).risk == LinuxCommandRisk.HIGH)
+            check(!findButton(screen, "Connect Bluetooth first").isEnabled)
+            check((field(composer, "arguments") as List<*>).isEmpty())
+            check(selections == 0)
+            pass("Oversized tasks are blocked; preparing a valid task clears editor fields and opens HIGH-risk TYPE ONLY review")
+        }
+        screenshot("workflows-04-prepared-command", screen)
+        onMain {
+            (field(library, "search") as EditText).text.clear()
+            setField(library, "selectedTool", data.toolById["bettercap-ui"]!!)
+            setEnum(library, "level", "TOOL"); invoke(library, "render")
+            findButton(screen, "Inspect package").performClick()
+            nav("bettercap-ui")
+            check((field(library, "selectedLesson") as OfflineLesson).steps.size == 3)
+            check((field(library, "guideCommands") as Map<*, *>).values.all { (it as LinuxCommandItem).command.startsWith("dpkg-query ") })
+            check(selections == 0)
+            pass("A package-only collection has a complete installed-version/status/files guide without an invented executable")
+        }
+        screenshot("workflows-05-package-only-guide", screen)
+        onMain {
+            library.dismiss()
+            panel = Class.forName("com.blackcat.remote.AiPanel").declaredConstructors.single().apply { isAccessible = true }
+                .newInstance(activity, field(activity, "hid") as HidManager, {})
+            invoke(panel, "show"); dialog = field(panel, "dialog") as Dialog
+            invoke(panel, "openCommandTree")
+            library = field(panel, "libraryPanel") as LinuxCommandLibraryPanel
+            screen = field(library, "dialog") as Dialog
+        }
+        await("AI guide selection library") { (field(library, "items") as List<*>).size == 467 }
+        onMain {
+            setField(library, "selectedTool", data.toolById["bettercap-ui"]!!)
+            setEnum(library, "level", "TOOL"); invoke(library, "render")
+            findButton(screen, "Inspect package").performClick(); nav("bettercap-ui")
+            findButton(screen, "Add complete guide").performClick()
+            check(workspace().plan!!.commands.map { it.command } == listOf("dpkg-query -W -- bettercap-ui", "dpkg-query -s -- bettercap-ui | head -n 40", "dpkg-query -L -- bettercap-ui | head -n 40"))
+            check(workspace().confirmedSteps.isEmpty())
+            check((field(panel, "activeTab") as Enum<*>).name == "PLAN")
+            pass("A complete guide enters the real AI plan in order through one atomic local edit with no confirmed results")
+            invoke(panel, "openCommandTree")
+            library = field(panel, "libraryPanel") as LinuxCommandLibraryPanel
+            screen = field(library, "dialog") as Dialog
+        }
+        screenshot("workflows-06-guide-in-plan", dialog)
+        await("stale guide library") { (field(library, "items") as List<*>).size == 467 }
+        onMain {
+            check(field(panel, "libraryPanel") === library) { "A late close callback cleared the newly opened library" }
+            setField(library, "selectedTool", data.toolById["bettercap-ui"]!!)
+            setEnum(library, "level", "TOOL"); invoke(library, "render")
+            findButton(screen, "Inspect package").performClick(); nav("bettercap-ui")
+            workspace().touch()
+            findButton(screen, "Add complete guide").performClick()
+            check(workspace().plan!!.commands.size == 3)
+            pass("A stale guide callback cannot change a revised plan or create a typing approval")
+            invoke(panel, "dismiss")
+        }
+        val original = android.content.res.Configuration(activity.resources.configuration)
+        val metrics = activity.resources.displayMetrics
+        for (width in listOf(320, 412)) for (scale in listOf(1f, 2f)) {
+            lateinit var editorPanel: OfflineCommandComposer
+            lateinit var editorWindow: Dialog
+            onMain {
+                val config = android.content.res.Configuration(original).apply { fontScale = scale }
+                activity.resources.updateConfiguration(config, metrics)
+                val entry = if (width == 320 && scale == 2f)
+                    data.entries.filter { it.id in data.workflows.kaliEntryIds }.maxBy { it.invocation.length }
+                    else data.entries.first { it.invocation == "git add" }
+                editorPanel = OfflineCommandComposer(activity, entry, {}, {})
+                editorPanel.show(); editorWindow = field(editorPanel, "dialog") as Dialog
+                editorWindow.window!!.setLayout((width * metrics.density).toInt(), (500 * metrics.density).toInt())
+                findButton(editorWindow, "Add argument").performClick()
+                ((field(editorPanel, "arguments") as List<*>)[0] as EditText).setText("sample file.txt")
+            }
+            screenshot("workflows-matrix-$width-${(scale * 100).toInt()}", editorWindow)
+            onMain {
+                fullyVisible(field(editorPanel, "review") as Button, 48)
+                check((field(editorPanel, "review") as Button).isEnabled)
+                editorPanel.dismiss()
+                check((field(editorPanel, "arguments") as List<*>).isEmpty())
+                pass("Command builder $width dp / font $scale keeps exact review visible in a reduced-height viewport and clears drafts on close")
+            }
+        }
+        onMain { activity.resources.updateConfiguration(original, metrics) }
+    }
+
     private fun captureOfflineLearning() {
         lateinit var library: LinuxCommandLibraryPanel
         lateinit var screen: Dialog
@@ -850,12 +1003,12 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         screenshot("learning-06-tool-guide", screen)
         onMain {
             val lesson = field(library, "selectedLesson") as OfflineLesson
-            check(lesson.steps.size in 2..3)
+            check(lesson.steps.size in 3..4)
             nav("1. Locate nmap")
             check((field(library, "selectedItem") as LinuxCommandItem).command == "command -v nmap")
             check(!findButton(screen, "Connect Bluetooth first").isEnabled)
             findButton(screen, "Next explanation").performClick()
-            check((field(library, "selectedItem") as LinuxCommandItem).command == "man -f nmap")
+            check((field(library, "selectedItem") as LinuxCommandItem).command == "man -f -- nmap")
             check(selected == 0)
             pass("Tool discovery links availability to local documentation without scanning or typing")
         }

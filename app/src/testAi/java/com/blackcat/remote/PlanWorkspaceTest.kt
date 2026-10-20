@@ -78,6 +78,26 @@ class PlanWorkspaceTest {
         assertNull(state.proposal)
     }
 
+    @Test fun completeGuideAppendsInOrderWithOneRevisionAndNoNewConfirmedResults() {
+        val state = PlanWorkspace().apply { replace(plan()); confirmResult(0, revision) }
+        val before = state.revision
+        state.appendAll(listOf(command("whoami"), command("uname -r")))
+        assertEquals(listOf("id", "whoami", "uname -r"), state.plan!!.commands.map { it.command })
+        assertEquals(before + 1, state.revision)
+        assertEquals(setOf(0), state.confirmedSteps)
+    }
+
+    @Test fun invalidOrOversizedGuideCannotPartiallyChangeThePlan() {
+        val state = PlanWorkspace().apply { replace(plan()); confirmResult(0, revision) }
+        val before = state.revision
+        for (items in listOf(listOf(command("whoami"), command("id\nwhoami")), List(40) { command() }, emptyList())) {
+            try { state.appendAll(items); fail("Invalid guide accepted") } catch (_: PlanException) {}
+            assertEquals(before, state.revision)
+            assertEquals(listOf("id"), state.plan!!.commands.map { it.command })
+            assertEquals(setOf(0), state.confirmedSteps)
+        }
+    }
+
     @Test(expected = PlanException::class) fun localPlanHasSameFortyStepLimit() {
         val state = PlanWorkspace()
         repeat(41) { state.append(command()) }

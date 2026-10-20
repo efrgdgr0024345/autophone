@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Validate data hashes, preserved cards, reference links, lesson graphs and offline boundaries."""
-import base64,csv,gzip,hashlib,io,json,re,shlex
+import base64,copy,csv,gzip,hashlib,io,json,re,shlex
+from kali_workflows import build_support
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 def verify(root=ROOT, schema=True):
@@ -53,7 +54,11 @@ def verify(root=ROOT, schema=True):
  assert any(x['category']=='Kali Linux' for x in commands.values())
  assert not {'tc cake','openssl format-options'} & {e['invocation'] for e in entries.values() if e['kind'] in ['binary','subcommand']},'Manual topic was invented as a runnable command'
  assert {'fsck.minix','mkfs.bfs','sha256sum'}<={e['invocation'] for e in entries.values()},'CLI extractor lost dotted or shared-manual names'
- for name in ['OfflineLearningCatalog.kt','LinuxCommandLibraryPanel.kt']:
+ rebuilt=copy.deepcopy(d);build_support(rebuilt)
+ assert d['workflow_support']==rebuilt['workflow_support'],'Incomplete or altered tool/command workflow coverage'
+ for key,value in rebuilt['counts'].items():
+  if key.startswith('workflow_'):assert counts[key]==value,'Wrong workflow coverage count'
+ for name in ['OfflineLearningCatalog.kt','LinuxCommandLibraryPanel.kt','OfflineWorkflows.kt','OfflineCommandComposer.kt']:
   source=(root/'app/src/main/java/com/blackcat/remote'/name).read_text()
   assert not any(x in source for x in ['HttpsURLConnection','URL(','ProcessBuilder(','Runtime.getRuntime','KEYCODE_ENTER'])
  assert d['safety']['offline_phone_network'] is False and d['safety']['auto_command_policy_changed'] is False

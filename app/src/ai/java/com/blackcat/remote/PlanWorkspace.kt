@@ -69,11 +69,17 @@ internal class PlanWorkspace {
     }
 
     fun append(command: SuggestedCommand) {
+        appendAll(listOf(command))
+    }
+
+    /** Validate the complete batch before changing revision, plan or result state. */
+    fun appendAll(additions: List<SuggestedCommand>) {
         val old = plan
         val commands = old?.commands.orEmpty()
-        if (commands.size >= PlanCodec.MAX_COMMANDS) throw PlanException("A plan can contain at most ${PlanCodec.MAX_COMMANDS} steps.")
+        if (additions.isEmpty()) throw PlanException("Select at least one command.")
+        if (commands.size + additions.size > PlanCodec.MAX_COMMANDS) throw PlanException("A plan can contain at most ${PlanCodec.MAX_COMMANDS} steps.")
         val value = CommandPlan(old?.explanation ?: "A local plan built from the Linux command library.",
-            old?.assumptions.orEmpty(), emptyList(), commands + command, old?.roadmap.orEmpty())
+            old?.assumptions.orEmpty(), emptyList(), commands + additions, old?.roadmap.orEmpty())
         validate(value)
         touch()
         plan = value

@@ -20,6 +20,18 @@ the exact files the lesson created. A missing tool, unexpected existing folder o
 mismatched result has an explicit error/stop route. A package reference is not
 misrepresented as one generic installation or execution command.
 
+## Full-directory preparation and plans
+
+All 820 Kali groups and 3,055 commands now have workflow mappings. Commands
+connect backing-executable discovery to their own local manual (including
+subcommands), a bounded manual view and observed help. Package-only groups
+connect installed version, status and file evidence. The argument editor creates
+literal argument values and an optional explicit sudo prefix, then opens exact
+HIGH-risk command review. Complete guides can be added atomically to the existing
+AI plan without a network request. Those plans can use the existing reviewed
+text/voice/photo feedback flow; automatic lesson completion and persisted learning
+progress are still separate future features. Auto retains its reviewed command subset.
+
 ## Proposed integration after this update
 
 1. **Goal-first suggestions.** Offer a small set of relevant lesson paths from the

@@ -1140,7 +1140,10 @@ private class AiPanel(
         if (busy) return
         confirmation?.dismiss()
         val token = planRevision
-        libraryPanel = LinuxCommandLibraryPanel(activity, manager, onClosed = { libraryPanel = null }, onSelectForPlan = { item ->
+        lateinit var opened: LinuxCommandLibraryPanel
+        opened = LinuxCommandLibraryPanel(activity, manager, onClosed = {
+            if (libraryPanel === opened) libraryPanel = null
+        }, onSelectForPlan = { item ->
             if (!dialog.isShowing || transportPaused || busy || token != planRevision) return@LinuxCommandLibraryPanel
             try {
                 // A tree-first workflow gets an editable goal from the user's selected task.
@@ -1156,7 +1159,26 @@ private class AiPanel(
                 setStatus("Library command added to your plan. Nothing was typed.")
                 renderAll()
             } catch (e: PlanException) { setStatus(e.message ?: "Could not add this command.", error = true) }
-        }).also { it.show() }
+        }, onSelectGuideForPlan = { items ->
+            if (!dialog.isShowing || transportPaused || busy || token != planRevision) return@LinuxCommandLibraryPanel
+            try {
+                val additions = items.map { item -> SuggestedCommand(item.title, item.command, item.explanation,
+                    item.risk.name.lowercase(), item.requiresAdmin, item.expectedResult,
+                    listOf("Check compatibility: ${item.compatibility}")) }
+                // Goal edits clear a plan. Validate first, then assign a missing
+                // goal before committing the complete batch to the live workspace.
+                PlanWorkspace().apply { currentPlan?.let { replace(it) }; appendAll(additions) }
+                if (goal.text.isBlank()) goal.setText(items.first().topic)
+                workspace.appendAll(additions)
+                selected = (commands.size - items.size).coerceAtLeast(0)
+                lastTypedCommand = null; lastTypedIndex = -1
+                activeTab = Tab.PLAN; applyActiveTab()
+                setStatus("Complete guide added in order. Review every step and actual result; nothing was typed.")
+                renderAll()
+            } catch (e: PlanException) { setStatus(e.message ?: "Could not add this guide.", error = true) }
+        })
+        libraryPanel = opened
+        opened.show()
     }
 
     private fun openAutoAssist() {

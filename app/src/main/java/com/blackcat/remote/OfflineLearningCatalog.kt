@@ -6,9 +6,11 @@ import org.json.JSONObject
 import java.util.zip.GZIPInputStream
 
 internal class OfflineTool(val id: String, val name: String, val summary: String,
-    val version: String, val distributions: List<String>, val entries: List<String>, val sources: List<String>)
+    val version: String, val distributions: List<String>, val entries: List<String>, val sources: List<String>,
+    val packages: List<String> = emptyList())
 internal class OfflineCli(val id: String, val name: String, val invocation: String, val kind: String,
-    val summary: String, val flags: List<String>, val help: List<String>, val toolIds: List<String>)
+    val summary: String, val flags: List<String>, val help: List<String>, val toolIds: List<String>,
+    val sources: List<String> = emptyList())
 internal class OfflineStep(val id: String, val commandId: String, val why: String, val lookFor: String, val onError: String)
 internal class OfflineLesson(val id: String, val title: String, val category: String, val goal: String,
     val prerequisites: List<String>, val steps: List<OfflineStep>, val next: List<String>)
@@ -16,7 +18,7 @@ internal class OfflineCommandNotes(val prerequisites: List<String>, val troubles
     val network: String, val sourceIds: List<String>, val lessons: List<String>)
 internal class OfflineLearningData(val commands: List<LinuxCommandItem>, val tools: List<OfflineTool>,
     val entries: List<OfflineCli>, val lessons: List<OfflineLesson>, val notes: Map<String, OfflineCommandNotes>,
-    val sources: Map<String, String>) {
+    val sources: Map<String, String>, val workflows: OfflineWorkflowSupport) {
     val commandById = commands.associateBy { it.id }
     val toolById = tools.associateBy { it.id }
     val entryById = entries.associateBy { it.id }
@@ -71,14 +73,16 @@ internal object OfflineLearningCatalog {
         }.toMap()
         val tools = array("tools", 5000).mapObjects { o -> OfflineTool(o.getString("id"), o.getString("name"),
             o.optString("summary"), if (o.isNull("version")) "Not supplied by this source" else o.optString("version", "Not supplied by this source"),
-            o.list("distributions"), o.list("entry_ids"), o.list("source_ids")) }
+            o.list("distributions"), o.list("entry_ids"), o.list("source_ids"),
+            o.optJSONArray("packages")?.mapObjects { it.getString("name") }.orEmpty()) }
         val inventory = array("command_inventory", 20000)
         val references = root.getJSONArray("reference_inventory")
         require(references.length() <= 5000)
         val entryObjects = inventory.mapObjects { it } + references.mapObjects { it }
         val entries = entryObjects.map { o -> OfflineCli(o.getString("id"), o.getString("name"),
             o.getString("invocation"), o.getString("kind"), o.optString("summary"), o.list("documented_flags"),
-            o.list("observed_help_invocations"), o.list("tool_ids")) }
+            o.list("observed_help_invocations"), o.list("tool_ids"),
+            o.getJSONArray("source_refs").mapObjects { it.getString("source_id") }.distinct()) }
         val lessons = array("lessons", 1000).mapObjects { o ->
             val steps = o.getJSONArray("steps")
             require(steps.length() in 1..40)
@@ -97,9 +101,10 @@ internal object OfflineLearningCatalog {
         require(tools.map { it.id }.distinct().size == tools.size)
         require(entries.map { it.id }.distinct().size == entries.size)
         require(lessons.map { it.id }.distinct().size == lessons.size)
-        val data = OfflineLearningData(commands, tools, entries, lessons, notes, sources)
+        val workflows = OfflineWorkflowSupport.parse(root.getJSONObject("workflow_support"), tools, entries)
+        val data = OfflineLearningData(commands, tools, entries, lessons, notes, sources, workflows)
         require(tools.all { t -> t.entries.all { it in data.entryById } && t.sources.all { it in sources } })
-        require(entries.all { e -> e.toolIds.all { it in data.toolById } })
+        require(entries.all { e -> e.toolIds.all { it in data.toolById } && e.sources.all { it in sources } })
         require(notes.values.all { n -> n.sourceIds.all { it in sources } && n.lessons.all { it in data.lessonById } })
         require(lessons.all { l -> l.steps.all { it.commandId in data.commandById } &&
             l.prerequisites.all { it in data.lessonById } && l.next.all { it in data.lessonById } })
