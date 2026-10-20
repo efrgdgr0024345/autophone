@@ -87,10 +87,16 @@ internal class OfflineCommandSearch(private val data: OfflineLearningData) {
     }
 
     companion object {
+        private val separators = Regex("[^\\p{L}\\p{N}_.+/-]+")
+        @Volatile private var cached: Pair<OfflineLearningData, OfflineCommandSearch>? = null
+        fun forData(data: OfflineLearningData): OfflineCommandSearch = cached?.takeIf { it.first === data }?.second
+            ?: synchronized(this) {
+                cached?.takeIf { it.first === data }?.second ?: OfflineCommandSearch(data).also { cached = data to it }
+            }
         val SYSTEMS = listOf("Kali Linux", "Ubuntu Linux", "Debian Linux", "Linux Mint", "Fedora Linux",
             "Red Hat Enterprise Linux", "Rocky Linux", "AlmaLinux", "openSUSE Linux", "Arch Linux", "Alpine Linux")
         fun initialSystem(target: String): String = SYSTEMS.firstOrNull { target.contains(it, true) } ?: target
-        private fun normalize(value: String) = value.lowercase(Locale.ROOT).replace(Regex("[^\\p{L}\\p{N}_.+/-]+"), " ").trim()
+        private fun normalize(value: String) = separators.replace(value.lowercase(Locale.ROOT), " ").trim()
         private fun words(value: String) = normalize(value).split(' ').filter { it.length >= 2 }.map {
             when (it) { "connections", "connected", "connection" -> "connections"; "files" -> "file";
                 "processes" -> "process"; "ports" -> "port"; "services" -> "service"; "errors" -> "error"; else -> it }

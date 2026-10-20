@@ -119,7 +119,7 @@ def verify() -> None:
         "CommandApproval",
         "ApprovedCommandSender.send",
         "press Enter yourself",
-        "OfflineCommandSearch(loaded)",
+        "OfflineCommandSearch.forData(loaded)",
         "searchIndex.search(query, os)",
         "searchTopic",
         "token == searchToken",

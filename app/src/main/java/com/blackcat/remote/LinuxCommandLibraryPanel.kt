@@ -150,7 +150,7 @@ class LinuxCommandLibraryPanel(
                 val data = withContext(Dispatchers.IO) {
                     val loaded = OfflineLearningCatalog.load(activity.applicationContext)
                     LinuxCommandCatalog.load(activity.applicationContext)
-                    loaded to OfflineCommandSearch(loaded)
+                    loaded to OfflineCommandSearch.forData(loaded)
                 }
                 if (!dialog.isShowing) return@launch
                 learning = data.first
