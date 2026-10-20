@@ -9,8 +9,8 @@ android {
         applicationId 'com.blackcat.remote'
         minSdk 28
         targetSdk 35
-        versionCode 19
-        versionName '15.0-offline-kali-learning'
+        versionCode 20
+        versionName '16.0-full-kali-workflows'
     }
     flavorDimensions 'capability'
     productFlavors {

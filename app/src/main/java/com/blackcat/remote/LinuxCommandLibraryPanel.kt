@@ -47,9 +47,10 @@ class LinuxCommandLibraryPanel(
     private val activity: Activity,
     private val manager: HidManager,
     private val onClosed: () -> Unit = {},
-    private val onSelectForPlan: ((LinuxCommandItem) -> Unit)? = null
+    private val onSelectForPlan: ((LinuxCommandItem) -> Unit)? = null,
+    private val onSelectGuideForPlan: ((List<LinuxCommandItem>) -> Unit)? = null
 ) {
-    private enum class Level { CATEGORIES, TOPICS, COMMANDS, SEARCH, DETAIL, TOOLS, TOOL, CLI, LESSONS, LESSON }
+    private enum class Level { CATEGORIES, TOPICS, COMMANDS, SEARCH, DETAIL, TOOLS, TOOL, CLI, CLI_LIST, PACKAGES, LESSONS, LESSON }
 
     private val dialog = Dialog(activity, android.R.style.Theme_Material_Light_NoActionBar)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -79,7 +80,13 @@ class LinuxCommandLibraryPanel(
     private var toolPage = 0
     private var entryPage = 0
     private var allFlags = false
+    private var cliPage = 0
+    private var packagePage = 0
+    private var guideReturnLevel = Level.TOOL
+    private var guideEntry: OfflineCli? = null
+    private var composer: OfflineCommandComposer? = null
     private val guideCommands = mutableMapOf<String, LinuxCommandItem>()
+    private val guideNotes = mutableMapOf<String, OfflineCommandNotes>()
     private lateinit var countBadge: TextView
     private lateinit var headerHero: View
     private lateinit var contentScroll: ScrollView
@@ -103,6 +110,7 @@ class LinuxCommandLibraryPanel(
             }
         }
         dialog.setOnDismissListener {
+            composer?.dismiss()
             confirmation?.dismiss()
             target.close()
             scope.cancel()
@@ -355,6 +363,9 @@ class LinuxCommandLibraryPanel(
                 before: Int,
                 count: Int
             ) {
+                if (level == Level.TOOLS || level == Level.CLI_LIST) {
+                    toolPage = 0; cliPage = 0; render(); return
+                }
                 selectedItem = null
                 selectedLesson = null
                 selectedTool = null
@@ -411,10 +422,12 @@ class LinuxCommandLibraryPanel(
             level == Level.TOOLS -> renderTools()
             level == Level.TOOL -> renderTool()
             level == Level.CLI -> renderCli()
+            level == Level.CLI_LIST -> renderCliDirectory()
+            level == Level.PACKAGES -> renderPackages()
             level == Level.LESSONS -> renderLessons()
             level == Level.LESSON -> renderLesson()
             level == Level.DETAIL -> renderDetail()
-            search.text?.isNotBlank() == true || level == Level.SEARCH -> renderSearch()
+            level == Level.SEARCH -> renderSearch()
             level == Level.TOPICS -> renderTopics()
             level == Level.COMMANDS -> renderCommands()
             else -> renderCategories()
@@ -442,6 +455,9 @@ class LinuxCommandLibraryPanel(
         }, matchWrap(bottom = 7))
         contentBody.addView(navigationRow("Tool and app directory", "Documented programs, subcommands and options", learning.tools.size.toString()) {
             kaliToolsOnly = false; toolPage = 0; level = Level.TOOLS; render()
+        }, matchWrap(bottom = 7))
+        contentBody.addView(navigationRow("All command workflows", "Availability, documentation, arguments and plan review", learning.workflows.commands.size.toString()) {
+            kaliToolsOnly = false; cliPage = 0; level = Level.CLI_LIST; render()
         }, matchWrap(bottom = 7))
 
         LinuxCommandCatalog.categories(items).filter { it.name != "Kali Linux" }.forEach { group ->
@@ -478,6 +494,9 @@ class LinuxCommandLibraryPanel(
         )
         if (selectedCategory == "Kali Linux") contentBody.addView(navigationRow("Kali Linux tool directory", "Browse Kali's documented tool collections", "Tools") {
             kaliToolsOnly = true; toolPage = 0; level = Level.TOOLS; render()
+        }, matchWrap(bottom = 8))
+        if (selectedCategory == "Kali Linux") contentBody.addView(navigationRow("All Kali command workflows", "${learning.workflows.kaliToolIds.size} tool groups · prepare and review every documented command", learning.workflows.kaliEntryIds.size.toString()) {
+            kaliToolsOnly = true; cliPage = 0; level = Level.CLI_LIST; render()
         }, matchWrap(bottom = 8))
         groups.forEach { group ->
             contentBody.addView(
@@ -578,6 +597,15 @@ class LinuxCommandLibraryPanel(
     private fun renderLesson() {
         val lesson = selectedLesson ?: run { level = Level.LESSONS; render(); return }
         contentBody.addView(pageIntro(lesson.title, lesson.goal), matchWrap(bottom = 8))
+        guideEntry?.takeIf { guideCommands.isNotEmpty() }?.let { entry ->
+            contentBody.addView(lessonButton("Build a task command · ${entry.invocation}") { openComposer(entry) }, matchWrap(bottom = 8))
+        }
+        onSelectGuideForPlan?.let { add ->
+            contentBody.addView(lessonButton("Add complete guide to plan · ${lesson.steps.size} steps") {
+                val sequence = lesson.steps.mapNotNull { learning.commandById[it.commandId] ?: guideCommands[it.commandId] }
+                if (sequence.size == lesson.steps.size && !busy) { add(sequence); dismiss() }
+            }, matchWrap(bottom = 8))
+        }
         if (lesson.prerequisites.isNotEmpty()) {
             val card = darkCard()
             infoBlock(card, "Complete these lessons first", lesson.prerequisites.mapNotNull { learning.lessonById[it]?.title }.joinToString("\n"))
@@ -589,7 +617,7 @@ class LinuxCommandLibraryPanel(
                 openLessonStep(index)
             }, matchWrap(bottom = 7))
         }
-        contentBody.addView(pageIntro("Review actual results", "Next opens an explanation; it never sends text or confirms success. Pause on unexpected output. Each command keeps its separate TYPE ONLY approval."), matchWrap(top = 8))
+        contentBody.addView(pageIntro("Review actual results", "Next opens an explanation; it never sends text or confirms success. Pause on unexpected output. Each command keeps its separate TYPE ONLY approval. Auto supports a separate command subset; adding a guide does not approve unattended execution."), matchWrap(top = 8))
     }
 
     private fun openLessonStep(index: Int) {
@@ -606,7 +634,9 @@ class LinuxCommandLibraryPanel(
 
     private var kaliToolsOnly = false
     private fun renderTools() {
-        val tools = learning.tools.filter { !kaliToolsOnly || "kali" in it.distributions }
+        val query = search.text.toString().trim()
+        val tools = learning.tools.filter { (!kaliToolsOnly || "kali" in it.distributions) &&
+            (query.isBlank() || it.name.contains(query, true) || it.summary.contains(query, true) || it.packages.any { p -> p.contains(query, true) }) }
         toolPage = toolPage.coerceIn(0, ((tools.size - 1).coerceAtLeast(0)) / 40)
         contentBody.addView(pageIntro(if (kaliToolsOnly) "Kali Linux tool directory" else "Tool and app directory",
             "${tools.size} tool/package groups. References include documented binaries and subcommands; versions describe the source snapshot."), matchWrap(bottom = 8))
@@ -636,10 +666,13 @@ class LinuxCommandLibraryPanel(
         infoBlock(card, "Compatibility", tool.distributions.joinToString(", ") + ". Check the installed version and package availability on your computer.")
         infoBlock(card, "Sources", tool.sources.mapNotNull { learning.sources[it] }.joinToString("\n\n"))
         contentBody.addView(card, matchWrap(bottom = 8))
-        val entry = entries.firstOrNull { it.kind == "binary" && it.name == tool.name }
-            ?: entries.firstOrNull { it.kind == "binary" && literalName(it.name) }
-        if (entry != null && literalName(entry.name)) contentBody.addView(lessonButton("Learn this tool · check, read, choose a task") {
+        val entry = entries.firstOrNull { it.name == tool.name && it.id in learning.workflows.commands }
+            ?: entries.firstOrNull { it.id in learning.workflows.commands }
+        if (entry != null) contentBody.addView(lessonButton("Learn this tool · check, read, choose a task") {
             openToolGuide(entry)
+        }, matchWrap(bottom = 8))
+        if (tool.packages.isNotEmpty()) contentBody.addView(lessonButton("Inspect package · ${tool.packages.size} documented packages") {
+            packagePage = 0; level = Level.PACKAGES; render()
         }, matchWrap(bottom = 8))
         contentBody.addView(lessonButton("Choose a task lesson") { selectedLesson = null; guideCommands.clear(); level = Level.LESSONS; render() }, matchWrap(bottom = 8))
         entryPage = entryPage.coerceIn(0, ((entries.size - 1).coerceAtLeast(0)) / 40)
@@ -662,7 +695,10 @@ class LinuxCommandLibraryPanel(
         infoBlock(card, "Help examples observed in the source", item.help.joinToString("\n").ifBlank { "No simple help invocation was extracted; no flag was invented." })
         infoBlock(card, "Use in this app", "This is reference information. Opening it creates no typing approval and does not widen Auto's supported commands.")
         contentBody.addView(card, matchWrap(bottom = 8))
-        if (item.kind == "binary" && literalName(item.name)) contentBody.addView(lessonButton("Learn this command · availability and local help") { openToolGuide(item) }, matchWrap(bottom = 8))
+        if (item.id in learning.workflows.commands) {
+            contentBody.addView(lessonButton("Learn this command · availability and local help") { openToolGuide(item) }, matchWrap(bottom = 8))
+            contentBody.addView(lessonButton("Build a task command · ${item.invocation}") { openComposer(item) }, matchWrap(bottom = 8))
+        }
         item.toolIds.mapNotNull { learning.toolById[it] }.forEach { tool ->
             contentBody.addView(navigationRow(tool.name, "Open the owning collection and its source references", "Tool") {
                 selectedTool = tool; entryPage = 0; level = Level.TOOL; render()
@@ -670,33 +706,67 @@ class LinuxCommandLibraryPanel(
         }
     }
 
-    private fun literalName(name: String) = Regex("[A-Za-z0-9_][A-Za-z0-9+_.:-]{0,119}").matches(name)
+    private fun renderCliDirectory() {
+        val query = search.text.toString().trim()
+        val entries = learning.entries.filter { it.id in learning.workflows.commands &&
+            (!kaliToolsOnly || it.id in learning.workflows.kaliEntryIds) &&
+            (query.isBlank() || it.invocation.contains(query, true) || it.summary.contains(query, true) || it.toolIds.any { t -> t.contains(query, true) }) }
+            .sortedBy { it.invocation }
+        cliPage = cliPage.coerceIn(0, ((entries.size - 1).coerceAtLeast(0)) / 40)
+        contentBody.addView(pageIntro(if (kaliToolsOnly) "All Kali command workflows" else "All command workflows",
+            "${entries.size} matches. Search within this directory; each command has local checks, an argument builder and plan selection."), matchWrap(bottom = 8))
+        entries.drop(cliPage * 40).take(40).forEach { entry ->
+            contentBody.addView(navigationRow(entry.invocation, entry.summary.ifBlank { "Open the owning collection and installed documentation" }, "Guide") {
+                selectedCli = entry; selectedTool = null; allFlags = false; level = Level.CLI; render()
+            }, matchWrap(bottom = 7))
+        }
+        pager(cliPage, entries.size) { cliPage = it; render() }
+    }
+
+    private fun renderPackages() {
+        val tool = selectedTool ?: run { level = Level.TOOLS; render(); return }
+        packagePage = packagePage.coerceIn(0, ((tool.packages.size - 1).coerceAtLeast(0)) / 40)
+        contentBody.addView(pageIntro("Packages in ${tool.name}", "Choose a documented package. Check version, status and installed files before choosing an executable or resource."), matchWrap(bottom = 8))
+        tool.packages.drop(packagePage * 40).take(40).forEach { pkg ->
+            contentBody.addView(navigationRow(pkg, "Three local inspection steps · no installation", "Guide") {
+                openGuide(OfflineWorkflows.packageGuide(tool, pkg), Level.PACKAGES)
+            }, matchWrap(bottom = 7))
+        }
+        pager(packagePage, tool.packages.size) { packagePage = it; render() }
+    }
 
     private fun openToolGuide(entry: OfflineCli) {
-        if (!literalName(entry.name)) return
-        guideCommands.clear()
-        val lines = mutableListOf("command -v ${entry.name}", "man -f ${entry.name}")
-        val safeShape = Regex(Regex.escape(entry.name) + " (?:--help|-h|--version|-V)")
-        entry.help.firstOrNull { safeShape.matches(it) && CommandPolicy.problem(it) == null }?.let { lines.add(it) }
-        val steps = lines.mapIndexed { index, command ->
-            val id = "guide-${entry.id}-$index"
-            val explanation = when (index) {
-                0 -> "Check whether this exact executable is available before trying a task."
-                1 -> "Read a local manual summary. Missing documentation does not prove the executable is absent."
-                else -> "This help invocation appears in the retrieved documentation. Review the installed tool's behavior; initialization or plugins may run before help appears."
-            }
-            guideCommands[id] = LinuxCommandItem(id, "Tool discovery", entry.name, when (index) {
-                0 -> "Locate ${entry.name}"; 1 -> "Read local documentation"; else -> "Review documented help"
-            }, command, explanation, if (index == 0) "A resolved executable path, or a missing-command result." else "Local documentation or an informative availability/version error.",
-                if (index < 2) LinuxCommandRisk.LOW else LinuxCommandRisk.MEDIUM, false,
-                "Linux; package, manual and help availability depend on the installed release.", listOf(entry.name))
-            OfflineStep(id + "-step", id, explanation, guideCommands[id]!!.expectedResult,
-                "Pause on unexpected output. Check package availability and privileges instead of blindly retrying or launching an operational task.")
+        openGuide(OfflineWorkflows.commandGuide(learning, entry), if (level == Level.TOOL) Level.TOOL else Level.CLI)
+    }
+
+    private fun openGuide(guide: OfflineGuide, returnLevel: Level) {
+        guideCommands.clear(); guideNotes.clear()
+        guide.commands.forEach { command ->
+            guideCommands[command.id] = command
+            guideNotes[command.id] = OfflineCommandNotes(listOf("Check the installed tool, shell and required local documentation."),
+                listOf("Read the actual error and revise the remaining steps before continuing."),
+                if (command.risk == LinuxCommandRisk.MEDIUM) "tool_initialization_may_have_effects" else "local_documentation_or_package_database",
+                guide.sources, emptyList())
         }
-        selectedLesson = OfflineLesson("tool-guide-${entry.id}", "Learn ${entry.name}", "Tool discovery",
-            "Locate the executable, inspect its local documentation, then choose a task-specific lesson. Nothing runs by opening this guide.", emptyList(), steps, emptyList())
+        guideEntry = guide.entryId?.let { learning.entryById[it] }
+        guideReturnLevel = returnLevel
+        selectedLesson = guide.lesson
         level = Level.LESSON
         render()
+    }
+
+    private fun openComposer(entry: OfflineCli) {
+        if (busy || entry.id !in learning.workflows.commands) return
+        confirmation?.dismiss(); composer?.dismiss()
+        composer = OfflineCommandComposer(activity, entry, onPrepared = { item ->
+            if (dialog.isShowing && !busy) {
+                selectedLesson = null; guideEntry = null; selectedCli = entry
+                guideNotes[item.id] = OfflineCommandNotes(listOf("Review installed syntax, target, privileges and effects."),
+                    listOf("Interpret the actual output; prepare a revised command explicitly instead of replaying it."),
+                    "depends_on_tool_and_user_arguments", entry.sources, emptyList())
+                selectedItem = item; detailReturnLevel = Level.CLI; level = Level.DETAIL; render(); scrollTop()
+            }
+        }, onClosed = { composer = null }).also { it.show() }
     }
 
     private fun renderDetail() {
@@ -743,7 +813,7 @@ class LinuxCommandLibraryPanel(
             }
         )
         infoBlock(card, "Compatibility", item.compatibility)
-        learning.notes[item.id]?.let { note ->
+        (learning.notes[item.id] ?: guideNotes[item.id])?.let { note ->
             infoBlock(card, "Prerequisites", note.prerequisites.joinToString("\n"))
             infoBlock(card, "Computer network effect", note.network.replace('_', ' '))
             infoBlock(card, "Reference status", "A reference example, not proof this command is installed or executed successfully.")
@@ -1000,7 +1070,9 @@ class LinuxCommandLibraryPanel(
             level == Level.TOOLS -> "Tool and app directory"
             level == Level.TOOL -> selectedTool?.name ?: "Tool"
             level == Level.CLI -> selectedCli?.invocation ?: "Command reference"
-            search.text?.isNotBlank() == true || level == Level.SEARCH -> "Search results"
+            level == Level.CLI_LIST -> if (kaliToolsOnly) "Kali command workflows" else "Command workflows"
+            level == Level.PACKAGES -> "Package workflows"
+            level == Level.SEARCH -> "Search results"
             level == Level.COMMANDS -> "$selectedCategory  ›  $selectedTopic"
             level == Level.TOPICS -> selectedCategory
             else -> "All categories"
@@ -1009,10 +1081,12 @@ class LinuxCommandLibraryPanel(
 
     private fun navigateBack() {
         when {
-            level == Level.CLI -> { level = if (selectedTool != null) Level.TOOL else Level.SEARCH; render() }
+            level == Level.CLI -> { level = if (selectedTool != null) Level.TOOL else Level.CLI_LIST; render() }
+            level == Level.CLI_LIST -> { search.text.clear(); level = if (kaliToolsOnly) Level.TOPICS else Level.CATEGORIES; render() }
+            level == Level.PACKAGES -> { level = Level.TOOL; render() }
             level == Level.TOOL -> { level = Level.TOOLS; render() }
-            level == Level.TOOLS || level == Level.LESSONS -> { level = Level.CATEGORIES; selectedLesson = null; render() }
-            level == Level.LESSON -> { level = if (guideCommands.isNotEmpty()) Level.TOOL else Level.LESSONS; render() }
+            level == Level.TOOLS || level == Level.LESSONS -> { level = Level.CATEGORIES; selectedLesson = null; search.text.clear(); render() }
+            level == Level.LESSON -> { level = if (guideCommands.isNotEmpty()) guideReturnLevel else Level.LESSONS; render() }
             level == Level.DETAIL -> {
                 level = detailReturnLevel
                 selectedItem = null

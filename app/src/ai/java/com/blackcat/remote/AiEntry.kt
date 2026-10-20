@@ -1156,6 +1156,19 @@ private class AiPanel(
                 setStatus("Library command added to your plan. Nothing was typed.")
                 renderAll()
             } catch (e: PlanException) { setStatus(e.message ?: "Could not add this command.", error = true) }
+        }, onSelectGuideForPlan = { items ->
+            if (!dialog.isShowing || transportPaused || busy || token != planRevision) return@LinuxCommandLibraryPanel
+            try {
+                workspace.appendAll(items.map { item -> SuggestedCommand(item.title, item.command, item.explanation,
+                    item.risk.name.lowercase(), item.requiresAdmin, item.expectedResult,
+                    listOf("Check compatibility: ${item.compatibility}")) })
+                if (goal.text.isBlank()) goal.setText(items.first().topic)
+                selected = (commands.size - items.size).coerceAtLeast(0)
+                lastTypedCommand = null; lastTypedIndex = -1
+                activeTab = Tab.PLAN; applyActiveTab()
+                setStatus("Complete guide added in order. Review every step and actual result; nothing was typed.")
+                renderAll()
+            } catch (e: PlanException) { setStatus(e.message ?: "Could not add this guide.", error = true) }
         }).also { it.show() }
     }
 
