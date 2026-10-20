@@ -164,22 +164,26 @@ internal class AutoAssistPanel(
         body.addView(modeButton, lp())
         body.addView(run)
         body.addView(button(if (cameraStarted) "Restart camera preview" else "Start live camera preview", false) { startCamera() }, lp())
-        val keyField = EditText(activity).apply {
-            hint = "API key for this Auto session"
-            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-            isSingleLine = true; isSaveEnabled = false
-            importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
-            imeOptions = android.view.inputmethod.EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING
-            filters = arrayOf(android.text.InputFilter.LengthFilter(512))
-            BlackCatStyle.styleInput(activity, this)
-            visibility = View.GONE
+        // Saved credentials are managed in Settings, outside the task/session flow.
+        sessionKeyInput = null
+        if (!vault.exists()) {
+            val keyField = EditText(activity).apply {
+                hint = "API key for this Auto session"
+                inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+                isSingleLine = true; isSaveEnabled = false
+                importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+                imeOptions = android.view.inputmethod.EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING
+                filters = arrayOf(android.text.InputFilter.LengthFilter(512))
+                BlackCatStyle.styleInput(activity, this)
+                visibility = View.GONE
+            }
+            sessionKeyInput = keyField
+            body.addView(button("Use a temporary API key here", false) {
+                keyField.visibility = View.VISIBLE; keyField.requestFocus()
+                status.text = "Enter a key for this Auto session. To reuse it across plans, save it in Settings. It is checked with the first photo request."
+            }, lp())
+            body.addView(keyField, lp())
         }
-        sessionKeyInput = keyField
-        body.addView(button("Use a temporary API key here", false) {
-            keyField.visibility = View.VISIBLE; keyField.requestFocus()
-            status.text = "Enter a key for this session, or leave empty to use your remembered key. It is checked with the first photo request."
-        }, lp())
-        body.addView(keyField, lp())
         val consent = CheckBox(activity).apply {
             text = "I approve this goal and destination, automatic Enter, new diagnostic commands and plan changes for this goal, and automatic photos to OpenAI. The terminal is focused and the camera frame contains no secrets."
             isChecked = false; minHeight = dp(56); setTextColor(Color.WHITE)
@@ -265,9 +269,13 @@ internal class AutoAssistPanel(
                 val value = if (enteredKey.isNotBlank()) enteredKey else withContext(Dispatchers.IO) { vault.read().orEmpty() }
                 if (closed || target.current() != host || revision() != snapshotRevision) return@launch
                 if (!OpenAiPlanner.validKey(value)) {
-                    sessionKeyInput?.visibility = View.VISIBLE
-                    sessionKeyInput?.requestFocus()
-                    status.text = "Enter an API key above and start again. A temporary key used to generate the plan has already been consumed."
+                    if (sessionKeyInput == null || vault.exists()) {
+                        status.text = "Your saved API key is unavailable. Close Auto and check the key in Settings, then start again."
+                    } else {
+                        sessionKeyInput?.visibility = View.VISIBLE
+                        sessionKeyInput?.requestFocus()
+                        status.text = "Enter an API key above and start again, or save one in Settings to reuse it across plans. A temporary key used to generate the plan has already been consumed."
+                    }
                     return@launch
                 }
                 key = value
