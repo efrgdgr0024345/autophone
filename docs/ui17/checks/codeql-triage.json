@@ -1,0 +1,18 @@
+{
+  "source": "9c1738a32721fcc9970a2795b6c81bb72bb5e297",
+  "security_findings": 0,
+  "quality_notes_total": 30,
+  "new_stream_notes": [
+    {
+      "rule": "java/constant-loop-condition",
+      "file": "PlanResponseStream.kt",
+      "assessment": "The completion variable changes inside the suspending dispatch closure. Explicit completion/EOF breaks, byte/event limits and cancellation also terminate reading. Completion, truncation, oversized wire and cancellation tests passed."
+    },
+    {
+      "rule": "java/misleading-indentation",
+      "file": "PlanResponseStream.kt",
+      "assessment": "The primitive skip loop is followed by one consumed() call in the surrounding branch. This is intentional, not a loop body; prefix parser tests cover primitive fields before following string fields."
+    }
+  ],
+  "preserved_window_deprecations": "Existing status/navigation bar calls are retained within the reviewed UI and SDK pins; no transport or SDK migration."
+}

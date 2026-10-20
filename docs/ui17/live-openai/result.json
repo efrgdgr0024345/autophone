@@ -1,0 +1,38 @@
+{
+  "synthetic_goal": true,
+  "request_sha256": "035ac624f706f24e666ced68397f955690e192d0258310955fe9e915d64e6153",
+  "requested_model": "gpt-6.1-sol",
+  "key_logged_or_saved": false,
+  "commands_executed": false,
+  "utc": "2026-10-20T21:35:43.642246+00:00",
+  "http": 200,
+  "content_type": "text/event-stream",
+  "passed": true,
+  "first_text_seconds": 3.63,
+  "elapsed_seconds": 13.629,
+  "events": {
+    "response.created": 1,
+    "response.in_progress": 1,
+    "response.output_item.added": 1,
+    "response.content_part.added": 1,
+    "response.output_text.delta": 524,
+    "response.output_text.done": 1,
+    "response.content_part.done": 1,
+    "response.output_item.done": 1,
+    "response.completed": 1
+  },
+  "usage": {
+    "input_tokens": 1731,
+    "input_tokens_details": {
+      "cache_write_tokens": 1728,
+      "cached_tokens": 0
+    },
+    "output_tokens": 533,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2264
+  },
+  "returned_model": "gpt-6.1-sol",
+  "response_bytes": 180712
+}

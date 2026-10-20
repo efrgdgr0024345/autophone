@@ -1,0 +1,188 @@
+{
+  "build_source": "9c1738a32721fcc9970a2795b6c81bb72bb5e297",
+  "test_driver_source": "9c1738a32721fcc9970a2795b6c81bb72bb5e297",
+  "rollback": "e109a68589ab4822b58d7871d4a6425fceb17359",
+  "version_code": 21,
+  "version_name": "17.0-search-streaming",
+  "application_id": "com.blackcat.remote",
+  "unit_tests": {
+    "ai": {
+      "tests": 170,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "offline": {
+      "tests": 27,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "lint": {
+    "ai": {
+      "Error": 0,
+      "Warning": 78
+    },
+    "offline": {
+      "Error": 0,
+      "Warning": 30
+    }
+  },
+  "apks": {
+    "CatAI-17.apk": {
+      "sha256": "2607ba4985e06372bdcb6ca4029e330631f45c927acdc217950599bf078d4bdc",
+      "bytes": 6490241
+    },
+    "CatBT-17.apk": {
+      "sha256": "6417e0ba478a32f08ed051e2dc14b5cb13aa96829e51da94d9b44c170a966c5e",
+      "bytes": 6097893
+    }
+  },
+  "signer_sha256": "fc5c0b42b9da40c2507d8f2e77ed92db9e023740aa1a44d1a3b2c14a6e9f4764",
+  "codeql": {
+    "app_source_files": 58,
+    "security_findings": 0,
+    "quality_notes": 30,
+    "coverage_note": "All 58 app Kotlin files, including tests, checked against SARIF artifacts; 40 are production files. CLI denominator also includes an unbuilt historical host Java helper."
+  },
+  "catalog": {
+    "schema_version": 2,
+    "json_sha256": "2f0cfbae60e570501bd11420fd9f583707f6dc7722e2a459f864ea462d6304b6",
+    "asset_gzip_sha256": "ca696aaaf0149191a37ec370261db5c7692a2deef4aa161f9f31df535d801c57",
+    "json_bytes": 9453394,
+    "asset_bytes": 940403,
+    "counts": {
+      "tool_or_package_groups": 824,
+      "kali_package_sections": 1561,
+      "documented_entries_total": 3667,
+      "documented_cli_entries": 3448,
+      "distinct_binary_names": 3133,
+      "builtin_only_entries": 53,
+      "shell_builtin_names": 61,
+      "subcommand_entries": 262,
+      "service_unit_references": 139,
+      "manual_reference_entries": 80,
+      "source_documents": 1871,
+      "command_example_entries": 467,
+      "distinct_command_example_lines": 465,
+      "legacy_example_entries": 212,
+      "added_example_entries": 255,
+      "lessons": 35,
+      "lesson_steps": 184,
+      "learning_paths": 5,
+      "workflow_templates": 1,
+      "observed_help_invocations": 2519,
+      "example_categories": 14,
+      "example_topics": 89,
+      "workflow_kali_tools": 820,
+      "workflow_kali_commands": 3055,
+      "workflow_supported_kali_tools": 820,
+      "workflow_supported_kali_commands": 3055,
+      "workflow_package_only_kali_groups": 38,
+      "workflow_all_supported_tools": 824,
+      "workflow_all_supported_commands": 3448
+    }
+  },
+  "policy_mutation_tests": 83,
+  "catalog_mutation_tests": 11,
+  "planner_contract_tests": 40,
+  "artwork_decode_tests": 1,
+  "native": {
+    "search-stream": {
+      "checks": 12,
+      "screenshots": 13,
+      "exact_apk_hash_match": true,
+      "fixture_source": "9c1738a32721fcc9970a2795b6c81bb72bb5e297"
+    },
+    "workflows": {
+      "checks": 11,
+      "screenshots": 10,
+      "exact_apk_hash_match": true,
+      "fixture_source": "9c1738a32721fcc9970a2795b6c81bb72bb5e297"
+    },
+    "learning": {
+      "checks": 11,
+      "screenshots": 22,
+      "exact_apk_hash_match": true,
+      "fixture_source": "9c1738a32721fcc9970a2795b6c81bb72bb5e297"
+    },
+    "native": {
+      "checks": 22,
+      "screenshots": 38,
+      "exact_apk_hash_match": true,
+      "fixture_source": "9c1738a32721fcc9970a2795b6c81bb72bb5e297"
+    },
+    "timeout": {
+      "checks": 1,
+      "screenshots": 1,
+      "exact_apk_hash_match": true,
+      "fixture_source": "9c1738a32721fcc9970a2795b6c81bb72bb5e297"
+    },
+    "layout": {
+      "checks": 26,
+      "screenshots": 37,
+      "exact_apk_hash_match": true,
+      "fixture_source": "9c1738a32721fcc9970a2795b6c81bb72bb5e297"
+    },
+    "total_checks": 83,
+    "total_screenshots": 121,
+    "runtime": "API31 Android12 AOSP ATD x86_64; software CPU; real PixelCopy",
+    "provider_boundary": "Synthetic streamed chunks into production parser/UI; synthetic planner/observer/HID for regression; real Camera2 capture. Separate live host OpenAI SSE test. No physical Bluetooth or continuous live OpenAI phone loop."
+  },
+  "live_openai": {
+    "request": {
+      "synthetic_goal": true,
+      "request_sha256": "035ac624f706f24e666ced68397f955690e192d0258310955fe9e915d64e6153",
+      "requested_model": "gpt-6.1-sol",
+      "key_logged_or_saved": false,
+      "commands_executed": false,
+      "utc": "2026-10-20T21:35:43.642246+00:00",
+      "http": 200,
+      "content_type": "text/event-stream",
+      "passed": true,
+      "first_text_seconds": 3.63,
+      "elapsed_seconds": 13.629,
+      "events": {
+        "response.created": 1,
+        "response.in_progress": 1,
+        "response.output_item.added": 1,
+        "response.content_part.added": 1,
+        "response.output_text.delta": 524,
+        "response.output_text.done": 1,
+        "response.content_part.done": 1,
+        "response.output_item.done": 1,
+        "response.completed": 1
+      },
+      "usage": {
+        "input_tokens": 1731,
+        "input_tokens_details": {
+          "cache_write_tokens": 1728,
+          "cached_tokens": 0
+        },
+        "output_tokens": 533,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 2264
+      },
+      "returned_model": "gpt-6.1-sol",
+      "response_bytes": 180712
+    },
+    "production_parser": {
+      "draft_callbacks": 2,
+      "commands_executed": false,
+      "displayable_code_received": true,
+      "phone_transport_tested": false,
+      "production_stream_parser_passed": true,
+      "commands": 2,
+      "phases": 2
+    }
+  },
+  "publication": {
+    "copied_exact_tested_apk_bytes_without_rebuild": true,
+    "prior_apks_unchanged": true,
+    "baseline_promoted": false,
+    "merged": false
+  }
+}
