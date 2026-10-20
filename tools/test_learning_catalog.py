@@ -10,7 +10,7 @@ class LearningIntegrityTests(unittest.TestCase):
    assets=dst/'app/src/main/assets';assets.mkdir(parents=True)
    for p in (ROOT/'app/src/main/assets').glob('linux_commands_*.b64'):shutil.copy2(p,assets/p.name)
    src=dst/'app/src/main/java/com/blackcat/remote';src.mkdir(parents=True)
-   for name in ['OfflineLearningCatalog.kt','LinuxCommandLibraryPanel.kt','OfflineWorkflows.kt','OfflineCommandComposer.kt']:shutil.copy2(ROOT/'app/src/main/java/com/blackcat/remote'/name,src/name)
+   for name in ['OfflineLearningCatalog.kt','LinuxCommandLibraryPanel.kt','OfflineWorkflows.kt','OfflineCommandComposer.kt','OfflineCommandSearch.kt']:shutil.copy2(ROOT/'app/src/main/java/com/blackcat/remote'/name,src/name)
    data=json.loads((dst/'catalog/offline-catalog.json').read_text());change(data)
    raw=(json.dumps(data,ensure_ascii=False,indent=2)+'\n').encode();packed=gzip.compress(raw,mtime=0)
    (dst/'catalog/offline-catalog.json').write_bytes(raw);(assets/'offline_learning_v2.catalog').write_bytes(packed)
