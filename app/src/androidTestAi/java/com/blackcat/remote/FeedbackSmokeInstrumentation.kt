@@ -49,12 +49,14 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
     private var injectedImages = false
     private var imageRunId = ""
     private var timeoutOnly = false
+    private var learningOnly = false
 
     override fun onCreate(arguments: Bundle?) {
         super.onCreate(arguments)
         autoOnly = arguments?.getString("scenario") == "auto"
         injectedImages = arguments?.getString("scenario") == "image-injected"
         imageRunId = arguments?.getString("demoRunId").orEmpty()
+        learningOnly = arguments?.getString("scenario") == "learning"
         timeoutOnly = arguments?.getString("scenario") == "timeout"
         imageAuto = arguments?.getString("scenario") == "image-auto" || injectedImages
         layoutOnly = arguments?.getString("scenario") == "layout"
@@ -93,6 +95,12 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                 decor.isShown && decor.isAttachedToWindow && decor.isLaidOut && SystemClock.uptimeMillis() - stableSince >= 2000
             }
             startupSettled = true
+            if (learningOnly) {
+                captureOfflineLearning()
+                result.putString("stream", "\nUI15_LEARNING_PASS ${checks.size}\n" + checks.joinToString("\n"))
+                finish(Activity.RESULT_OK, result)
+                return
+            }
             if (timeoutOnly) {
                 captureAutoTimeout()
                 result.putString("stream", "\nUI14_TIMEOUT_PASS ${checks.size}\n" + checks.joinToString("\n"))
@@ -214,11 +222,9 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
             onMain {
                 switchTab("PLAN")
                 findButton(dialog, "Browse Offline Linux Library").performClick()
-                val library = field(panel, "libraryPanel")!!
-                val items = field(library, "items") as List<*>
-                check(items.size == 212)
             }
             val library = field(panel, "libraryPanel")!!
+            await("expanded offline catalogue loaded", timeoutMillis = 60000) { (field(library, "items") as List<*>).size == 467 }
             val libraryDialog = field(library, "dialog") as Dialog
             screenshot("library-categories", libraryDialog)
             onMain {
@@ -781,6 +787,162 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                 "Synthetic observation: the fixture terminal appears ready.", listOf("Synthetic visible evidence fixture."), false)
         }
     }
+    private fun captureOfflineLearning() {
+        lateinit var library: LinuxCommandLibraryPanel
+        lateinit var screen: Dialog
+        var selected = 0
+        val started = SystemClock.elapsedRealtime()
+        onMain {
+            library = LinuxCommandLibraryPanel(activity, field(activity, "hid") as HidManager,
+                onSelectForPlan = { selected++ })
+            library.show()
+            screen = field(library, "dialog") as Dialog
+        }
+        await("cold offline learning data", timeoutMillis = 60000) { (field(library, "items") as List<*>).size == 467 }
+        val loadMillis = SystemClock.elapsedRealtime() - started
+        onMain {
+            val data = field(library, "learning") as OfflineLearningData
+            check(data.tools.size == 824 && data.lessons.size == 35)
+            check(data.entries.count { it.kind in setOf("binary", "subcommand", "shell_builtin") } == 3448)
+            check(data.commands.take(212).map { it.id }.distinct().size == 212)
+            check(selected == 0)
+            pass("Cold bundled catalogue loads 467 examples, 824 tool groups and 3448 CLI references without network or selection")
+        }
+        screenshot("learning-01-home", screen)
+        fun nav(title: String) = descendants(screen.window!!.decorView).first {
+            it.isShown && it.isClickable && it.contentDescription?.toString() == title
+        }.performClick()
+        onMain { nav("Kali Linux") }
+        screenshot("learning-02-kali", screen)
+        onMain {
+            check(texts(screen).any { it == "Kali Linux tool directory" })
+            nav("Kali Linux tool directory")
+            check(field(library, "kaliToolsOnly") == true)
+            check((field(library, "level") as Enum<*>).name == "TOOLS")
+            check(selected == 0)
+            pass("Kali has a dedicated offline menu and source-filtered tool directory")
+        }
+        screenshot("learning-03-tools", screen)
+        onMain {
+            scrollBottom(screen)
+            findButton(screen, "Next page").performClick()
+            check(field(library, "toolPage") == 1)
+            pass("Tool browsing is paginated instead of creating thousands of phone views")
+        }
+        screenshot("learning-04-page-two", screen)
+        onMain {
+            val data = field(library, "learning") as OfflineLearningData
+            setField(library, "selectedTool", data.toolById["nmap"]!!)
+            setField(library, "entryPage", 0)
+            setEnum(library, "level", "TOOL")
+            invoke(library, "render")
+        }
+        screenshot("learning-05-tool-source", screen)
+        onMain { findButton(screen, "Learn this tool").performClick() }
+        screenshot("learning-06-tool-guide", screen)
+        onMain {
+            val lesson = field(library, "selectedLesson") as OfflineLesson
+            check(lesson.steps.size in 2..3)
+            nav("1. Locate nmap")
+            check((field(library, "selectedItem") as LinuxCommandItem).command == "command -v nmap")
+            check(!findButton(screen, "Connect Bluetooth first").isEnabled)
+            findButton(screen, "Next explanation").performClick()
+            check((field(library, "selectedItem") as LinuxCommandItem).command == "man -f nmap")
+            check(selected == 0)
+            pass("Tool discovery links availability to local documentation without scanning or typing")
+        }
+        screenshot("learning-07-tool-next", screen)
+        onMain {
+            val data = field(library, "learning") as OfflineLearningData
+            setField(library, "selectedCli", data.entries.first { it.invocation == "nmap" })
+            setEnum(library, "level", "CLI")
+            invoke(library, "render")
+            check(texts(screen).contains("Documented options"))
+            check(descendants(screen.window!!.decorView).filterIsInstance<Button>().none {
+                it.isShown && it.text.toString().startsWith("Approve & type")
+            })
+            check(selected == 0)
+            pass("CLI references show documented options while creating no command approval")
+        }
+        screenshot("learning-08-command-reference", screen)
+        onMain {
+            (field(library, "guideCommands") as MutableMap<*, *>).clear()
+            val data = field(library, "learning") as OfflineLearningData
+            setField(library, "selectedLesson", data.lessonById["workspace"]!!)
+            setEnum(library, "level", "LESSON")
+            invoke(library, "render")
+        }
+        screenshot("learning-09-lesson-overview", screen)
+        onMain {
+            nav("1. Check practice path is unused")
+            val before = (field(library, "selectedItem") as LinuxCommandItem).command
+            findButton(screen, "Next explanation").performClick()
+            val after = (field(library, "selectedItem") as LinuxCommandItem).command
+            check(before == "test ! -e /tmp/blackcat-offline-lab" && after == "mkdir -m 700 /tmp/blackcat-offline-lab")
+            check(selected == 0 && field(library, "busy") == false)
+            check(texts(screen).contains("If the result differs"))
+            check(texts(screen).any { it.contains("not proof this command is installed") })
+            pass("Lesson Next changes only the explanation; expected evidence and stop guidance remain visible")
+        }
+        screenshot("learning-10-next-explanation", screen)
+        val metrics = activity.resources.displayMetrics
+        val originalConfig = android.content.res.Configuration(activity.resources.configuration)
+        for (width in listOf(320, 412)) for (scale in listOf(1f, 2f)) {
+            onMain {
+                val config = android.content.res.Configuration(originalConfig).apply { fontScale = scale }
+                activity.resources.updateConfiguration(config, metrics)
+                library.dismiss()
+                library = LinuxCommandLibraryPanel(activity, field(activity, "hid") as HidManager)
+                library.show(); screen = field(library, "dialog") as Dialog
+                screen.window!!.setLayout((width * metrics.density).toInt(), (780 * metrics.density).toInt())
+            }
+            await("learning layout data $width/$scale") { (field(library, "items") as List<*>).size == 467 }
+            onMain {
+                val data = field(library, "learning") as OfflineLearningData
+                setField(library, "selectedLesson", data.lessonById["kali-readiness"]!!)
+                setEnum(library, "level", "LESSON"); invoke(library, "render")
+            }
+            screenshot("learning-matrix-$width-${(scale * 100).toInt()}-overview", screen)
+            onMain {
+                val data = field(library, "learning") as OfflineLearningData
+                val first = (field(library, "selectedLesson") as OfflineLesson).steps.first()
+                nav("1. ${data.commandById[first.commandId]!!.title}")
+            }
+            screenshot("learning-matrix-$width-${(scale * 100).toInt()}-step", screen)
+            onMain {
+                check((field(library, "headerHero") as View).visibility == View.GONE)
+                check((field(library, "contentScroll") as View).height >= (80 * metrics.density).toInt())
+                scrollBottom(screen)
+            }
+            screenshot("learning-matrix-$width-${(scale * 100).toInt()}-approval", screen)
+            onMain {
+                val type = findButton(screen, "Connect Bluetooth first")
+                fullyVisible(type, 48)
+                check(!type.isEnabled)
+                val body = field(library, "contentBody") as ViewGroup
+                val rect = Rect()
+                body.getGlobalVisibleRect(rect)
+                for (view in descendants(body).filterIsInstance<TextView>().filter { it.isShown && it.width > 0 }) {
+                    val layout = view.layout ?: continue
+                    for (line in 0 until layout.lineCount) check(layout.getEllipsisCount(line) == 0)
+                }
+                pass("Offline lesson $width dp / font $scale: no cat above task, readable viewport and visible single disabled approval")
+            }
+        }
+        onMain {
+            library.dismiss()
+            activity.resources.updateConfiguration(originalConfig, metrics)
+            val cancelled = LinuxCommandLibraryPanel(activity, field(activity, "hid") as HidManager)
+            cancelled.show(); cancelled.dismiss()
+            check(!(field(cancelled, "dialog") as Dialog).isShowing)
+            check(selected == 0)
+            pass("Closing a loading library cancels its UI scope without selecting, typing or reopening")
+        }
+        File(targetContext.filesDir, "ui15-learning-metrics.json").writeText(
+            org.json.JSONObject().put("cold_open_ms_software_emulator", loadMillis).put("checks", checks.size)
+                .put("phone_network_used", false).put("physical_hid_tested", false).toString(2))
+    }
+
     private fun workspace() = field(panel, "workspace") as PlanWorkspace
     private fun pass(name: String) {
         checks.add("PASS: $name")

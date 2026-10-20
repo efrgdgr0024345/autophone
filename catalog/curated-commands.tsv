@@ -1,0 +1,295 @@
+# Sections: category | topic | owning tool | network effect. Rows: command<TAB>title<TAB>explanation<TAB>expected result
+@@System|Identity and release|coreutils|none
+uname -s	Kernel name	Identify the operating-system kernel before using platform-specific instructions.	Linux on the intended target.
+uname -m	Machine architecture	Read the CPU architecture used by installed software.	An architecture such as x86_64 or aarch64.
+uname -o	Operating-system family	Read the operating-system label without changing configuration.	A GNU/Linux label on supported GNU systems.
+id -u	Numeric user ID	Check whether the current shell is root without requesting additional privileges.	Zero means root; another number means an ordinary user.
+id -un	Current login name	Resolve your current effective user name.	The account running this shell.
+id -Gn	Current groups	List the current account's group names to explain access decisions.	Space-separated group names.
+who -b	Last boot time	Read the system boot record where it is available.	A boot timestamp or no record in a minimal container.
+who -q	Logged-in account count	Summarize current login records without changing sessions.	Names and a login count; container records can be empty.
+@@System|Kernel and hardware|util-linux|none
+lscpu --summary	CPU summary	Read processor topology and virtualization information.	CPU model, architecture, and core counts.
+lscpu --extended	CPU topology table	Show how logical CPUs map to cores, sockets, and NUMA nodes.	A table; column availability depends on util-linux version.
+lsmem --summary	Memory-block summary	Read online and offline memory-block totals.	Memory totals, or an unsupported-platform message.
+lsipc --summary	IPC resource summary	Inspect kernel IPC resource limits and use.	Shared-memory, semaphore, and queue summaries.
+lsns --type net	Network namespaces	List network namespaces visible to the current account.	Namespace identifiers and related process information.
+lsns --type mnt	Mount namespaces	Identify mount-namespace isolation before interpreting filesystem paths.	Visible mount namespaces.
+findmnt --target /	Root mount source	Identify the filesystem backing the root directory.	Source device, filesystem type, and mount options.
+@@Storage|Devices and mounts|util-linux|none
+lsblk --output NAME,TYPE,SIZE,FSTYPE,MOUNTPOINTS	Device filesystem map	Relate block devices to filesystems and mount points without writing devices.	One row per device, with mount points if supported.
+lsblk --json	Machine-readable devices	Display block-device metadata as JSON for careful inspection.	JSON describing visible devices.
+lsblk --discard	Discard capability	Read discard and TRIM capabilities without performing a discard operation.	Device discard limits and granularity.
+findmnt --real	Real filesystem mounts	Show real mounted filesystems while excluding pseudo filesystems.	A mount table for real filesystems.
+findmnt --fstab	Configured mount entries	Read the filesystem table without mounting anything.	Configured mount entries, which may differ from active mounts.
+findmnt --verify --verbose	Verify mount configuration	Check filesystem-table syntax and usability without mounting filesystems.	Checks and warnings; privileges and missing devices can affect results.
+findmnt --df	Filesystem space table	Display filesystem capacity through the mount-information interface.	Size, used, and available values.
+lslocks	Current file locks	Inspect advisory locks visible on this machine.	Lock owners and files, subject to access restrictions.
+@@Storage|Capacity and paths|coreutils|none
+df -i	Inode availability	Check whether inode exhaustion explains a full-disk error.	Inode totals, use, and availability for mounted filesystems.
+df -h /tmp	Temporary filesystem capacity	Check available space on the filesystem holding temporary files.	Capacity and usage for /tmp.
+df -T /	Root filesystem type	Read the root filesystem's type and capacity.	A root filesystem row with its type.
+du -sh /var/log	Log directory size	Estimate disk use under the log directory without removing logs.	A total or permission-denied messages for unreadable files.
+stat -f /	Filesystem metadata	Read filesystem-level limits and block information.	Filesystem type, block counts, and available files.
+stat -c '%A %U %G %n' /tmp	Temporary-directory permissions	Check owner, group, and mode before choosing a practice workspace.	Permissions and ownership for /tmp.
+realpath /bin/ls	Resolve an executable path	Follow trusted system symlinks to identify the actual ls file.	An absolute canonical path.
+readlink /proc/self/exe	Current process executable	Read the executable symlink for the process performing this lookup.	The readlink program's executable path; this is not the interactive shell.
+@@Files|Inspect system files|coreutils|none
+cat /etc/debian_version	Debian base version	Read the Debian-family base-version file where present.	A version string, or a missing-file message on other distributions.
+head -n 12 /etc/os-release	Bounded release information	Read at most twelve lines when the full release file is unnecessary.	The first twelve release-information lines.
+tail -n 5 /etc/os-release	End of release information	Inspect the final five lines without changing the file.	The file's last five lines.
+nl -ba /etc/os-release	Number release-file lines	Show line numbers so feedback can identify an exact setting.	Numbered release-file lines.
+wc -l /etc/os-release	Release-file line count	Count lines before deciding how much output to request.	The newline count and filename.
+wc -c /etc/os-release	Release-file byte count	Check file size using a small read-only command.	The byte count and filename.
+sort /etc/os-release	Sorted release fields	Display a sorted view without overwriting the original file.	Release fields in sorted order.
+cut -d= -f1 /etc/os-release	Release field names	Read only field names to learn the file's key-value structure.	Names such as ID and VERSION_ID.
+@@Files|Owned practice workspace|coreutils|none
+test ! -e /tmp/blackcat-offline-lab	Check practice path is unused	Continue only if the fixed practice path does not already exist; never reuse an unknown directory.	Exit zero with no output if unused; otherwise stop and choose a new path.
+mkdir -m 700 /tmp/blackcat-offline-lab	Create private practice directory	Create a new owner-only directory after the unused-path check succeeds.	No output on success; an existing path must not be overwritten.
+printf '%s\n' 'alpha' 'beta' 'beta' 'gamma' > /tmp/blackcat-offline-lab/sample.txt	Create sample text	Write a small known sample only inside the newly created practice directory.	A new four-line sample file; existing contents at this exact path would be overwritten.
+cat /tmp/blackcat-offline-lab/sample.txt	Read the practice sample	Inspect the sample before commands that transform its display.	Four lines: alpha, beta, beta, gamma.
+head -n 2 /tmp/blackcat-offline-lab/sample.txt	Preview sample start	Read a bounded number of lines from the owned sample.	The alpha and first beta lines.
+tail -n 2 /tmp/blackcat-offline-lab/sample.txt	Preview sample end	Read the final two lines from the owned sample.	The second beta and gamma lines.
+nl -ba /tmp/blackcat-offline-lab/sample.txt	Number sample lines	Add display line numbers without modifying the text.	Four numbered lines.
+wc -l -w -c /tmp/blackcat-offline-lab/sample.txt	Measure the sample	Count lines, words, and bytes to verify the sample's shape.	Four lines, four words, and the corresponding byte count.
+sort /tmp/blackcat-offline-lab/sample.txt	Sort sample display	Show ordered text while retaining the source file.	Sorted sample lines.
+uniq -c /tmp/blackcat-offline-lab/sample.txt	Count adjacent repeats	Count adjacent repeated lines; sorting is required for scattered duplicates.	Counts of alpha, beta, and gamma groups.
+cut -c 1-2 /tmp/blackcat-offline-lab/sample.txt	Select sample character columns	Display the first two characters of each sample line.	Two-character prefixes.
+tr '[:lower:]' '[:upper:]' < /tmp/blackcat-offline-lab/sample.txt	Uppercase sample display	Transform stdin for display; do not redirect over the input file.	Uppercase lines while the source stays unchanged.
+sha256sum /tmp/blackcat-offline-lab/sample.txt	Fingerprint the sample	Calculate a content hash before copying or comparing files.	A SHA-256 digest and the sample path.
+cp -n /tmp/blackcat-offline-lab/sample.txt /tmp/blackcat-offline-lab/copy.txt	Copy without overwriting	Create a practice copy while refusing to overwrite an existing destination.	A copy if the destination was absent; inspect both files afterward.
+cmp /tmp/blackcat-offline-lab/sample.txt /tmp/blackcat-offline-lab/copy.txt	Compare two practice files	Compare bytes to verify that the copy matches the sample.	Exit zero and no output if identical.
+stat /tmp/blackcat-offline-lab/copy.txt	Inspect copy metadata	Check the new file's type, size, ownership, and timestamps.	Metadata for the owned practice copy.
+rm -- /tmp/blackcat-offline-lab/copy.txt	Remove the owned copy	Remove only the exact practice copy after confirming its path and contents.	No output on success; this file removal is not reversible without another copy.
+rm -- /tmp/blackcat-offline-lab/sample.txt	Remove the owned sample	Remove only the known practice sample after finishing the lesson.	No output on success; do not substitute unrelated paths.
+rmdir -- /tmp/blackcat-offline-lab	Remove empty practice directory	Remove the exact directory only after the lesson files are removed.	Success if empty; refusal if unexpected contents remain.
+@@Files|Bounded text queries|grep|none
+grep -n '^ID=' /etc/os-release	Find the distribution identifier	Read one exact release key with its line number.	An ID line on a conventional os-release file.
+grep -n '^VERSION_ID=' /etc/os-release	Find the release version	Read the release's version identifier without assuming it always exists.	A VERSION_ID line, or exit one if the distribution omits it.
+grep -c '^' /etc/os-release	Count visible release lines	Count matching lines with grep rather than altering the file.	A line count.
+grep -n 'beta' /tmp/blackcat-offline-lab/sample.txt	Find practice matches	Locate each beta line in the sample created by the workspace lesson.	Two matching lines with line numbers.
+grep -v 'beta' /tmp/blackcat-offline-lab/sample.txt	Exclude practice matches	Display sample lines that do not contain beta.	The alpha and gamma lines.
+sed -n '2,3p' /tmp/blackcat-offline-lab/sample.txt	Display one text slice	Read an explicit line range from the owned sample without in-place editing.	The second and third lines.
+awk 'END {print NR}' /tmp/blackcat-offline-lab/sample.txt	Count sample records	Read all records and print the final record number without writing files.	Four for the four-line sample.
+@@Processes|Process overview|procps|none
+ps -eo pid,ppid,user,stat,comm	Process identity table	Read process ownership, parents, states, and names without full argument strings.	A process table subject to namespace and permission limits.
+ps -eo pid,pcpu,pmem,comm --sort=-pcpu	CPU-ranked processes	Compare recent CPU use; this is a snapshot rather than a sustained measurement.	Processes ordered by the reported CPU value.
+ps -eo pid,pmem,rss,comm --sort=-rss	Resident-memory ranking	Inspect memory consumers without terminating any process.	Processes ordered by resident memory size.
+ps -p 1 -o pid,comm,args	Inspect the init process	Check whether systemd-based lessons apply inside this environment.	The name and arguments of PID 1.
+pgrep -a systemd	Find systemd processes	Find matching processes without sending signals.	Matching process IDs and arguments, or exit one if absent.
+pstree -p	Process parent tree	Show process relationships to explain service and shell ownership.	A process tree if pstree is installed.
+uptime -p	Readable uptime	Read time since boot in a human-friendly form.	A duration such as hours or days.
+vmstat 1 3	Three activity samples	Collect three bounded samples to compare CPU, memory, and I/O activity.	Three data rows; the first may be averages since boot.
+free -m	Memory in MiB	Read RAM and swap totals using consistent units.	Memory and swap tables in MiB.
+@@Network|Interface and route detail|iproute2|none
+ip -brief link	Link state overview	Read interface state without bringing links up or down.	Interface names, state, and link-layer information.
+ip -4 address show	IPv4 addresses	Inspect IPv4 addressing separately from IPv6.	IPv4 interface addresses.
+ip -6 address show	IPv6 addresses	Inspect IPv6 addresses and scope without changing them.	IPv6 interface addresses.
+ip -4 route show	IPv4 routes	Read the IPv4 routing table before testing connectivity.	Routes and a default gateway if configured.
+ip -6 route show default	IPv6 default routes	Check whether IPv6 has a default route.	Default routes or an empty result.
+ip -s link	Interface counters	Read packet and error counters to distinguish link problems from DNS failures.	Per-interface transmit and receive counters.
+ip rule show	Routing-policy rules	Inspect policy routing before assuming the main route table is sufficient.	Rule priorities and lookup tables.
+ip netns list	Named network namespaces	List named namespaces without creating or entering them.	Namespace names, or an empty result.
+ip route get 1.1.1.1	Route decision without ping	Ask the kernel how it would route to a public address; this lookup does not send a probe packet.	Chosen route, interface, source address, or an unreachable error.
+ss -lnt	Listening TCP ports	Inspect local TCP listeners without connecting to them.	Listening addresses and ports.
+ss -lnu	Listening UDP sockets	Read local UDP sockets without transmitting traffic.	UDP listener addresses and ports.
+ss -tan	All TCP states	Inspect TCP sockets in numeric form without hostname lookups.	Socket states and numeric endpoints.
+ss -s	Socket totals	Read a compact summary before requesting a detailed socket table.	TCP, UDP, and total socket counters.
+ss -tpn	TCP process ownership	Associate visible TCP sockets with processes; some owners require privilege.	Numeric endpoints and permitted process information.
+bridge link show	Bridge port state	Inspect bridge ports without changing topology.	Bridge ports and their state if present.
+bridge fdb show	Bridge forwarding entries	Read the bridge forwarding database.	MAC forwarding entries or an empty table.
+@@Network|DNS and connectivity|systemd|dns
+resolvectl statistics	Resolver statistics	Read local resolver counters before issuing a new query.	DNS cache and transaction statistics if systemd-resolved is available.
+resolvectl dns	Configured DNS servers	Read configured per-link DNS servers without replacing them.	Interfaces and configured resolver addresses.
+resolvectl domain	Resolver search domains	Inspect search and routing domains to explain split DNS behavior.	Per-link DNS domain settings.
+resolvectl query api.openai.com	Look up the app's API host	Ask the configured resolver for the current OpenAI API addresses; results can change.	Resolved addresses or a specific DNS error.
+getent ahostsv4 api.openai.com	IPv4 API-host lookup	Use the system name-service configuration to find current IPv4 addresses.	IPv4 records, possibly repeated for different socket types.
+getent ahostsv6 api.openai.com	IPv6 API-host lookup	Use the system resolver to check IPv6 availability.	IPv6 records when available; no records is not proof the service is down.
+dig +noall +answer api.openai.com	Concise API DNS answers	Ask the configured DNS server and display answer records only.	DNS answer records with TTLs, or no answers.
+dig +noall +answer api.openai.com AAAA	API IPv6 DNS records	Query the API hostname's AAAA records explicitly.	IPv6 DNS records if published.
+@@Services|System state|systemd|none
+systemctl is-system-running	Overall systemd state	Check for degraded or incomplete boot before inspecting individual units.	A state label; nonzero status can simply mean degraded.
+systemctl list-jobs --no-pager	Pending service jobs	Read queued unit operations without starting or cancelling jobs.	Pending jobs or an empty list.
+systemctl list-timers --all --no-pager	Scheduled service timers	Inspect timer schedules without enabling or disabling them.	Timer deadlines and associated services.
+systemctl list-sockets --all --no-pager	Socket-activated services	Read socket units to identify services activated on demand.	Socket listeners and their units.
+systemctl list-unit-files --type=service --no-pager	Service installation inventory	Inspect installed service unit files and enablement states.	Service unit names and states.
+systemctl list-units --type=service --all --no-pager	All loaded services	Read running and inactive loaded service units without changing them.	Loaded services and their state.
+systemctl list-dependencies --no-pager	Default target dependencies	Inspect dependencies to understand boot ordering before proposing changes.	A dependency tree, not a guarantee every unit is running.
+systemctl show --property=SystemState	Machine-readable service state	Read a single manager property.	The SystemState property if a system manager is reachable.
+systemd-analyze time	Boot timing	Read firmware, loader, kernel, and userspace timing when available.	Boot-duration breakdown or an environment-specific limitation.
+systemd-analyze blame	Slow-starting units	Inspect recorded unit activation durations; do not equate the longest unit with the whole critical path.	Units sorted by activation time.
+systemd-analyze critical-chain	Boot critical chain	Read dependencies on the recorded boot critical path.	A timing/dependency tree.
+systemd-analyze security --no-pager	Service sandbox review	Read heuristic unit-hardening scores; these are guidance rather than proof of security.	Exposure scores and hardening observations.
+@@Logs|Bounded journal reading|systemd|none
+journalctl --list-boots --no-pager	Available boot journals	Identify which boots have retained logs before choosing a boot selector.	Boot indices, identifiers, and time ranges.
+journalctl -b -n 50 --no-pager	Recent messages this boot	Read at most fifty journal entries for the current boot.	A bounded set of log entries or a permission message.
+journalctl -b -p warning -n 50 --no-pager	Current boot warnings	Read warnings and more severe journal entries with a line limit.	At most fifty qualifying messages.
+journalctl -k -b -n 40 --no-pager	Kernel messages this boot	Read recent kernel journal entries without changing logging settings.	At most forty kernel messages if access is permitted.
+journalctl -u ssh -n 40 --no-pager	Recent SSH service messages	Inspect SSH service logs only; the service unit name varies by distribution.	SSH messages, no entries, or an access error.
+journalctl -u NetworkManager -n 40 --no-pager	NetworkManager messages	Read a bounded networking-service log before restarting anything.	Recent messages if the unit exists.
+journalctl --disk-usage	Journal storage use	Measure journal space without vacuuming or deleting logs.	Total active and archived journal storage.
+journalctl --verify --no-pager	Journal-file consistency	Verify journal-file internal consistency without deleting files.	Verification results; this may take time for large journals.
+journalctl --since '1 hour ago' -n 80 --no-pager	Last-hour messages	Narrow evidence by time and output count.	Up to eighty messages in the chosen time window.
+@@Packages|Debian and Kali inventory|apt|none
+command -v apt	Find APT	Check that APT exists before following a Debian-family lesson.	An executable path, or exit nonzero if absent.
+apt-cache policy	Configured package priorities	Read locally known repository origins and priority values without refreshing indexes.	Sources and pin priorities; cached data may be stale.
+apt-cache policy bash	Bash package candidate	Read installed and candidate versions from local package metadata.	Version and source information for bash.
+apt-cache policy kali-linux-default	Kali default metapackage availability	Inspect local metadata for the default Kali tool collection without installing it.	Candidate and installed versions if the configured sources provide it.
+apt-cache show kali-linux-default	Kali metapackage description	Read the locally cached description and dependency metadata.	Package fields, or an unavailable-package message.
+apt-cache depends kali-linux-default	Kali default package dependencies	Inspect what the metapackage depends on before considering installation.	Dependency relationships from the current cache.
+apt-cache search --names-only kali-tools	Find Kali tool metapackages	Search locally known package names for tool collections.	Matching package names and descriptions.
+apt-mark showmanual	Explicitly installed packages	Read packages marked as manually installed to understand intended system components.	Manual package names.
+apt-mark showhold	Held packages	Check upgrade holds without modifying them.	Held package names, or an empty list.
+apt list --installed	APT installed package list	Read locally installed packages; the output may be long.	Package names, versions, and repository annotations.
+apt list --upgradable	APT upgrade candidates	Read upgrade candidates from existing indexes without downloading or applying upgrades.	Known upgrades; stale indexes can make this incomplete.
+apt-get -s upgrade	Simulate package upgrades	Ask APT to describe an upgrade transaction without applying it; this is a simulation, not approval to install.	A proposed transaction or dependency warnings.
+dpkg-query -W kali-linux-default	Check default Kali metapackage installation	Query local dpkg records for one exact metapackage.	Its installed version or a package-not-installed error.
+dpkg-query -W bash	Check installed Bash package	Read the locally recorded Bash version.	A package name and version.
+dpkg --audit	Inspect incomplete package states	Report partially installed or otherwise inconsistent package records without repairing them.	Problems to investigate, or no output when none are found.
+dpkg --print-architecture	Primary package architecture	Read the architecture dpkg expects for native packages.	An architecture such as amd64 or arm64.
+dpkg --print-foreign-architectures	Additional package architectures	List configured foreign architectures without adding or removing any.	Architecture names or an empty result.
+dpkg -S /bin/ls	Find package ownership	Ask dpkg which package owns an exact path; merged-/usr systems may record /usr/bin/ls instead.	An owning package or a path-not-found result.
+@@Security|Accounts and session access|coreutils|none
+getent passwd	Account directory inventory	Read account records through the configured name service; this can consult remote directory services.	Account entries without password hashes; account names can be sensitive.
+getent group sudo	Sudo group membership	Inspect a distribution's sudo group entry without changing membership.	The group entry or no match on systems using another admin group.
+getent group wireshark	Packet-capture group membership	Check whether the Wireshark access group exists before diagnosing capture permissions.	A group entry if configured.
+groups	Current group names	Inspect group membership without requesting root access.	Current account's groups.
+sudo -n -l	Noninteractive sudo policy check	Ask what sudo permits without typing or capturing a password; failure must not be retried automatically.	Permitted commands or a credentials/policy error.
+loginctl list-sessions --no-pager	Login session list	Read sessions recorded by systemd-logind.	Session identifiers and users if logind is available.
+loginctl list-users --no-pager	Logged-in users	Read users with logind-managed sessions.	User IDs and names, subject to the environment.
+last -n 10	Recent login records	Read ten login-history records without changing authentication state.	Recent login entries; retained records vary.
+@@Security|SSH configuration review|openssh|none
+ssh -V	SSH client version	Read the installed SSH client version without contacting a host.	An OpenSSH version string, often written to stderr.
+ssh -G localhost	Effective local SSH client settings	Print client configuration for localhost without opening an SSH connection; configured Match exec directives can run local helpers.	Evaluated client settings; review local SSH configuration first.
+sshd -t	Validate SSH server configuration	Check server configuration syntax without starting or reloading the daemon; privileged keys may require root.	No output on success or a specific configuration/access error.
+sudo -n sshd -T	Effective SSH server settings	Read server configuration with noninteractive sudo and stop if privileges are unavailable.	Effective settings; this does not establish network reachability.
+systemctl is-active ssh	SSH unit activity	Read whether the Debian-family SSH service is active without starting it.	A service state and matching exit status.
+systemctl is-enabled ssh	SSH unit enablement	Read boot enablement without changing it.	Enabled, disabled, static, or another unit state.
+systemctl cat ssh --no-pager	SSH unit definition	Read unit files and drop-ins before considering service changes.	The unit definition or a unit-not-found error.
+@@Kali Linux|System and shell readiness|kali|none
+command -v zsh	Find the Kali user shell	Check whether Zsh is installed; do not assume every Kali account uses the same shell.	An executable path if installed.
+zsh --version	Installed Zsh version	Read the Zsh version without starting an interactive shell.	A version string.
+bash --version	Installed Bash version	Read Bash version information before using Bash-specific lessons.	A version and license header.
+command -v man	Find local manuals	Check that a local manual reader is available for offline study.	A man executable path or a missing-command result.
+man -w ls	Locate the ls manual	Ask where a local manual lives without opening a pager.	A manual-file path if installed.
+man -f ls	Short ls manual description	Read a local manual description without fetching a web page.	A description or a missing-index result.
+command -v kali-tweaks	Find Kali configuration utility	Check utility availability without launching a configuration screen or changing settings.	A path if the utility is installed.
+command -v kali-undercover	Find Kali desktop mode utility	Check availability without toggling the desktop appearance.	A path or a not-found result.
+command -v nmap	Find network inventory tooling	Check that Nmap exists without initiating a scan.	The Nmap executable path if installed.
+nmap --version	Nmap build information	Read local Nmap version and compiled features without probing a target.	Version, platform, and library information.
+command -v tshark	Find packet-file tooling	Check availability before an offline packet-analysis lesson.	The tshark path if installed.
+tshark --version	TShark build information	Read local packet-analyzer version and build details without capturing traffic.	Version and library information.
+command -v exiftool	Find metadata inspection tooling	Check whether ExifTool is installed before reading local sample metadata.	The exiftool path if installed.
+exiftool -ver	ExifTool version	Read the local tool version without modifying any file.	A version number.
+command -v hashcat	Find installed hash-audit tooling	Check availability only; this does not start a cracking task.	A path or a not-found result.
+hashcat --version	Hashcat version	Read the installed version without processing hashes or launching a device workload.	A version string.
+command -v john	Find installed password-audit tooling	Check availability only; no password hashes are read or processed.	A path or a not-found result.
+command -v msfconsole	Find the framework launcher	Locate the launcher without starting its services or an exploitation console.	A launcher path or a not-found result.
+@@Kali Linux|Trusted local file inspection|binutils|none
+file /bin/ls	Identify a trusted executable	Read the system ls file's format before choosing a file-analysis tool.	Executable or symlink classification.
+stat /bin/ls	Trusted executable metadata	Read size, permissions, and ownership without modifying the executable.	File metadata; use a resolved path if symlink details matter.
+sha256sum /bin/ls	Trusted executable fingerprint	Calculate a comparison fingerprint; a hash alone does not establish authenticity.	A SHA-256 digest and filename.
+readelf -h /bin/ls	ELF header inspection	Inspect the header of a trusted system executable without running it.	ELF class, architecture, and entry-point metadata.
+readelf -l /bin/ls	ELF program headers	Inspect loadable segments and interpreter metadata without executing the file.	Program-header information.
+readelf -d /bin/ls	ELF dynamic dependencies	Read declared shared-library dependencies without using ldd on an untrusted binary.	Dynamic section entries and needed libraries.
+objdump -f /bin/ls	Object-file summary	Inspect format, architecture, and entry-point metadata without launching the executable.	A file-format summary.
+strings -n 12 /bin/ls	Long printable strings	Inspect printable strings from a trusted executable; strings can be misleading and are untrusted data.	Strings of at least twelve characters.
+@@Applications|OpenSSL local inspection|openssl|none
+openssl version -a	OpenSSL build and directories	Read local crypto-library build details without contacting any server.	Version, platform, build options, and default paths.
+openssl list -providers	Available crypto providers	Inspect providers loaded by local OpenSSL configuration without generating keys.	Provider names and status.
+openssl list -digest-algorithms	Available digest algorithms	Read locally supported digest names without processing user secrets.	A digest-algorithm list.
+openssl list -cipher-algorithms	Available cipher algorithms	Read cipher availability; availability alone does not recommend an algorithm.	A cipher-algorithm list.
+openssl list -public-key-algorithms	Public-key algorithm inventory	Read local public-key algorithm implementations without creating key material.	Algorithm names and implementations.
+openssl dgst -sha256 /bin/ls	OpenSSL digest of a trusted file	Cross-check a SHA-256 digest using another local implementation.	The same digest value as sha256sum for identical file bytes.
+@@Applications|Git repository inspection|git|none
+git --version	Git version	Read the local Git version without contacting a remote.	A version string.
+git rev-parse --is-inside-work-tree	Check repository context	Determine whether the current directory belongs to a Git work tree before other Git lessons.	True in a work tree or a not-a-repository error.
+git status --short	Concise repository changes	Read tracked and untracked change summaries without discarding any work.	Changed paths or no output for a clean work tree.
+git branch --show-current	Current Git branch	Read the current branch without switching branches.	A branch name, or empty output in detached HEAD state.
+git log -n 5 --oneline	Five recent commits	Read a bounded commit history without fetching or changing history.	Up to five commit summaries.
+git diff --stat	Change-size summary	Read tracked unstaged change sizes without resetting files.	A path and insertion/deletion summary.
+git diff --check	Whitespace and conflict-marker check	Check the current diff without applying a fix or modifying files.	No output when no such problems are found.
+git ls-files	Tracked file list	Read repository-tracked paths without adding or deleting files.	Tracked filenames.
+git remote -v	Configured remote destinations	Read remote URLs before any network operation; do not share output containing embedded credentials.	Fetch and push URLs; no remote connection is made by this command.
+git show --stat --oneline HEAD	Current commit summary	Inspect the current commit without checking it out.	Commit summary and changed-file statistics.
+@@Applications|Containers without changes|docker|none
+docker version	Docker client and daemon version	Ask the configured Docker endpoint for version information; a remote DOCKER_HOST can make this a network request.	Client information and daemon information if accessible.
+docker context show	Selected Docker context	Read which context would receive future Docker commands.	The current context name.
+docker context ls	Docker endpoint inventory	Inspect configured contexts before contacting an unexpected daemon.	Context names and endpoints.
+docker ps --no-trunc	Running containers	Read running containers from the selected Docker daemon without changing them.	A container table; endpoint and access depend on the selected context.
+podman --version	Podman version	Read the local client version before a container lesson.	A version string.
+podman ps	Running Podman containers	Read running containers; remote Podman configuration can select another machine.	A container table or a daemon/access error.
+@@Documentation|Local help discovery|coreutils|none
+command -v ls	Find a basic executable	Check how the shell resolves a command before assuming a package is missing.	An executable path or shell definition.
+command -v systemctl	Find service-management tooling	Check availability before systemd-specific tasks.	A path if installed.
+command -v ip	Find network-state tooling	Check iproute2 availability before using interface commands.	A path if installed.
+command -v git	Find development tooling	Check availability without installing or launching a network operation.	The git path if installed.
+command -v openssl	Find crypto inspection tooling	Check local OpenSSL availability without processing keys.	The openssl path if installed.
+command -v readelf	Find ELF inspection tooling	Check binutils availability before file-analysis lessons.	The readelf path if installed.
+type ls	Inspect shell resolution	Check whether ls is an alias, function, builtin, or external command in this shell.	Shell-specific command-resolution information.
+getconf ARG_MAX	Maximum argument space	Read the system limit relevant to long command lines.	A byte-limit value or an unsupported-variable error.
+getconf LONG_BIT	Process integer word size	Read the word-size information for the current userland environment.	Usually 32 or 64.
+@@Applications|Owned local Git practice|git|none
+test ! -e /tmp/blackcat-git-lab	Check Git practice path is unused	Proceed only when the fixed practice directory does not exist.	Exit zero for an unused path; otherwise stop without overwriting it.
+mkdir -m 700 /tmp/blackcat-git-lab	Create Git practice directory	Create an owner-only directory after verifying the path was unused.	A new empty directory.
+git -C /tmp/blackcat-git-lab init	Initialize a local practice repository	Create Git metadata only in the newly created practice directory; do not add a remote.	An initialized repository; the initial branch name depends on Git settings.
+git -C /tmp/blackcat-git-lab status --short	Inspect new practice repository	Read its state before adding any content.	A clean or empty repository status.
+printf '%s\n' 'Black Cat local practice' > /tmp/blackcat-git-lab/note.txt	Create a Git practice note	Write only the known note in the owned practice directory.	A new one-line note; an existing note at this path would be overwritten.
+git -C /tmp/blackcat-git-lab add -- note.txt	Stage the owned practice note	Change only the index of the owned practice repository, not a real project.	The note becomes staged.
+git -C /tmp/blackcat-git-lab diff --cached --stat	Inspect staged practice change	Verify what is staged before any commit.	A summary of the staged note; no commit is made.
+git -C /tmp/blackcat-git-lab diff --cached -- note.txt	Review the staged note	Read the exact staged contents without committing or uploading them.	A one-line addition in a diff.
+@@Files|More owned sample transforms|coreutils|none
+cat -n /tmp/blackcat-offline-lab/sample.txt	Number sample display	Show display-only line numbers without changing the sample.	Four numbered lines.
+cat -A /tmp/blackcat-offline-lab/sample.txt	Reveal sample line endings	Make line endings and control characters visible before troubleshooting formatting.	A visible end-of-line marker on each sample line.
+od -An -tx1 /tmp/blackcat-offline-lab/sample.txt	Read sample bytes	Display hexadecimal bytes to distinguish text from hidden control characters.	Hexadecimal bytes including newline values.
+base64 /tmp/blackcat-offline-lab/sample.txt	Encode sample for display	Show a base64 representation without sending or saving it elsewhere.	Encoded text; encoding is not encryption.
+base32 /tmp/blackcat-offline-lab/sample.txt	Base32 sample display	Compare another reversible text encoding without changing the source.	Base32 text representing the sample bytes.
+cksum /tmp/blackcat-offline-lab/sample.txt	Sample CRC checksum	Read a checksum for accidental-corruption comparisons; CRC is not an authenticity check.	CRC value, byte count, and filename.
+b2sum /tmp/blackcat-offline-lab/sample.txt	Sample BLAKE2 fingerprint	Calculate another local content fingerprint without modifying the file.	A BLAKE2 digest and filename.
+md5sum /tmp/blackcat-offline-lab/sample.txt	Legacy sample checksum	Read a legacy checksum for format compatibility; MD5 must not establish security or authenticity.	An MD5 digest and filename.
+sha512sum /tmp/blackcat-offline-lab/sample.txt	Sample SHA-512 fingerprint	Calculate a local SHA-512 fingerprint without processing credentials.	A SHA-512 digest and filename.
+fold -w 3 /tmp/blackcat-offline-lab/sample.txt	Wrap sample display	Wrap long display lines without changing the file.	Sample lines split at three display columns.
+fmt -w 20 /tmp/blackcat-offline-lab/sample.txt	Reformat sample display	Show paragraph reformatting while leaving the source untouched.	Reflowed text suitable for a narrow display.
+paste -s -d ',' /tmp/blackcat-offline-lab/sample.txt	Join sample lines for display	Show a comma-separated view without writing over the source.	One joined sample line.
+expand -t 4 /tmp/blackcat-offline-lab/sample.txt	Display expanded tabs	Inspect how tab expansion works; this sample has no tabs, so it stays unchanged.	The sample text with any tabs converted to spaces.
+@@Documentation|Local capability checks|coreutils|none
+getconf PAGESIZE	Memory page size	Read the process environment's memory page size without changing kernel configuration.	A page size in bytes.
+getconf OPEN_MAX	Open-file limit query	Read the limit exposed through the system configuration interface.	A numeric limit or an unsupported-variable result.
+command -v grep	Find text-search tooling	Check whether the text-search tool is available before following filter lessons.	A resolved command path or a failure status.
+command -v sed	Find stream-editing tooling	Check availability before display-only line slicing.	A sed path if installed.
+command -v awk	Find record-processing tooling	Check which awk executable or shell resolution is available.	A command path if installed.
+command -v file	Find file-type tooling	Check availability before classifying a local file.	The file utility path if installed.
+command -v sha256sum	Find SHA-256 tooling	Check that the checksum implementation exists before a fingerprint lesson.	An executable path if installed.
+command -v capinfos	Find capture metadata utility	Check for packet-file metadata tooling without starting capture.	A path or a not-found result.
+command -v dumpcap	Find packet capture utility	Locate the utility without opening a capture session or changing privileges.	A path if installed.
+capinfos --version	Capture metadata utility version	Read the installed program version without reading a capture file.	Version and build information if the flag is supported by the installed release.
+dumpcap --version	Capture utility version	Read local build details without selecting an interface or capturing packets.	A version string.
+@@Security|Local security configuration|systemd|none
+systemctl status apparmor --no-pager	AppArmor service state	Read the unit's state without starting, stopping, or changing enforcement.	State and recent service messages, or a missing-unit result.
+systemctl status auditd --no-pager	Audit service state	Inspect auditing availability without changing audit rules.	Service state where auditd is installed.
+systemctl status ufw --no-pager	UFW service state	Inspect the unit separately from actual firewall rules; an inactive unit alone does not prove rules are absent.	Unit state or a unit-not-found result.
+cat /proc/sys/kernel/randomize_va_space	ASLR configuration value	Read the current address-randomization setting without modifying it.	A kernel configuration value; interpretation depends on the system.
+cat /proc/sys/kernel/kptr_restrict	Kernel pointer exposure setting	Read one kernel information-exposure setting without changing it.	A restriction level or an inaccessible-file result.
+cat /proc/sys/kernel/dmesg_restrict	Kernel log access setting	Read the kernel log-access restriction setting.	A restriction value.
+cat /proc/sys/fs/protected_hardlinks	Hardlink protection setting	Read a filesystem protection control without changing permissions or links.	A protection value if supported by this kernel.
+cat /proc/sys/fs/protected_symlinks	Symlink protection setting	Read the symlink protection control without creating or following untrusted links.	A protection value if supported.
+systemctl status systemd-timesyncd --no-pager	Time synchronization state	Read whether this time-sync service is running; another service may provide synchronization.	Service state or a missing-unit result.
+timedatectl status	Clock and time-zone state	Read system clock and synchronization metadata without changing time.	Clock, time zone, and sync state when available.
+@@Applications|Git object and index reading|git|none
+git diff --name-only	Unstaged changed paths	Read which tracked files have unstaged changes without showing their contents.	Changed filenames or no output.
+git diff --cached --stat	Staged change summary	Read the size of the staged change before any commit.	A staged change summary.
+git diff --cached --name-only	Staged path list	Read which files would enter a commit without creating one.	Staged filenames.
+git log -n 5 --format='%h %s'	Bounded commit subjects	Read five recent abbreviated commit IDs and subjects without email addresses.	Up to five commit summaries.
+git rev-parse --show-toplevel	Repository root	Resolve the repository root before interpreting relative paths.	An absolute root directory or an outside-repository error.
+git rev-parse --show-prefix	Current repository subdirectory	Read the current directory's path relative to the repository root.	A relative prefix or an empty string at the root.
+git ls-files --stage	Index entry metadata	Read tracked index modes and object identifiers without resetting the index.	Mode, object ID, stage, and path entries.
+git tag --list	Local Git tags	Read local tag names without fetching from a remote.	Tag names or an empty result.
+git stash list	Existing stash records	Read stash descriptions without applying, dropping, or creating a stash.	Local stash entries or no output.
+git worktree list	Existing worktree locations	Read current worktree registrations without adding, moving, or removing any.	Worktree paths and associated revisions.
+git -C /tmp/blackcat-git-lab rm --cached -- note.txt	Unstage the owned practice note	Remove the note from the practice index while retaining its working file; inspect the exact path first.	The note becomes untracked; no file contents are removed.
+@@System|Identity and release|coreutils|none
+uname -r	Kernel release	Read the running kernel release before consulting version-specific guidance.	The active kernel release; it can differ from installed package versions.
+@@Services|System state|systemd|none
+systemctl --failed --no-pager	Failed systemd units	Read failed unit state without entering a pager or restarting services.	Failed units or an empty list; no failures does not guarantee service health.
+@@Storage|Capacity and paths|coreutils|none
+df -h	Filesystem capacity overview	Compare used and available space before choosing a specific mount to investigate.	Human-readable filesystem size and usage rows.

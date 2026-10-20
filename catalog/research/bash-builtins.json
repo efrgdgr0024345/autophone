@@ -1,0 +1,252 @@
+{
+  "source": "Local Bash builtin help, read without profiles or startup scripts",
+  "version": "GNU bash, version 5.2.37(1)-release (x86_64-pc-linux-gnu)",
+  "reference_url": "https://www.gnu.org/software/bash/manual/html_node/Bash-Builtins.html",
+  "reference_url_retrieved": false,
+  "builtins": [
+    {
+      "name": ".",
+      "description": ". - Execute commands from a file in the current shell."
+    },
+    {
+      "name": ":",
+      "description": ": - Null command."
+    },
+    {
+      "name": "[",
+      "description": "[ - Evaluate conditional expression."
+    },
+    {
+      "name": "alias",
+      "description": "alias - Define or display aliases."
+    },
+    {
+      "name": "bg",
+      "description": "bg - Move jobs to the background."
+    },
+    {
+      "name": "bind",
+      "description": "bind - Set Readline key bindings and variables."
+    },
+    {
+      "name": "break",
+      "description": "break - Exit for, while, or until loops."
+    },
+    {
+      "name": "builtin",
+      "description": "builtin - Execute shell builtins."
+    },
+    {
+      "name": "caller",
+      "description": "caller - Return the context of the current subroutine call."
+    },
+    {
+      "name": "cd",
+      "description": "cd - Change the shell working directory."
+    },
+    {
+      "name": "command",
+      "description": "command - Execute a simple command or display information about commands."
+    },
+    {
+      "name": "compgen",
+      "description": "compgen - Display possible completions depending on the options."
+    },
+    {
+      "name": "complete",
+      "description": "complete - Specify how arguments are to be completed by Readline."
+    },
+    {
+      "name": "compopt",
+      "description": "compopt - Modify or display completion options."
+    },
+    {
+      "name": "continue",
+      "description": "continue - Resume for, while, or until loops."
+    },
+    {
+      "name": "declare",
+      "description": "declare - Set variable values and attributes."
+    },
+    {
+      "name": "dirs",
+      "description": "dirs - Display directory stack."
+    },
+    {
+      "name": "disown",
+      "description": "disown - Remove jobs from current shell."
+    },
+    {
+      "name": "echo",
+      "description": "echo - Write arguments to the standard output."
+    },
+    {
+      "name": "enable",
+      "description": "enable - Enable and disable shell builtins."
+    },
+    {
+      "name": "eval",
+      "description": "eval - Execute arguments as a shell command."
+    },
+    {
+      "name": "exec",
+      "description": "exec - Replace the shell with the given command."
+    },
+    {
+      "name": "exit",
+      "description": "exit - Exit the shell."
+    },
+    {
+      "name": "export",
+      "description": "export - Set export attribute for shell variables."
+    },
+    {
+      "name": "false",
+      "description": "false - Return an unsuccessful result."
+    },
+    {
+      "name": "fc",
+      "description": "fc - Display or execute commands from the history list."
+    },
+    {
+      "name": "fg",
+      "description": "fg - Move job to the foreground."
+    },
+    {
+      "name": "getopts",
+      "description": "getopts - Parse option arguments."
+    },
+    {
+      "name": "hash",
+      "description": "hash - Remember or display program locations."
+    },
+    {
+      "name": "help",
+      "description": "help - Display information about builtin commands."
+    },
+    {
+      "name": "history",
+      "description": "history - Display or manipulate the history list."
+    },
+    {
+      "name": "jobs",
+      "description": "jobs - Display status of jobs."
+    },
+    {
+      "name": "kill",
+      "description": "kill - Send a signal to a job."
+    },
+    {
+      "name": "let",
+      "description": "let - Evaluate arithmetic expressions."
+    },
+    {
+      "name": "local",
+      "description": "local - Define local variables."
+    },
+    {
+      "name": "logout",
+      "description": "logout - Exit a login shell."
+    },
+    {
+      "name": "mapfile",
+      "description": "mapfile - Read lines from the standard input into an indexed array variable."
+    },
+    {
+      "name": "popd",
+      "description": "popd - Remove directories from stack."
+    },
+    {
+      "name": "printf",
+      "description": "printf - Formats and prints ARGUMENTS under control of the FORMAT."
+    },
+    {
+      "name": "pushd",
+      "description": "pushd - Add directories to stack."
+    },
+    {
+      "name": "pwd",
+      "description": "pwd - Print the name of the current working directory."
+    },
+    {
+      "name": "read",
+      "description": "read - Read a line from the standard input and split it into fields."
+    },
+    {
+      "name": "readarray",
+      "description": "readarray - Read lines from a file into an array variable."
+    },
+    {
+      "name": "readonly",
+      "description": "readonly - Mark shell variables as unchangeable."
+    },
+    {
+      "name": "return",
+      "description": "return - Return from a shell function."
+    },
+    {
+      "name": "set",
+      "description": "set - Set or unset values of shell options and positional parameters."
+    },
+    {
+      "name": "shift",
+      "description": "shift - Shift positional parameters."
+    },
+    {
+      "name": "shopt",
+      "description": "shopt - Set and unset shell options."
+    },
+    {
+      "name": "source",
+      "description": "source - Execute commands from a file in the current shell."
+    },
+    {
+      "name": "suspend",
+      "description": "suspend - Suspend shell execution."
+    },
+    {
+      "name": "test",
+      "description": "test - Evaluate conditional expression."
+    },
+    {
+      "name": "times",
+      "description": "times - Display process times."
+    },
+    {
+      "name": "trap",
+      "description": "trap - Trap signals and other events."
+    },
+    {
+      "name": "true",
+      "description": "true - Return a successful result."
+    },
+    {
+      "name": "type",
+      "description": "type - Display information about command type."
+    },
+    {
+      "name": "typeset",
+      "description": "typeset - Set variable values and attributes."
+    },
+    {
+      "name": "ulimit",
+      "description": "ulimit - Modify shell resource limits."
+    },
+    {
+      "name": "umask",
+      "description": "umask - Display or set file mode mask."
+    },
+    {
+      "name": "unalias",
+      "description": "unalias - Remove each NAME from the list of defined aliases."
+    },
+    {
+      "name": "unset",
+      "description": "unset - Unset values and attributes of shell variables and functions."
+    },
+    {
+      "name": "wait",
+      "description": "wait - Wait for job completion and return exit status."
+    }
+  ]
+}

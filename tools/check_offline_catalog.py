@@ -162,8 +162,11 @@ def verify() -> None:
     assert online_entry.count("LinuxCommandLibraryPanel(activity, manager, onClosed = { libraryPanel = null }, onSelectForPlan") == 1, "Offline library selection entry changed"
     assert "workspace.append(SuggestedCommand(item.title, item.command" in online_entry, "Library selection must update local plan data only"
 
+    from check_learning_catalog import verify as verify_learning
+    verify_learning(ROOT, schema=False)
+
     print(
-        f"PASS: {len(rows)} offline commands, {len(categories)} categories, "
+        f"PASS: preserved {len(rows)} offline commands, {len(categories)} categories, "
         f"{len(topics)} topics; no API or automatic Enter path"
     )
 
