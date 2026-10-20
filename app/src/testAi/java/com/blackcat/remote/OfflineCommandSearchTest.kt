@@ -57,6 +57,9 @@ class OfflineCommandSearchTest {
         val card = LinuxCommandItem("unicode-reference", "Reference", "Text", "Inspect café Ⅳ 𝟚 𐐀", "id",
             "Read the current account.", "Account information.", LinuxCommandRisk.LOW, false, "Most Linux distributions", emptyList())
         val extended = OfflineLearningData(data.commands + card, data.tools, data.entries, data.lessons, data.notes, data.sources, data.workflows)
-        assertTrue(OfflineCommandSearch(extended).search("CAFÉ Ⅳ 𝟚 𐐀!", "Ubuntu Linux").any { it.id == card.id })
+        val unicodeIndex = OfflineCommandSearch(extended)
+        for (query in listOf("CAFÉ!", "𝟚!", "𐐀!", "CAFÉ Ⅳ 𝟚 𐐀!")) {
+            assertTrue(query, unicodeIndex.search(query, "Ubuntu Linux").any { it.id == card.id })
+        }
     }
 }
