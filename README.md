@@ -2,7 +2,43 @@
 
 Android phone remote that preserves the proven Bluetooth HID keyboard/mouse core while adding a phone-first Linux AI planner and a fully offline Linux command library.
 
-> **UI09 is a physical-test prerelease.** All automated build, policy, unit, lint, APK inspection, CodeQL and provenance gates passed. Real Android-to-computer Bluetooth testing is still required before this version becomes the protected baseline.
+> **UI16 is a physical-test candidate.** Automated checks passed; real Android-to-computer Bluetooth acceptance is still required before baseline promotion.
+
+## UI16 test download — full Kali workflows and command preparation
+
+Full direct APK download URL:
+
+https://raw.githubusercontent.com/efrgdgr0024345/autophone/c8d2d738feb99073af6661bb766905b9b0cb712f/docs/ui16/install/CatAI-16.apk
+
+Expanded plain JSON catalogue:
+
+https://raw.githubusercontent.com/efrgdgr0024345/autophone/11b82c595fddec9904717a2b865daa42b8d77600/catalog/offline-catalog.json
+
+All **820 Kali tool/package groups and 3,055 Kali command entries** now have
+workflow mappings. Open **Kali Linux → All Kali command workflows**, search
+within the paginated list, then use its guide or literal argument builder.
+Subcommands use their backing executable and own manual. The 38 package-only
+groups get installed-version/status/file inspection; no executable is invented.
+Complete guides can be added atomically to a local AI plan with no API request.
+
+Argument values are quoted individually, an optional sudo prefix is explicit,
+and prepared tasks open HIGH-risk exact-command review. Ordinary TYPE ONLY and
+Auto's separate supported command subset are retained. The existing 467 curated
+cards and 35 task lessons remain available; the full workflow mappings are
+counted separately. Catalogue browsing and preparation work offline.
+
+All 180 unit tests, 94 policy/data mutations, 40 planner contracts and 71 native
+emulator checks passed. Lint: zero errors. CodeQL: zero security findings, 26
+quality notes. Production-prepared literal arguments passed independent Bash
+checks, alongside three local package inspections. The inventory was not all
+installed or executed; target availability and physical phone/Bluetooth behavior
+still need acceptance.
+
+Version code 20, original signer; APK source `11b82c595fddec9904717a2b865daa42b8d77600`.
+SHA-256: `a1048f88c6e8cfdc31f9a4d4162b6906d3e9feb6bed0316b6ccfcec616ed8820`.
+[Install/offline alternative](docs/ui16/install/README.md), [verification](docs/ui16/README.md),
+[new screens](docs/ui16/workflows-screens/README.md), [learning gallery](docs/ui16/learning-screens/README.md)
+and [complete layout matrix](docs/ui16/layout-matrix/README.md). Old APKs are preserved.
 
 ## UI15 test download — offline Kali and linked Linux lessons
 

@@ -22,3 +22,7 @@ Version code 20, `16.0-full-kali-workflows`. See [SOURCE.txt](SOURCE.txt),
 Tool programs must be available on the target Linux computer; this APK does not
 install the 820 packages on Android. Actual phone/computer Bluetooth and tool
 execution need physical acceptance. Earlier APKs remain unchanged.
+
+Full direct CatAI APK URL:
+
+https://raw.githubusercontent.com/efrgdgr0024345/autophone/c8d2d738feb99073af6661bb766905b9b0cb712f/docs/ui16/install/CatAI-16.apk
