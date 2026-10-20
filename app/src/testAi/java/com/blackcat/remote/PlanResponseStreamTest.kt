@@ -88,4 +88,17 @@ class PlanResponseStreamTest {
         assertEquals(512, draft.commands.single().command.length)
         rejected(delta(root.toString()) + completion(root.toString()))
     }
+    @Test fun fortyStepPlansHaveRoomForTokenEventMetadataWithoutRelaxingTextBounds() = runBlocking {
+        val root = proposal()
+        val commands = JSONArray()
+        repeat(40) { i -> commands.put(JSONObject(root.getJSONObject("decision").getJSONArray("commands").getJSONObject(0).toString())
+            .put("title", "Inspect $i").put("explanation", "Read-only context. ".repeat(40)).put("expected_result", "Visible facts. ".repeat(20))) }
+        root.getJSONObject("decision").put("commands", commands)
+        val text = root.toString()
+        val wire = text.chunked(4).joinToString("") { chunk -> event("response.output_text.delta", "output_index" to 0,
+            "content_index" to 0, "item_id" to "msg_${"a".repeat(200)}", "delta" to chunk) } + completion(text)
+        assertTrue(wire.length > 3000000)
+        assertTrue(text.length < PlanResponseStream.MAX_TEXT)
+        assertEquals(40, PlanResponseStream.read(bytes(wire)) {}.commands.size)
+    }
 }

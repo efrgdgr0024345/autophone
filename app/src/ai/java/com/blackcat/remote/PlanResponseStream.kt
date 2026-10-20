@@ -15,7 +15,9 @@ internal data class DraftCommand(val title: String, val command: String, val exp
 internal object PlanResponseStream {
     const val MAX_TEXT = 262144
     private const val MAX_EVENT = 600000
-    private const val MAX_WIRE = 3000000
+    // SSE repeats IDs/metadata for each token. Preserve room for a full 16k-token
+    // detailed plan while bounding retained text/event sizes independently.
+    private const val MAX_WIRE = 12000000
 
     suspend fun read(input: InputStream, onDraft: suspend (PlanStreamDraft) -> Unit): CommandPlan {
         val reader = InputStreamReader(input, Charsets.UTF_8).buffered()
