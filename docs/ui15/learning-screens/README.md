@@ -90,4 +90,3 @@ Synthetic goals/providers; not evidence of physical Bluetooth or a continuous li
 ## learning-matrix-412-200-step
 
 ![learning-matrix-412-200-step](learning-matrix-412-200-step.png)
-

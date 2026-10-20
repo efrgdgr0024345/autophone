@@ -150,4 +150,3 @@ Synthetic goals/providers; not evidence of physical Bluetooth or a continuous li
 ## matrix-412-200-step
 
 ![matrix-412-200-step](matrix-412-200-step.png)
-

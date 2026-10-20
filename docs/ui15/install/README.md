@@ -14,3 +14,7 @@ Version code 19, `15.0-offline-kali-learning`. See [SOURCE.txt](SOURCE.txt),
 [SHA256SUMS.txt](SHA256SUMS.txt), signing reports and the
 [verification report](../VERIFICATION.json). Both files are testing candidates;
 physical phone/computer acceptance remains required.
+
+Full direct CatAI APK URL:
+
+https://raw.githubusercontent.com/efrgdgr0024345/autophone/ae9d55436b450aa878432c59917f110840bd039c/docs/ui15/install/CatAI-15.apk

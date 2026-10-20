@@ -158,4 +158,3 @@ Synthetic goals/providers; not evidence of physical Bluetooth or a continuous li
 ## voice-consent
 
 ![voice-consent](voice-consent.png)
-
