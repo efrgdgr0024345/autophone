@@ -37,7 +37,9 @@ internal class OfflineCommandComposer(private val activity: Activity, private va
         }
         BlackCatStyle.applySystemBarInsets(root)
         val header = LinearLayout(activity).apply { gravity = Gravity.CENTER_VERTICAL; setPadding(dp(12), dp(8), dp(12), dp(8)) }
-        header.addView(label("Prepare ${entry.invocation}", 20f, true), LinearLayout.LayoutParams(0, -2, 1f))
+        header.addView(label("Prepare ${entry.invocation}", 20f, true).apply {
+            maxLines = 2; ellipsize = android.text.TextUtils.TruncateAt.END
+        }, LinearLayout.LayoutParams(0, -2, 1f))
         header.addView(button("Close") { dismiss() }, LinearLayout.LayoutParams(-2, -2))
         root.addView(header)
         val body = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(16), dp(10), dp(16), dp(16)) }
@@ -51,7 +53,7 @@ internal class OfflineCommandComposer(private val activity: Activity, private va
         body.addView(button("Remove last argument") {
             if (arguments.isNotEmpty()) { val field = arguments.removeAt(arguments.lastIndex); field.text.clear(); argumentBody.removeViewAt(argumentBody.childCount - 1); refresh() }
         })
-        admin = CheckBox(activity).apply { text = "This task requires administrator access"; minHeight = dp(48); setOnCheckedChangeListener { _, _ -> refresh() } }
+        admin = CheckBox(activity).apply { text = "Prefix with sudo · a password may be requested"; minHeight = dp(48); setOnCheckedChangeListener { _, _ -> refresh() } }
         body.addView(admin)
         body.addView(label("Exact command preview", 15f, true))
         preview = label("", 15f).apply { typeface = Typeface.MONOSPACE; setTextIsSelectable(true); setPadding(dp(12), dp(12), dp(12), dp(12)); setBackgroundColor(Color.WHITE) }

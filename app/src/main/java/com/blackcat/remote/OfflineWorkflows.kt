@@ -31,7 +31,7 @@ internal class OfflineWorkflowSupport(val commands: Map<String, OfflineCliWorkfl
                 require(discovery.all { CommandPolicy.problem(it) == null })
                 val builder = row.getJSONObject("task_builder")
                 require(builder.getString("default_risk") == "high" && builder.getInt("maximum_command_length") == CommandPolicy.MAX_LENGTH)
-                require(builder.getString("argument_mode") == "literal_arguments" && builder.getBoolean("requires_user_preparation"))
+                require(builder.getString("argument_mode") == "literal_arguments" && builder.getBoolean("requires_user_preparation") && builder.getBoolean("user_selected_sudo_prefix"))
                 commands[entry.id] = OfflineCliWorkflow(entry.id, tokens, entry.name, help, discovery)
             }
             val toolRows = root.getJSONArray("tool_workflows")
@@ -120,7 +120,8 @@ internal object OfflineWorkflows {
     }
     fun prepare(entry: OfflineCli, arguments: List<String>, admin: Boolean = false): LinuxCommandItem {
         require(arguments.size <= 24) { "Use at most 24 argument fields." }
-        val command = (tokens(entry).map { word(it) } + arguments.map { literal(it) }).joinToString(" ")
+        val command = (if (admin) "sudo " else "") +
+            (tokens(entry).map { word(it) } + arguments.map { literal(it) }).joinToString(" ")
         CommandPolicy.problem(command)?.let { throw IllegalArgumentException(it) }
         val purpose = entry.summary.takeIf { it.any(Char::isLetterOrDigit) }.orEmpty()
         return LinuxCommandItem("prepared-${entry.id}", "Kali workflows", entry.invocation, "Prepared ${entry.invocation}", command,

@@ -59,6 +59,16 @@ class OfflineWorkflowsTest {
             catch (_: IllegalArgumentException) {}
         }
     }
+    @Test fun administratorPrefixIsExplicitAndVisibleInTheExactCommand() {
+        val entry = data.entries.first { it.invocation == "nmap" }
+        val ordinary = OfflineWorkflows.prepare(entry, listOf("--version"))
+        val privileged = OfflineWorkflows.prepare(entry, listOf("--version"), true)
+        assertEquals("nmap '--version'", ordinary.command)
+        assertEquals("sudo nmap '--version'", privileged.command)
+        assertFalse(ordinary.requiresAdmin)
+        assertTrue(privileged.requiresAdmin)
+        assertEquals(LinuxCommandRisk.HIGH, privileged.risk)
+    }
     @Test fun missingHelpIsNotInventedAndKnownHelpMustMatchTheInvocation() {
         for (entry in data.entries.filter { it.id in data.workflows.commands }) {
             val workflow = data.workflows.commands[entry.id]!!

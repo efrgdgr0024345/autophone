@@ -918,7 +918,10 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
             onMain {
                 val config = android.content.res.Configuration(original).apply { fontScale = scale }
                 activity.resources.updateConfiguration(config, metrics)
-                editorPanel = OfflineCommandComposer(activity, data.entries.first { it.invocation == "git add" }, {}, {})
+                val entry = if (width == 320 && scale == 2f)
+                    data.entries.filter { it.id in data.workflows.kaliEntryIds }.maxBy { it.invocation.length }
+                    else data.entries.first { it.invocation == "git add" }
+                editorPanel = OfflineCommandComposer(activity, entry, {}, {})
                 editorPanel.show(); editorWindow = field(editorPanel, "dialog") as Dialog
                 editorWindow.window!!.setLayout((width * metrics.density).toInt(), (500 * metrics.density).toInt())
                 findButton(editorWindow, "Add argument").performClick()

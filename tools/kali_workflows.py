@@ -34,7 +34,7 @@ def build_support(data):
                 f'man -f -- {literal(topic)}',
                 f'man -P cat -- {literal(topic)} | head -n 40'] + ([observed] if observed else []),
             'task_builder': {'argument_mode': 'literal_arguments', 'default_risk': 'high',
-                'maximum_command_length': 512, 'requires_user_preparation': True},
+                'maximum_command_length': 512, 'requires_user_preparation': True, 'user_selected_sudo_prefix': True},
             'evidence': 'user_reviews_actual_terminal_output', 'automatic_execution': False})
     tool_workflows = []
     for tool in data['tools']:
