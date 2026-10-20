@@ -901,6 +901,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         screenshot("workflows-06-guide-in-plan", dialog)
         await("stale guide library") { (field(library, "items") as List<*>).size == 467 }
         onMain {
+            check(field(panel, "libraryPanel") === library) { "A late close callback cleared the newly opened library" }
             setField(library, "selectedTool", data.toolById["bettercap-ui"]!!)
             setEnum(library, "level", "TOOL"); invoke(library, "render")
             findButton(screen, "Inspect package").performClick(); nav("bettercap-ui")
