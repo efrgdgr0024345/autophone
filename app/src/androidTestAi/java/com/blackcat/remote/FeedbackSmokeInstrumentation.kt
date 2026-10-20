@@ -922,6 +922,11 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                 check((field(library, "contentScroll") as View).height >= (80 * metrics.density).toInt())
                 scrollBottom(screen)
             }
+            await("lesson approval scroll settled $width/$scale") {
+                val type = findButton(screen, "Connect Bluetooth first")
+                val visible = Rect()
+                type.getGlobalVisibleRect(visible) && visible.height() >= type.height
+            }
             screenshot("learning-matrix-$width-${(scale * 100).toInt()}-approval", screen)
             onMain {
                 val type = findButton(screen, "Connect Bluetooth first")
