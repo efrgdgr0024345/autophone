@@ -406,7 +406,12 @@ private class AiPanel(
             setPadding(dp(10), dp(6), dp(10), dp(6))
         }
         row.addView(statusPill)
-        statusText = label("Open Settings for API key", 11f, Color.rgb(205, 218, 212)).apply {
+        val keyStatus = when {
+            vault.exists() -> "API key saved on this phone"
+            PendingApiKey.has(activity) -> "Temporary API key · ready for one request"
+            else -> "Open Settings for API key"
+        }
+        statusText = label(keyStatus, 11f, Color.rgb(205, 218, 212)).apply {
             setPadding(dp(10), 0, 0, 0)
             maxLines = 4
         }
