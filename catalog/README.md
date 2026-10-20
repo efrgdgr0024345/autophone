@@ -77,6 +77,32 @@ complete third-party manuals are not redistributed.
 proposes goal-first suggestions, target profiles, evidence per step and explicit
 remaining-plan changes for later camera/voice integration.
 
+## Full Kali workflow support
+
+`workflow_support` now maps all **820 Kali tool/package groups and 3,055 Kali
+CLI entries** to source-linked workflows; the broader catalogue maps all 824 groups
+and 3,448 CLI entries. All 38 package-only Kali groups get local package inspection,
+without inventing executables. Command workflows include availability, local manual
+summary, a bounded manual view, and a simple observed help invocation when available.
+The app also provides a literal argument builder and complete-guide plan import.
+
+Use **Kali Linux → All Kali command workflows** for the entire paginated command
+list. Search inside the list, open an entry, then choose its guide or task builder.
+The editor supports up to 24 argument fields within the final command limit.
+Each field is one literal argument, including empty values. An optional
+user-selected `sudo` prefix is visible in the preview and may request a password. Shell quoting
+prevents outer-shell expansion; tools can interpret their own arguments and may
+change files or contact network targets. Prepared task commands start at HIGH risk
+and keep the existing 512-character printable-ASCII typing limit. Building and
+adding a plan are local data edits; the existing fresh TYPE ONLY approval still
+applies. Unattended Auto retains its separate supported command subset.
+
+Coverage means that every entry has a valid route through discovery, preparation
+and review. It does not mean every program was installed, executed or given a
+complete expert-authored task cookbook. Source versions, missing documentation,
+package availability and required arguments must be checked on the actual computer.
+The 467 curated examples and 35 task lessons remain separately counted.
+
 ## Reproduce or edit
 
 The app never downloads the catalogue. The public JSON and compressed bundled asset

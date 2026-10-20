@@ -1,0 +1,161 @@
+{
+  "build_source": "11b82c595fddec9904717a2b865daa42b8d77600",
+  "rollback": "dff3d3ac601418c9f99dc220329c89a3dcf68cc7",
+  "version_code": 20,
+  "version_name": "16.0-full-kali-workflows",
+  "application_id": "com.blackcat.remote",
+  "unit_tests": {
+    "ai": {
+      "tests": 153,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "offline": {
+      "tests": 27,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "lint": {
+    "ai": {
+      "Error": 0,
+      "Warning": 72
+    },
+    "offline": {
+      "Error": 0,
+      "Warning": 26
+    }
+  },
+  "apks": {
+    "CatAI-16.apk": {
+      "sha256": "a1048f88c6e8cfdc31f9a4d4162b6906d3e9feb6bed0316b6ccfcec616ed8820",
+      "bytes": 6419201
+    },
+    "CatBT-16.apk": {
+      "sha256": "9ab7bbdc385547e7661f98ee5feaad57d44f29ffa8676462094bf7e196cf73a6",
+      "bytes": 6058529
+    }
+  },
+  "signer_sha256": "fc5c0b42b9da40c2507d8f2e77ed92db9e023740aa1a44d1a3b2c14a6e9f4764",
+  "codeql": {
+    "app_source_files": 53,
+    "security_findings": 0,
+    "quality_notes": 26,
+    "coverage_note": "All 53 app Kotlin files extracted. CLI denominator also includes the unbuilt historical docs/ui14.2/live-openai/ProductionCodecCheck.java host helper."
+  },
+  "catalog": {
+    "schema_version": 2,
+    "json_sha256": "2f0cfbae60e570501bd11420fd9f583707f6dc7722e2a459f864ea462d6304b6",
+    "asset_gzip_sha256": "ca696aaaf0149191a37ec370261db5c7692a2deef4aa161f9f31df535d801c57",
+    "json_bytes": 9453394,
+    "asset_bytes": 940403,
+    "counts": {
+      "tool_or_package_groups": 824,
+      "kali_package_sections": 1561,
+      "documented_entries_total": 3667,
+      "documented_cli_entries": 3448,
+      "distinct_binary_names": 3133,
+      "builtin_only_entries": 53,
+      "shell_builtin_names": 61,
+      "subcommand_entries": 262,
+      "service_unit_references": 139,
+      "manual_reference_entries": 80,
+      "source_documents": 1871,
+      "command_example_entries": 467,
+      "distinct_command_example_lines": 465,
+      "legacy_example_entries": 212,
+      "added_example_entries": 255,
+      "lessons": 35,
+      "lesson_steps": 184,
+      "learning_paths": 5,
+      "workflow_templates": 1,
+      "observed_help_invocations": 2519,
+      "example_categories": 14,
+      "example_topics": 89,
+      "workflow_kali_tools": 820,
+      "workflow_kali_commands": 3055,
+      "workflow_supported_kali_tools": 820,
+      "workflow_supported_kali_commands": 3055,
+      "workflow_package_only_kali_groups": 38,
+      "workflow_all_supported_tools": 824,
+      "workflow_all_supported_commands": 3448
+    }
+  },
+  "policy_mutation_tests": 83,
+  "catalog_mutation_tests": 11,
+  "planner_contract_tests": 40,
+  "artwork_decode_tests": 1,
+  "local_workflow_smoke": {
+    "passed": true,
+    "results": [
+      {
+        "check": "production_Kotlin_to_real_Bash_literal_arguments",
+        "passed": true,
+        "cases": 5,
+        "shell_injection_marker_created": false
+      },
+      {
+        "check": "local_package_-W",
+        "passed": true
+      },
+      {
+        "check": "local_package_-s",
+        "passed": true
+      },
+      {
+        "check": "local_package_-L",
+        "passed": true
+      }
+    ],
+    "all_inventoried_programs_execution_tested": false,
+    "source_example_tools_used": [
+      "printf",
+      "dpkg-query"
+    ]
+  },
+  "native": {
+    "workflows": {
+      "checks": 11,
+      "screenshots": 10,
+      "exact_apk_hash_match": true,
+      "fixture_source": "11b82c595fddec9904717a2b865daa42b8d77600"
+    },
+    "learning": {
+      "checks": 11,
+      "screenshots": 22,
+      "exact_apk_hash_match": true,
+      "fixture_source": "11b82c595fddec9904717a2b865daa42b8d77600"
+    },
+    "native": {
+      "checks": 22,
+      "screenshots": 38,
+      "exact_apk_hash_match": true,
+      "fixture_source": "11b82c595fddec9904717a2b865daa42b8d77600"
+    },
+    "timeout": {
+      "checks": 1,
+      "screenshots": 1,
+      "exact_apk_hash_match": true,
+      "fixture_source": "11b82c595fddec9904717a2b865daa42b8d77600"
+    },
+    "layout": {
+      "checks": 26,
+      "screenshots": 37,
+      "exact_apk_hash_match": true,
+      "fixture_source": "11b82c595fddec9904717a2b865daa42b8d77600"
+    },
+    "total_checks": 71,
+    "total_screenshots": 108,
+    "runtime": "API31 Android12 AOSP ATD x86_64; software CPU; real PixelCopy",
+    "provider_boundary": "Synthetic planner/observer/HID for regression; real Camera2 capture. No physical Bluetooth or continuous live OpenAI phone loop."
+  },
+  "live_openai_requests_this_update": false,
+  "publication": {
+    "copied_exact_tested_apk_bytes_without_rebuild": true,
+    "prior_apks_unchanged": true,
+    "baseline_promoted": false,
+    "merged": false
+  }
+}

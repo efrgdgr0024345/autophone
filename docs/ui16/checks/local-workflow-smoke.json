@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "results": [
+    {
+      "check": "production_Kotlin_to_real_Bash_literal_arguments",
+      "passed": true,
+      "cases": 5,
+      "shell_injection_marker_created": false
+    },
+    {
+      "check": "local_package_-W",
+      "passed": true
+    },
+    {
+      "check": "local_package_-s",
+      "passed": true
+    },
+    {
+      "check": "local_package_-L",
+      "passed": true
+    }
+  ],
+  "all_inventoried_programs_execution_tested": false,
+  "source_example_tools_used": [
+    "printf",
+    "dpkg-query"
+  ]
+}
