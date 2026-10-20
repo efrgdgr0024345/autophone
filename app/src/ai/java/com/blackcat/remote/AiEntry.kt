@@ -438,6 +438,10 @@ private class AiPanel(
         goalSummary = label("", 14f, INK, Typeface.BOLD).apply { maxLines = 1; ellipsize = android.text.TextUtils.TruncateAt.END }
         goalSummaryRow.addView(goalSummary, LinearLayout.LayoutParams(0, -2, 1f))
         goalSummaryRow.addView(textButton("Edit goal") {
+            if (busy) {
+                cancelWork(); workspace.touch()
+                setStatus("Request cancelled. Edit your goal; nothing was typed.")
+            }
             goalExpanded = true; renderAll(); goal.requestFocus()
         })
         body.addView(goalSummaryRow, matchWrap(bottom = 8))
@@ -951,6 +955,9 @@ private class AiPanel(
                 workspace.touch()
                 cancelButton.visibility = View.GONE
                 buildButton.isEnabled = goal.text.isNotBlank() && selectedTarget.isNotBlank()
+                liveHost.visibility = View.GONE
+                autoPlayButton.isEnabled = commands.isNotEmpty() && workspace.proposal == null && !transportPaused
+                renderManualActionBar()
                 renderPlanResult()
             }
         })
