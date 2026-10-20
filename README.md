@@ -2,7 +2,42 @@
 
 Android phone remote that preserves the proven Bluetooth HID keyboard/mouse core while adding a phone-first Linux AI planner and a fully offline Linux command library.
 
-> **UI16 is a physical-test candidate.** Automated checks passed; real Android-to-computer Bluetooth acceptance is still required before baseline promotion.
+> **UI17 is a physical-test candidate.** Automated checks passed; real Android-to-computer Bluetooth acceptance is still required before baseline promotion.
+
+## UI17 test download — natural language search and live plan cards
+
+Full direct APK download URL:
+
+https://raw.githubusercontent.com/efrgdgr0024345/autophone/ebd126d85c1bdae3c15dbd599445a8bb63c39a11/docs/ui17/install/CatAI-17.apk
+
+Search tasks such as “I want to check all internet connections” locally across
+the eligible catalogue for the selected OS. Results show matching topics and
+paginated command/tool references. Search OS initially follows the target setting;
+its visible chooser changes this library session only. No model download or API key
+is required for search. The 820 Kali groups and 3,055 command workflows are retained.
+
+Interactive AI plan and text-feedback requests now stream into explanation,
+roadmap and monospace command cards. Progress identifies the current draft step;
+scrolling pauses following, and Follow latest step resumes it. Auto/Voice and Cancel
+stay visible. Partial drafts become usable only after final stream consistency and
+strict plan validation; failure or cancellation keeps the prior plan. Existing
+foreground Auto execution policy, photo analysis, Bluetooth and permissions are retained.
+
+All **197 unit tests and 83 native emulator checks** passed, with 121 actual
+screenshots, zero Lint errors and zero CodeQL security findings (30 quality notes).
+A paid live host OpenAI stream passed with a synthetic two-command plan: first text
+3.63 seconds, completion 13.63 seconds. Emulator providers are synthetic; physical
+phone/computer and continuous live camera/Bluetooth acceptance remain required.
+
+A roughly 20 MB embedding model could improve paraphrase ranking; runtime, memory,
+licensing and phone benchmarks need evaluation before integration. UI17 adds no neural
+runtime, dependency, permission, endpoint or model-version upgrade.
+
+Version code 21, original signer; APK source `9c1738a32721fcc9970a2795b6c81bb72bb5e297`.
+SHA-256: `2607ba4985e06372bdcb6ca4029e330631f45c927acdc217950599bf078d4bdc`.
+[Install/offline alternative](docs/ui17/install/README.md), [verification](docs/ui17/README.md),
+[new search/streaming screens](docs/ui17/search-stream-screens/README.md)
+and [complete layout matrix](docs/ui17/layout-matrix/README.md). Prior APKs are preserved.
 
 ## UI16 test download — full Kali workflows and command preparation
 

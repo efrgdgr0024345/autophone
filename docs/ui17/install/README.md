@@ -1,5 +1,13 @@
 # UI17 installation
 
+Full direct AI APK URL (HTTP 200 and SHA-256 verified):
+
+https://raw.githubusercontent.com/efrgdgr0024345/autophone/ebd126d85c1bdae3c15dbd599445a8bb63c39a11/docs/ui17/install/CatAI-17.apk
+
+Full direct offline APK URL:
+
+https://raw.githubusercontent.com/efrgdgr0024345/autophone/ebd126d85c1bdae3c15dbd599445a8bb63c39a11/docs/ui17/install/CatBT-17.apk
+
 [Download CatAI-17.apk](CatAI-17.apk) — AI planner, live plan cards, local task search and Bluetooth remote.
 
 [Download CatBT-17.apk](CatBT-17.apk) — Bluetooth remote and the same local search/library, with no Internet/camera/microphone capability.
