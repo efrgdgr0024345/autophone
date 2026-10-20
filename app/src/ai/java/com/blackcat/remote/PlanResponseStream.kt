@@ -157,14 +157,14 @@ internal object PlanDraftPreview {
         }
         val phases = (0 until 16).mapNotNull { n ->
             val title = values["roadmap[$n].title"] ?: return@mapNotNull null
-            title to values["roadmap[$n].purpose"].orEmpty()
+            title.take(160) to values["roadmap[$n].purpose"].orEmpty().take(1500)
         }
         val commands = (0 until PlanCodec.MAX_COMMANDS).mapNotNull { n ->
             val base = "decision.commands[$n]"
             if (values.keys.none { it.startsWith("$base.") }) return@mapNotNull null
-            DraftCommand(values["$base.title"].orEmpty(), values["$base.command"].orEmpty(), values["$base.explanation"].orEmpty())
+            DraftCommand(values["$base.title"].orEmpty().take(160), values["$base.command"].orEmpty().take(512), values["$base.explanation"].orEmpty().take(2000))
         }
         return PlanStreamDraft(values["explanation"].orEmpty().take(6000), phases, commands,
-            (0 until 20).mapNotNull { values["decision.questions[$it]"] })
+            (0 until 8).mapNotNull { values["decision.questions[$it]"]?.take(1000) })
     }
 }

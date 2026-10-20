@@ -78,4 +78,13 @@ class PlanResponseStreamTest {
         PlanResponseStream.read(bytes(event("response.reasoning_text.delta", "delta" to "PRIVATE") + delta(text) + completion(text))) { previews += it }
         assertTrue(previews.none { it.toString().contains("PRIVATE") })
     }
+    @Test fun oversizedDraftFieldsCannotFloodThePhoneViewOrPassFinalValidation() {
+        val root = proposal()
+        val command = root.getJSONObject("decision").getJSONArray("commands").getJSONObject(0)
+        command.put("title", "x".repeat(5000)).put("command", "x".repeat(5000))
+        val draft = PlanDraftPreview.read(root.toString())
+        assertEquals(160, draft.commands.single().title.length)
+        assertEquals(512, draft.commands.single().command.length)
+        rejected(delta(root.toString()) + completion(root.toString()))
+    }
 }
