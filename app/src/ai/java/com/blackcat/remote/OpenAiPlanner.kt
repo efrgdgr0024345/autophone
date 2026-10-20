@@ -16,9 +16,10 @@ class OpenAiPlanner {
     @Volatile private var connection: HttpsURLConnection? = null
     fun cancel() { connection?.disconnect() }
 
-    suspend fun propose(goal: String, target: String, model: String, key: String): CommandPlan = withContext(Dispatchers.IO) {
+    internal suspend fun propose(goal: String, target: String, model: String, key: String,
+        onDraft: (suspend (PlanStreamDraft) -> Unit)? = null): CommandPlan = withContext(Dispatchers.IO) {
         require(validKey(key)) { "Enter a valid API key." }
-        val body = PlanCodec.request(goal, target, model).toString().toByteArray(Charsets.UTF_8)
+        val body = PlanCodec.request(goal, target, model).put("stream", onDraft != null).toString().toByteArray(Charsets.UTF_8)
         currentCoroutineContext().ensureActive()
         val http = URL(ENDPOINT).openConnection() as HttpsURLConnection
         connection = http
@@ -31,11 +32,17 @@ class OpenAiPlanner {
             http.doOutput = true
             http.setRequestProperty("Authorization", "Bearer $key")
             http.setRequestProperty("Content-Type", "application/json; charset=utf-8")
+            if (onDraft != null) http.setRequestProperty("Accept", "text/event-stream")
             http.setFixedLengthStreamingMode(body.size)
             currentCoroutineContext().ensureActive()
             http.outputStream.use { it.write(body) }
             val code = http.responseCode
             if (code != 200) throw PlanException(failureMessage(code, providerErrorCode(http)))
+            if (onDraft != null) {
+                if (http.contentType?.substringBefore(';')?.trim() != "text/event-stream")
+                    throw PlanException("OpenAI returned an unexpected stream format. Your plan was kept.")
+                return@withContext http.inputStream.use { PlanResponseStream.read(it, onDraft) }
+            }
             val response = http.inputStream.use { input ->
                 val buffer = ByteArray(4096)
                 val out = java.io.ByteArrayOutputStream()
