@@ -9,8 +9,8 @@ android {
         applicationId 'com.blackcat.remote'
         minSdk 28
         targetSdk 35
-        versionCode 21
-        versionName '17.0-search-streaming'
+        versionCode 22
+        versionName '19.0-evidence-auto'
     }
     flavorDimensions 'capability'
     productFlavors {

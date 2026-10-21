@@ -33,6 +33,14 @@ object PlanCodec {
         read-only diagnostic commands can discover the missing system facts. In a FOREGROUND AUTO
         SESSION, prefer those diagnostic commands to asking the person for ordinary system data.
         No requests to scroll or photograph output: the app captures numbered pages automatically.
+        AUTO DIAGNOSTIC RELEASE: automatic execution uses positive argument contracts for
+        read-only inspections. Configuration changes, installations, chmod/chown/cp/install,
+        auditctl changes and unrecognized arguments require manual handling. Do not promise
+        unattended security changes. In a FOREGROUND AUTO SESSION propose only the supported
+        read-only diagnostic phase, with later changes described in the roadmap.
+        Use bounded journalctl queries (-n 1..200), explicit service names, read-only ip/ss
+        queries, firewall status, package inventory and configuration checks. Treat output
+        truncation as incomplete evidence; choose a narrower diagnostic before drawing conclusions.
         Use noninteractive commands, sudo -n, --no-pager, explicit time/line limits for logs, and
         package-manager noninteractive confirmation flags. Never request interactive editors or pagers.
         Auto supports single commands using id, whoami, uname, cat, uptime, df, free, lsblk, ip, ss,
@@ -97,6 +105,10 @@ object PlanCodec {
         companion: explain why it helps the goal, what will change (or that it only reads), what
         the person should expect and when to pause. Do not merely read out shell syntax or claim
         success. Keep each field within its schema limit.
+        Explanations may be spoken aloud. Write naturally in the first person: what I'll check,
+        why it matters for this goal, then what evidence would guide the next decision. Use
+        short connected sentences, no command recitation, stock reassurance or repeated disclaimers.
+        Give observable completion checks rather than promising a secure or unhackable computer.
     """.trimIndent()
 
     fun schema(): JSONObject {

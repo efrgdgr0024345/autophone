@@ -58,4 +58,41 @@ class AutoObservationTest {
         assertEquals("https://api.openai.com/v1/audio/speech", OpenAiSpeechCodec.ENDPOINT)
         assertFalse(r.has("tools"))
     }
+    @Test fun exactPrintedCaptureFooterFromTheLiveProviderHasACanonicalPrefix() {
+        val prefix = "BC1234567890abcdef12345678_CAP"
+        for ((state, suffix) in listOf("captured" to "DONE", "truncated" to "TRUNCATED")) {
+            val value = fixture(outcome = "unclear").put("page_state", state).put("exit_code", "0")
+                .put("page_marker", "${prefix}_0_$suffix")
+            assertEquals(prefix, AutoObservationCodec.parse(value.toString()).pageMarker)
+        }
+    }
+    @Test fun canonicalPrefixesRemainUnchangedAndWrongNoncesRemainDifferent() {
+        val prefix = "BC1234567890abcdef12345678_CAP"
+        val value = fixture().put("page_state", "captured").put("exit_code", "0").put("page_marker", prefix)
+        assertEquals(prefix, AutoObservationCodec.parse(value.toString()).pageMarker)
+        val other = "BCabcdef1234567890abcdef12_CAP"
+        value.put("page_marker", "${other}_0_DONE")
+        assertNotEquals(prefix, AutoObservationCodec.parse(value.toString()).pageMarker)
+    }
+    @Test fun inconsistentExitCodeOrStateIsNeverNormalizedIntoAnAcceptedMarker() {
+        val prefix = "BC1234567890abcdef12345678_CAP"
+        for ((raw, state, code) in listOf(Triple("${prefix}_1_DONE", "captured", "0"),
+            Triple("${prefix}_0_TRUNCATED", "captured", "0"), Triple("${prefix}_0_DONE", "truncated", "0"),
+            Triple("${prefix}_0_DONE_EXTRA", "captured", "0"), Triple("BC_wrong_CAP_0_DONE", "captured", "0"))) {
+            val value = fixture().put("page_state", state).put("exit_code", code).put("page_marker", raw)
+            assertNotEquals(raw, prefix)
+            assertNotEquals(prefix, AutoObservationCodec.parse(value.toString()).pageMarker)
+        }
+    }
+    @Test fun printedPageAndCleanupFootersRequireTheirExactSeparateStateAndCode() {
+        val page = "BC1234567890abcdef12345678_P1_1_8"
+        val clean = "BC1234567890abcdef12345678_CLEAN"
+        for ((raw, state, expected) in listOf(Triple("${page}_END_2_MORE", "more", page),
+            Triple("${page}_END_2_DONE", "unreadable", page), Triple("${clean}_2", "cleaned", clean))) {
+            val value = fixture().put("page_state", state).put("exit_code", "2").put("page_marker", raw)
+            assertEquals(expected, AutoObservationCodec.parse(value.toString()).pageMarker)
+        }
+        val wrong = fixture().put("page_state", "more").put("exit_code", "0").put("page_marker", "${page}_END_2_MORE")
+        assertNotEquals(page, AutoObservationCodec.parse(wrong.toString()).pageMarker)
+    }
 }

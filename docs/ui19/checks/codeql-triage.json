@@ -1,0 +1,13 @@
+{
+  "security_findings": 0,
+  "covered_kotlin_files": 61,
+  "quality_notes": 30,
+  "same_rule_file_counts_as_ui17": true,
+  "notes": {
+    "java/deprecated-call": "Android platform UI/compatibility APIs; no incidental migration of protected behavior.",
+    "java/random-used-once": "SecureRandom produces a fresh 96-bit collection nonce. This is not java.util.Random or a weak seed.",
+    "java/whitespace-contradicts-precedence": "Existing test-only geometry assertion; width/font native checks verify intended evaluation.",
+    "java/misleading-indentation": "Compact stream-parser formatting and frozen Diagnostics; no behavioral change or preservation exception.",
+    "java/constant-loop-condition": "Bounded SSE reader exits on completion/EOF/errors, with event/wire/text limits and request deadlines."
+  }
+}

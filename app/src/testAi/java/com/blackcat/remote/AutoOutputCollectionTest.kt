@@ -128,28 +128,35 @@ class AutoOutputCollectionTest {
             assertFalse(Files.exists(java.nio.file.Path.of(first.ticket.path)))
         } finally { Files.deleteIfExists(input); cleanup(first.ticket.path) }
     }
-    @Test fun outputLimitDoesNotLimitCommandFileWritesOrCauseSigpipe() {
+    @Test fun outputLimitReportsIncompleteEvidenceAndDrainsWithoutSigpipe() {
         val source = Files.createTempFile("bc-large-source", ".bin")
-        val destination = Files.createTempFile("bc-large-destination", ".bin")
         val bytes = ByteArray(3 * 1024 * 1024) { 'x'.code.toByte() }
         Files.write(source, bytes)
         val collector = AutoOutputCollection()
-        val copy = collector.prepare(step("cp $source $destination"))
-        val copyOp = collector.operation(copy.command)!!
+        val capture = collector.prepare(step("cat $source"))
+        val op = collector.operation(capture.command)!!
         try {
-            assertFalse(copy.command.contains("ulimit"))
-            assertTrue(shell(copy.command).contains("${copyOp.marker}_0"))
-            assertEquals(bytes.size.toLong(), Files.size(destination))
-            assertArrayEquals(bytes, Files.readAllBytes(destination))
-            shell(collector.cleanup(copyOp).command)
+            assertFalse(capture.command.contains("ulimit"))
+            assertTrue(shell(capture.command).contains("${op.marker}_0_TRUNCATED"))
+            assertEquals(1048577L, Files.size(java.nio.file.Path.of(op.ticket.path, "r")))
+            assertArrayEquals(bytes, Files.readAllBytes(source))
+            shell(collector.cleanup(op).command)
+        } finally { Files.deleteIfExists(source); cleanup(op.ticket.path) }
+    }
+    @Test fun exactlyOneMiBIsCompleteButTheNextByteIsExplicitlyTruncated() {
+        for (size in listOf(1048576, 1048577)) {
+            val source = Files.createTempFile("bc-boundary", ".bin")
+            Files.write(source, ByteArray(size) { 'x'.code.toByte() })
+            val collector = AutoOutputCollection()
             val capture = collector.prepare(step("cat $source"))
             val op = collector.operation(capture.command)!!
             try {
-                assertTrue(shell(capture.command).contains("${op.marker}_0"))
-                assertEquals(1048576L, Files.size(java.nio.file.Path.of(op.ticket.path, "r")))
+                assertTrue(capture.command.length <= 512)
+                val expected = if (size == 1048576) "DONE" else "TRUNCATED"
+                assertTrue(shell(capture.command).contains("${op.marker}_0_$expected"))
                 shell(collector.cleanup(op).command)
-            } finally { cleanup(op.ticket.path) }
-        } finally { Files.deleteIfExists(source); Files.deleteIfExists(destination); cleanup(copyOp.ticket.path) }
+            } finally { Files.deleteIfExists(source); cleanup(op.ticket.path) }
+        }
     }
     @Test fun partiallyVisiblePageCanBeRedisplayedInSmallerSlicesWithoutLosingLines() {
         val input = Files.createTempFile("bc-resize", ".txt")

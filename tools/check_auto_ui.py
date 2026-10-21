@@ -84,11 +84,14 @@ def verify(root=ROOT):
                        'CommandApproval(command, host)', 'ApprovedCommandSender.send'), 'single approval')
     collector = (ai / 'AutoOutputCollection.kt').read_text()
     assert 'ulimit' not in collector, 'Output capture must not limit files written by the command'
-    require(collector, ('SecureRandom()', 'umask 077', 'head -c 1048576', 'cat >/dev/null', 'LC_ALL=C cat -v',
+    require(collector, ('SecureRandom()', 'umask 077', 'head -c 1048577', 'echo _TRUNCATED', 'cat >/dev/null', 'LC_ALL=C cat -v',
                         'fold -w 64', 'const val LINES = 8', 'const val MAX_PAGES = 16',
                         'CommandPolicy.problem(command)', 'operations[command]', 'ticket.pages.add(value.pageText)',
                         'if (page > MAX_PAGES) return null', 'Never repeat a transmitted change',
                         'Do not ask the person to scroll'), 'bounded output collection')
+    require(state, ('AutoActionContracts.match(words) != null', 'history.interrupt()', '&& !expired',
+                    '!op.ticket.truncated', 'fun recordEvidence('), 'diagnostic contracts and truthful task state')
+    require(panel, ('operation.ticket.truncated = true', 'current.recordEvidence(value)', 'AutoTaskState.OBSERVED'), 'incomplete evidence')
     require(panel, ('current.insertCollection(step, newRevision)', 'value.collectionReady(operation)',
                     'current.collection.retain(operation, value)', 'current.waitAgain()',
                     'collectionContext =', 'AutoRevisionContext.goal', 'Live command list',

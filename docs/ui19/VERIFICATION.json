@@ -1,0 +1,287 @@
+{
+  "source": "173946bb1172cea930dfd78ed032967b022d8fcf",
+  "test_driver_source": "e9c3cb7f662ee0586d73ae4880301a62720b0514",
+  "rollback": "267e886d9e3a63d0627bd2d29c18f64051dc6d0b",
+  "version_code": 22,
+  "version_name": "19.0-evidence-auto",
+  "apks": {
+    "CatAI-19.apk": {
+      "sha256": "3e42faac46d7a658c94e72553bce1564efebc699253639bf553f6bdacf7c357f",
+      "bytes": 6522185
+    },
+    "CatBT-19.apk": {
+      "sha256": "d555e83b83faac606185c3024786e437dde47f33f28d7cfef41b2aa7a25343ed",
+      "bytes": 6097885
+    }
+  },
+  "unit_tests": {
+    "ai": {
+      "tests": 186,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "offline": {
+      "tests": 27,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "lint": {
+    "ai": {
+      "Error": 0,
+      "Warning": 82
+    },
+    "offline": {
+      "Error": 0,
+      "Warning": 30
+    }
+  },
+  "native": {
+    "evidence": {
+      "checks": 5,
+      "screenshots": 2,
+      "exact_apk_match": true,
+      "tested_apk_sha256": "3e42faac46d7a658c94e72553bce1564efebc699253639bf553f6bdacf7c357f"
+    },
+    "search-stream": {
+      "checks": 12,
+      "screenshots": 13,
+      "exact_apk_match": false,
+      "tested_apk_sha256": "9b3ef1a5c0cad9b5892f43328e649c2839539f6ddc6d49d6e414c1fd861f247f"
+    },
+    "workflows": {
+      "checks": 11,
+      "screenshots": 10,
+      "exact_apk_match": false,
+      "tested_apk_sha256": "9b3ef1a5c0cad9b5892f43328e649c2839539f6ddc6d49d6e414c1fd861f247f"
+    },
+    "learning": {
+      "checks": 11,
+      "screenshots": 22,
+      "exact_apk_match": false,
+      "tested_apk_sha256": "9b3ef1a5c0cad9b5892f43328e649c2839539f6ddc6d49d6e414c1fd861f247f"
+    },
+    "native": {
+      "checks": 22,
+      "screenshots": 38,
+      "exact_apk_match": true,
+      "tested_apk_sha256": "3e42faac46d7a658c94e72553bce1564efebc699253639bf553f6bdacf7c357f"
+    },
+    "timeout": {
+      "checks": 1,
+      "screenshots": 1,
+      "exact_apk_match": true,
+      "tested_apk_sha256": "3e42faac46d7a658c94e72553bce1564efebc699253639bf553f6bdacf7c357f"
+    },
+    "layout": {
+      "checks": 26,
+      "screenshots": 37,
+      "exact_apk_match": false,
+      "tested_apk_sha256": "9b3ef1a5c0cad9b5892f43328e649c2839539f6ddc6d49d6e414c1fd861f247f"
+    }
+  },
+  "ui_baseline": {
+    "source": "5dc08a9be6fdd312d3fed1ef5cbb8b749763f089",
+    "apk_sha256": "9b3ef1a5c0cad9b5892f43328e649c2839539f6ddc6d49d6e414c1fd861f247f",
+    "cases": {
+      "evidence": {
+        "checks": 5,
+        "screenshots": 2
+      },
+      "search-stream": {
+        "checks": 12,
+        "screenshots": 13
+      },
+      "workflows": {
+        "checks": 11,
+        "screenshots": 10
+      },
+      "learning": {
+        "checks": 11,
+        "screenshots": 22
+      },
+      "native": {
+        "checks": 22,
+        "screenshots": 38
+      },
+      "timeout": {
+        "checks": 1,
+        "screenshots": 1
+      },
+      "layout": {
+        "checks": 26,
+        "screenshots": 37
+      }
+    },
+    "total_checks": 88,
+    "unchanged_ui_source_verified": true,
+    "final_production_delta": [
+      "app/src/ai/java/com/blackcat/remote/AutoObservation.kt"
+    ]
+  },
+  "signer_sha256": "fc5c0b42b9da40c2507d8f2e77ed92db9e023740aa1a44d1a3b2c14a6e9f4764",
+  "codeql": {
+    "covered_kotlin_files": 61,
+    "security_findings": 0,
+    "quality_notes": 30
+  },
+  "live_openai": {
+    "requests": [
+      {
+        "case": "plan",
+        "synthetic_data_only": true,
+        "key_logged_or_saved": false,
+        "commands_executed": false,
+        "http": 200,
+        "elapsed_seconds": 17.536,
+        "response_bytes": 21188,
+        "passed": true,
+        "model": "gpt-6.1-sol",
+        "usage": {
+          "input_tokens": 1938,
+          "input_tokens_details": {
+            "cache_write_tokens": 1935,
+            "cached_tokens": 0
+          },
+          "output_tokens": 761,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 2699
+        }
+      },
+      {
+        "case": "vision",
+        "synthetic_data_only": true,
+        "key_logged_or_saved": false,
+        "commands_executed": false,
+        "http": 200,
+        "elapsed_seconds": 5.796,
+        "response_bytes": 9015,
+        "passed": true,
+        "model": "gpt-6.1-sol",
+        "usage": {
+          "input_tokens": 2139,
+          "input_tokens_details": {
+            "cache_write_tokens": 2136,
+            "cached_tokens": 0
+          },
+          "output_tokens": 201,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 2340
+        }
+      },
+      {
+        "case": "speech",
+        "synthetic_data_only": true,
+        "key_logged_or_saved": false,
+        "commands_executed": false,
+        "http": 200,
+        "elapsed_seconds": 2.779,
+        "response_bytes": 516000,
+        "passed": true,
+        "audio_seconds": 10.75
+      },
+      {
+        "case": "vision",
+        "synthetic_data_only": true,
+        "key_logged_or_saved": false,
+        "commands_executed": false,
+        "http": 200,
+        "elapsed_seconds": 6.958,
+        "response_bytes": 9499,
+        "passed": true,
+        "model": "gpt-6.1-sol",
+        "usage": {
+          "input_tokens": 2215,
+          "input_tokens_details": {
+            "cache_write_tokens": 2212,
+            "cached_tokens": 0
+          },
+          "output_tokens": 234,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 2449
+        }
+      },
+      {
+        "case": "truncation",
+        "synthetic_data_only": true,
+        "key_logged_or_saved": false,
+        "commands_executed": false,
+        "http": 200,
+        "elapsed_seconds": 6.33,
+        "response_bytes": 9288,
+        "passed": true,
+        "model": "gpt-6.1-sol",
+        "usage": {
+          "input_tokens": 1756,
+          "input_tokens_details": {
+            "cache_write_tokens": 1753,
+            "cached_tokens": 0
+          },
+          "output_tokens": 135,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 1891
+        }
+      }
+    ],
+    "parsed": {
+      "natural_explanations": [
+        "I'll start by reading the system's OS identification so we know which Ubuntu release we're reviewing. This only displays information; check for the distribution name and version.",
+        "I'll check filesystem capacity to see whether storage pressure could affect normal operation. Look at available space and usage on the root filesystem and any separate home or data filesystem.",
+        "I'll ask the service manager which services are currently marked failed. This only reads their state; any listed service needs context before deciding whether it indicates a problem."
+      ],
+      "vision_page_and_exit_code_match": true,
+      "phone_transport_tested": false,
+      "diagnostic_contracts_passed": true,
+      "vision_explanation": "The output identifies the account as demo, with demo as its primary and only listed group. The identity check is complete, and the terminal is back at an idle prompt.",
+      "production_serializers_and_parsers": true,
+      "commands": 3
+    },
+    "truncation": {
+      "success_disallowed": true,
+      "passed": true,
+      "live_truncation_recognized": true,
+      "explanation": "The capture reached its output limit and returned to an idle prompt. Some output is missing, so the account context cannot yet be confirmed."
+    },
+    "request_source": "5dc08a9be6fdd312d3fed1ef5cbb8b749763f089",
+    "final_parser_source": "173946bb1172cea930dfd78ed032967b022d8fcf",
+    "final_live_payload_replay": true,
+    "paid_requests": 5
+  },
+  "linux_image_demo": {
+    "passed": true,
+    "observations": 14,
+    "commands_executed": 13,
+    "plan_revisions": 1,
+    "task_states": [
+      "FAILED",
+      "REPLACED",
+      "OBSERVED"
+    ],
+    "injected_vision_frames": true,
+    "app_openai_network_tested": false,
+    "physical_bluetooth_tested": false,
+    "printed_footer_normalization_exercised": true
+  },
+  "verification_limits": [
+    "Synthetic emulator HID/planner/observer for native regressions.",
+    "Separate actual Linux helpers, independently OCR-read terminal fixtures injected at observer boundary.",
+    "Separate bounded live API planning/vision/speech using production serializers/parsers.",
+    "No continuous physical phone camera/OpenAI/Bluetooth proof.",
+    "Configuration changes remain manual in the diagnostic milestone."
+  ],
+  "publication": {
+    "exact_tested_bytes": true,
+    "merged": false,
+    "baseline_promoted": false
+  }
+}

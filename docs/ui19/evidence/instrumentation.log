@@ -1,0 +1,13 @@
+UI12_SMOKE_START
+PASS: A remembered encrypted key removes temporary-key controls from Auto; opening it makes no API/HID request
+PASS: Truncated evidence cannot become success: cleanup and a focused diagnostic replace the unstarted next task automatically
+PASS: Task identities survive helper operations and revision; uncertain, replaced and evidence-checked states remain distinct
+PASS: Finished Auto reports OFF with cleared session key/camera and a truthful phase label
+PASS: Stopping the session preserves the remembered Keystore-encrypted key for later plans
+
+UI19_EVIDENCE_PASS 5
+PASS: A remembered encrypted key removes temporary-key controls from Auto; opening it makes no API/HID request
+PASS: Truncated evidence cannot become success: cleanup and a focused diagnostic replace the unstarted next task automatically
+PASS: Task identities survive helper operations and revision; uncertain, replaced and evidence-checked states remain distinct
+PASS: Finished Auto reports OFF with cleared session key/camera and a truthful phase label
+PASS: Stopping the session preserves the remembered Keystore-encrypted key for later plans

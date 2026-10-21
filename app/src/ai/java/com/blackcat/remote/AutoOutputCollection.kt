@@ -10,6 +10,7 @@ internal class AutoOutputCollection {
         val pages = mutableListOf<String>()
         var exitCode: String? = null
         var conclusion: AutoObservation? = null
+        var truncated = false
         val path get() = "/tmp/bc-$token"
     }
     internal class Operation(val ticket: Ticket, val page: Int, val command: String, val from: Int = 0, val to: Int = 0) {
@@ -26,15 +27,16 @@ internal class AutoOutputCollection {
         val ticket = Ticket(step, token)
         // No interactive pager or stdin. sudo is noninteractive: a missing credential fails visibly.
         val input = AutoRunPolicy.nonInteractive(step.command)
-        val command = "(umask 077; b=${ticket.path}; mkdir \"\$b\" && { " +
-            "{ env TERM=dumb PAGER=cat SYSTEMD_PAGER=cat $input </dev/null; echo \$? >\"\$b/s\"; } 2>&1 | " +
-            "{ head -c 1048576 >\"\$b/r\"; cat >/dev/null; }; LC_ALL=C cat -v \"\$b/r\" | fold -w 64 >\"\$b/o\"; " +
-            "printf '\\nBC${token}_CAP_'; cat \"\$b/s\"; })"
+        val command = "(umask 077; b=${ticket.path}; mkdir \"\$b\" && cd \"\$b\" && { " +
+            "{ env TERM=dumb PAGER=cat SYSTEMD_PAGER=cat $input </dev/null; echo \$? >s; } 2>&1 | " +
+            "{ head -c 1048577 >r; cat >/dev/null; }; LC_ALL=C cat -v r | fold -w 64 >o; " +
+            "printf '\\nBC${token}_CAP_'; tr -d '\\n' <s; " +
+            "if [ \$(wc -c <r) -le 1048576 ]; then echo _DONE; else echo _TRUNCATED; fi; })"
         if (CommandPolicy.problem(command) != null) return step
         operations[command] = Operation(ticket, 0, command)
         return SuggestedCommand("Capture · ${step.title}".take(160), command,
-            (step.explanation + " Run once and capture output in a private temporary Linux folder, then read numbered pages automatically. Output is capped at 1 MiB; no passwords are entered.").take(1500),
-            step.risk, step.requiresAdmin, "${operations[command]!!.marker}_<exit code>, followed by an idle shell prompt.", step.warnings)
+            (step.explanation + " Run once and capture output in a private temporary Linux folder, then read numbered pages automatically. Output over 1 MiB is explicitly incomplete; no passwords are entered.").take(1500),
+            step.risk, step.requiresAdmin, "${operations[command]!!.marker}_<exit code>_DONE or _TRUNCATED, followed by an idle shell prompt.", step.warnings)
     }
 
     fun nextPage(op: Operation): SuggestedCommand? {
@@ -74,7 +76,7 @@ internal class AutoOutputCollection {
             "low", false, "${marker}_0 and a fresh prompt.", emptyList())
     }
 
-    fun context(op: Operation) = JSONObject().put("expected_marker", op.marker).put("page", op.page)
+    fun context(op: Operation) = JSONObject().put("expected_marker", op.marker).put("page", op.page).put("capture_truncated", op.ticket.truncated)
         .put("original_command", op.ticket.original.command).put("original_expected_result", op.ticket.original.expectedResult)
         .put("earlier_pages_untrusted", JSONArray(op.ticket.pages)).toString()
 
