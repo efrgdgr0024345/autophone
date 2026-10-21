@@ -10,5 +10,7 @@
         <intent><action android:name="android.speech.RecognitionService" /></intent>
         <intent><action android:name="android.intent.action.TTS_SERVICE" /></intent>
     </queries>
-    <application android:label="Black Cat AI" tools:replace="android:label" />
+    <application android:label="Black Cat AI" tools:replace="android:label">
+        <activity android:name=".UpdateActivity" android:exported="false" />
+    </application>
 </manifest>

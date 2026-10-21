@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blackcat.remote.OfflineLearningCatalogTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-21T09:08:45" hostname="447eb30ef900" time="5.161">
+  <properties/>
+  <testcase name="danglingLessonCommandCannotBecomeANavigableStep" classname="com.blackcat.remote.OfflineLearningCatalogTest" time="1.423"/>
+  <testcase name="controlCharactersCannotBecomeTypingExamples" classname="com.blackcat.remote.OfflineLearningCatalogTest" time="0.887"/>
+  <testcase name="duplicateIdsAreRejectedBeforeLookupCanChooseTheWrongCommand" classname="com.blackcat.remote.OfflineLearningCatalogTest" time="0.788"/>
+  <testcase name="aFalseCountCannotBeDisplayedAsACompleteSnapshot" classname="com.blackcat.remote.OfflineLearningCatalogTest" time="0.691"/>
+  <testcase name="bundledSnapshotSeparatesCommandsToolsAndReferencesWithRealLinks" classname="com.blackcat.remote.OfflineLearningCatalogTest" time="0.631"/>
+  <testcase name="danglingToolReferencesAreRejected" classname="com.blackcat.remote.OfflineLearningCatalogTest" time="0.741"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

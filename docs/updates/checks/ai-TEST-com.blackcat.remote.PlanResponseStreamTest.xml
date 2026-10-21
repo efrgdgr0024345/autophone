@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blackcat.remote.PlanResponseStreamTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-10-21T09:08:58" hostname="447eb30ef900" time="0.519">
+  <properties/>
+  <testcase name="fragmentedUtf8SseProducesDraftBeforeStrictFinalPlan" classname="com.blackcat.remote.PlanResponseStreamTest" time="0.01"/>
+  <testcase name="fortyStepPlansHaveRoomForTokenEventMetadataWithoutRelaxingTextBounds" classname="com.blackcat.remote.PlanResponseStreamTest" time="0.432"/>
+  <testcase name="eofFailureRefusalAndMismatchedCompletionCannotPublish" classname="com.blackcat.remote.PlanResponseStreamTest" time="0.005"/>
+  <testcase name="prefixesKeepProseCodeAndPhasesSeparateWithoutRepairingExecutablePlans" classname="com.blackcat.remote.PlanResponseStreamTest" time="0.001"/>
+  <testcase name="deeplyNestedOrUnboundedKeyPrefixesStopBeforeRecursiveParsingOrPathGrowth" classname="com.blackcat.remote.PlanResponseStreamTest" time="0.004"/>
+  <testcase name="malformedAndMixedDecisionsStillUseTheProductionValidation" classname="com.blackcat.remote.PlanResponseStreamTest" time="0.053"/>
+  <testcase name="reasoningEventsAreNeverPresentedAsUserFacingThoughts" classname="com.blackcat.remote.PlanResponseStreamTest" time="0.006"/>
+  <testcase name="oversizedDraftFieldsCannotFloodThePhoneViewOrPassFinalValidation" classname="com.blackcat.remote.PlanResponseStreamTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

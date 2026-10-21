@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blackcat.remote.AutoReliabilityTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2026-10-21T09:08:35" hostname="447eb30ef900" time="0.021">
+  <properties/>
+  <testcase name="contractsAllowUsefulBoundedDiagnosticsWithLiteralArguments" classname="com.blackcat.remote.AutoReliabilityTest" time="0.006"/>
+  <testcase name="truncatedFailedAndLimitedEvidenceCannotBecomeSuccessEvenIfProviderClaimsCompletion" classname="com.blackcat.remote.AutoReliabilityTest" time="0.006"/>
+  <testcase name="stoppingAndClearingHelperOwnershipPreservesTheOriginalDisplayTask" classname="com.blackcat.remote.AutoReliabilityTest" time="0.001"/>
+  <testcase name="contractsRejectMutatingArgumentsEvenWhenTheModelSaysLowRisk" classname="com.blackcat.remote.AutoReliabilityTest" time="0.0"/>
+  <testcase name="stoppingDuringTransmissionPreservesAnUncertainTaskRatherThanSuccess" classname="com.blackcat.remote.AutoReliabilityTest" time="0.0"/>
+  <testcase name="speechUsesMeaningfulExplanationWithoutRepeatedReassuranceOrInternalMarkers" classname="com.blackcat.remote.AutoReliabilityTest" time="0.0"/>
+  <testcase name="deadlineInvalidatesApprovalWithoutRenewingTheSessionClock" classname="com.blackcat.remote.AutoReliabilityTest" time="0.001"/>
+  <testcase name="replacingAPlanKeepsEarlierTaskIdentitiesAndMarksOnlyUnstartedReplacements" classname="com.blackcat.remote.AutoReliabilityTest" time="0.002"/>
+  <testcase name="helpersShareOneStableTaskIdentityAndOnlyFinalEvidenceCompletesIt" classname="com.blackcat.remote.AutoReliabilityTest" time="0.001"/>
+  <testcase name="countdownCancellationLeavesAnUnattemptedTaskPlanned" classname="com.blackcat.remote.AutoReliabilityTest" time="0.0"/>
+  <testcase name="staleOrWrongCleanupMarkersCannotCompleteATask" classname="com.blackcat.remote.AutoReliabilityTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

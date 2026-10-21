@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blackcat.remote.AutoOutputCollectionTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-10-21T09:08:34" hostname="447eb30ef900" time="0.928">
+  <properties/>
+  <testcase name="pageLimitIsExplicitAndCleanupRemovesTemporaryDataInsteadOfLooping" classname="com.blackcat.remote.AutoOutputCollectionTest" time="0.382"/>
+  <testcase name="quotedSudoStillUsesNoninteractiveAuthentication" classname="com.blackcat.remote.AutoOutputCollectionTest" time="0.001"/>
+  <testcase name="ownershipCannotBeForgedAndUnapprovedScriptsAreNeverWrapped" classname="com.blackcat.remote.AutoOutputCollectionTest" time="0.001"/>
+  <testcase name="exactlyOneMiBIsCompleteButTheNextByteIsExplicitlyTruncated" classname="com.blackcat.remote.AutoOutputCollectionTest" time="0.138"/>
+  <testcase name="outputLimitReportsIncompleteEvidenceAndDrainsWithoutSigpipe" classname="com.blackcat.remote.AutoOutputCollectionTest" time="0.117"/>
+  <testcase name="preservesRealFailureCodeAndEscapesTerminalControlBytes" classname="com.blackcat.remote.AutoOutputCollectionTest" time="0.099"/>
+  <testcase name="autoRevisionIncludesOriginalGoalAllEvidenceAndMissingFactsBecomeDiagnostics" classname="com.blackcat.remote.AutoOutputCollectionTest" time="0.001"/>
+  <testcase name="capturesOnceThenReadsAllPagesWithoutRepeatingTheCommandAndCleansUp" classname="com.blackcat.remote.AutoOutputCollectionTest" time="0.102"/>
+  <testcase name="markerExitCodePromptAndPageOrderAreRequired" classname="com.blackcat.remote.AutoOutputCollectionTest" time="0.001"/>
+  <testcase name="partiallyVisiblePageCanBeRedisplayedInSmallerSlicesWithoutLosingLines" classname="com.blackcat.remote.AutoOutputCollectionTest" time="0.085"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

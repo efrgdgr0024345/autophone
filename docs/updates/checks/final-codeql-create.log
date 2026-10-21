@@ -1,0 +1,757 @@
+Initializing database at /workspace/security-review/ui20/final-codeql-db.
+Running build command: [bash, /workspace/security-review/ui20/final-build.sh]
+Running command in /workspace/autophone: [bash, /workspace/security-review/ui20/final-build.sh]
+[2026-10-21 09:05:45] [build-stdout] To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.9/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+[2026-10-21 09:05:47] [build-stdout] Daemon will be stopped at the end of the build
+[2026-10-21 09:05:57] [build-stdout] > Task :app:clean
+[2026-10-21 09:05:58] [build-stdout] > Task :app:buildKotlinToolingMetadata
+[2026-10-21 09:05:58] [build-stdout] > Task :app:checkKotlinGradlePluginConfigurationErrors
+[2026-10-21 09:05:58] [build-stdout] > Task :app:preBuild UP-TO-DATE
+[2026-10-21 09:05:58] [build-stdout] > Task :app:preOfflineDebugBuild UP-TO-DATE
+[2026-10-21 09:05:58] [build-stdout] > Task :app:checkOfflineDebugAarMetadata
+[2026-10-21 09:05:58] [build-stdout] > Task :app:generateOfflineDebugResValues
+[2026-10-21 09:05:58] [build-stdout] > Task :app:mapOfflineDebugSourceSetPaths
+[2026-10-21 09:05:58] [build-stdout] > Task :app:generateOfflineDebugResources
+[2026-10-21 09:05:58] [build-stdout] > Task :app:mergeOfflineDebugResources
+[2026-10-21 09:05:58] [build-stdout] > Task :app:packageOfflineDebugResources
+[2026-10-21 09:05:58] [build-stdout] > Task :app:parseOfflineDebugLocalResources
+[2026-10-21 09:05:58] [build-stdout] > Task :app:createOfflineDebugCompatibleScreenManifests
+[2026-10-21 09:05:58] [build-stdout] > Task :app:extractDeepLinksOfflineDebug
+[2026-10-21 09:05:59] [build-stdout] > Task :app:processOfflineDebugMainManifest
+[2026-10-21 09:05:59] [build-stdout] > Task :app:processOfflineDebugManifest
+[2026-10-21 09:05:59] [build-stdout] > Task :app:processOfflineDebugManifestForPackage
+[2026-10-21 09:05:59] [build-stdout] > Task :app:processOfflineDebugResources
+[2026-10-21 09:06:29] [build-stdout] > Task :app:compileOfflineDebugKotlin
+[2026-10-21 09:06:50] [build-stdout] w: file:///workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:134:24 'setter for statusBarColor: Int' is deprecated. Deprecated in Java
+[2026-10-21 09:06:50] [build-stdout] w: file:///workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:135:24 'setter for navigationBarColor: Int' is deprecated. Deprecated in Java
+[2026-10-21 09:06:50] [build-stdout] w: file:///workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:142:68 'SOFT_INPUT_ADJUST_RESIZE: Int' is deprecated. Deprecated in Java
+[2026-10-21 09:06:50] [build-stdout] w: file:///workspace/autophone/app/src/main/java/com/blackcat/remote/OfflineCommandComposer.kt:97:68 'SOFT_INPUT_ADJUST_RESIZE: Int' is deprecated. Deprecated in Java
+[2026-10-21 09:06:50] [build-stdout] w: file:///workspace/autophone/app/src/offline/java/com/blackcat/remote/AiEntry.kt:27:47 Parameter 'manager' is never used
+[2026-10-21 09:06:50] [build-stdout] w: file:///workspace/autophone/app/src/offline/java/com/blackcat/remote/AiEntry.kt:82:27 Parameter 'activity' is never used
+[2026-10-21 09:06:50] [build-stdout] w: file:///workspace/autophone/app/src/offline/java/com/blackcat/remote/AiEntry.kt:82:47 Parameter 'onTranscript' is never used
+[2026-10-21 09:06:50] [build-stdout] w: file:///workspace/autophone/app/src/offline/java/com/blackcat/remote/AiEntry.kt:89:37 Parameter 'activity' is never used
+[2026-10-21 09:06:50] [build-stdout] > Task :app:javaPreCompileOfflineDebug
+[2026-10-21 09:06:50] [build-stdout] > Task :app:compileOfflineDebugJavaWithJavac NO-SOURCE
+[2026-10-21 09:06:50] [build-stdout] > Task :app:bundleOfflineDebugClassesToRuntimeJar
+[2026-10-21 09:06:50] [build-stdout] > Task :app:bundleOfflineDebugClassesToCompileJar
+[2026-10-21 09:06:59] [build-stdout] > Task :app:compileOfflineDebugUnitTestKotlin
+[2026-10-21 09:06:59] [build-stdout] > Task :app:preOfflineDebugUnitTestBuild UP-TO-DATE
+[2026-10-21 09:06:59] [build-stdout] > Task :app:javaPreCompileOfflineDebugUnitTest
+[2026-10-21 09:06:59] [build-stdout] > Task :app:compileOfflineDebugUnitTestJavaWithJavac NO-SOURCE
+[2026-10-21 09:06:59] [build-stdout] > Task :app:processOfflineDebugJavaRes
+[2026-10-21 09:06:59] [build-stdout] > Task :app:processOfflineDebugUnitTestJavaRes
+[2026-10-21 09:07:02] [build-stdout] > Task :app:testOfflineDebugUnitTest
+[2026-10-21 09:07:02] [build-stdout] > Task :app:preAiDebugBuild UP-TO-DATE
+[2026-10-21 09:07:02] [build-stdout] > Task :app:checkAiDebugAarMetadata
+[2026-10-21 09:07:02] [build-stdout] > Task :app:generateAiDebugResValues
+[2026-10-21 09:07:02] [build-stdout] > Task :app:mapAiDebugSourceSetPaths
+[2026-10-21 09:07:02] [build-stdout] > Task :app:generateAiDebugResources
+[2026-10-21 09:07:03] [build-stdout] > Task :app:mergeAiDebugResources
+[2026-10-21 09:07:03] [build-stdout] > Task :app:packageAiDebugResources
+[2026-10-21 09:07:03] [build-stdout] > Task :app:parseAiDebugLocalResources
+[2026-10-21 09:07:03] [build-stdout] > Task :app:createAiDebugCompatibleScreenManifests
+[2026-10-21 09:07:03] [build-stdout] > Task :app:extractDeepLinksAiDebug
+[2026-10-21 09:07:03] [build-stdout] > Task :app:processAiDebugMainManifest
+[2026-10-21 09:07:03] [build-stdout] > Task :app:processAiDebugManifest
+[2026-10-21 09:07:03] [build-stdout] > Task :app:processAiDebugManifestForPackage
+[2026-10-21 09:07:03] [build-stdout] > Task :app:processAiDebugResources
+[2026-10-21 09:07:33] [build-stdout] > Task :app:compileAiDebugKotlin
+[2026-10-21 09:08:00] [build-stdout] w: file:///workspace/autophone/app/src/ai/java/com/blackcat/remote/AiEntry.kt:147:22 This declaration overrides deprecated member but not marked as deprecated itself. Please add @Deprecated annotation or suppress. See https://youtrack.jetbrains.com/issue/KT-47902 for details
+[2026-10-21 09:08:00] [build-stdout] w: file:///workspace/autophone/app/src/ai/java/com/blackcat/remote/AiEntry.kt:262:24 'setter for statusBarColor: Int' is deprecated. Deprecated in Java
+[2026-10-21 09:08:00] [build-stdout] w: file:///workspace/autophone/app/src/ai/java/com/blackcat/remote/AiEntry.kt:263:24 'setter for navigationBarColor: Int' is deprecated. Deprecated in Java
+[2026-10-21 09:08:00] [build-stdout] w: file:///workspace/autophone/app/src/ai/java/com/blackcat/remote/AiEntry.kt:273:68 'SOFT_INPUT_ADJUST_RESIZE: Int' is deprecated. Deprecated in Java
+[2026-10-21 09:08:00] [build-stdout] w: file:///workspace/autophone/app/src/ai/java/com/blackcat/remote/AiStandalonePanels.kt:111:24 'setter for statusBarColor: Int' is deprecated. Deprecated in Java
+[2026-10-21 09:08:00] [build-stdout] w: file:///workspace/autophone/app/src/ai/java/com/blackcat/remote/AiStandalonePanels.kt:112:24 'setter for navigationBarColor: Int' is deprecated. Deprecated in Java
+[2026-10-21 09:08:00] [build-stdout] w: file:///workspace/autophone/app/src/ai/java/com/blackcat/remote/AiStandalonePanels.kt:115:68 'SOFT_INPUT_ADJUST_RESIZE: Int' is deprecated. Deprecated in Java
+[2026-10-21 09:08:00] [build-stdout] w: file:///workspace/autophone/app/src/ai/java/com/blackcat/remote/PhotoCaptureController.kt:115:16 'createCaptureSession((Mutable)List<Surface!>, CameraCaptureSession.StateCallback, Handler?): Unit' is deprecated. Deprecated in Java
+[2026-10-21 09:08:00] [build-stdout] w: file:///workspace/autophone/app/src/ai/java/com/blackcat/remote/PhotoFeedbackPanel.kt:101:24 'setter for statusBarColor: Int' is deprecated. Deprecated in Java
+[2026-10-21 09:08:00] [build-stdout] w: file:///workspace/autophone/app/src/ai/java/com/blackcat/remote/PhotoFeedbackPanel.kt:102:24 'setter for navigationBarColor: Int' is deprecated. Deprecated in Java
+[2026-10-21 09:08:00] [build-stdout] w: file:///workspace/autophone/app/src/ai/java/com/blackcat/remote/PhotoFeedbackPanel.kt:105:68 'SOFT_INPUT_ADJUST_RESIZE: Int' is deprecated. Deprecated in Java
+[2026-10-21 09:08:00] [build-stdout] w: file:///workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:134:24 'setter for statusBarColor: Int' is deprecated. Deprecated in Java
+[2026-10-21 09:08:00] [build-stdout] w: file:///workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:135:24 'setter for navigationBarColor: Int' is deprecated. Deprecated in Java
+[2026-10-21 09:08:00] [build-stdout] w: file:///workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:142:68 'SOFT_INPUT_ADJUST_RESIZE: Int' is deprecated. Deprecated in Java
+[2026-10-21 09:08:00] [build-stdout] w: file:///workspace/autophone/app/src/main/java/com/blackcat/remote/OfflineCommandComposer.kt:97:68 'SOFT_INPUT_ADJUST_RESIZE: Int' is deprecated. Deprecated in Java
+[2026-10-21 09:08:01] [build-stdout] > Task :app:javaPreCompileAiDebug
+[2026-10-21 09:08:01] [build-stdout] > Task :app:compileAiDebugJavaWithJavac NO-SOURCE
+[2026-10-21 09:08:01] [build-stdout] > Task :app:bundleAiDebugClassesToRuntimeJar
+[2026-10-21 09:08:01] [build-stdout] > Task :app:bundleAiDebugClassesToCompileJar
+[2026-10-21 09:08:31] [build-stdout] > Task :app:compileAiDebugUnitTestKotlin
+[2026-10-21 09:08:31] [build-stdout] > Task :app:preAiDebugUnitTestBuild UP-TO-DATE
+[2026-10-21 09:08:31] [build-stdout] > Task :app:javaPreCompileAiDebugUnitTest
+[2026-10-21 09:08:31] [build-stdout] > Task :app:compileAiDebugUnitTestJavaWithJavac NO-SOURCE
+[2026-10-21 09:08:31] [build-stdout] > Task :app:processAiDebugJavaRes
+[2026-10-21 09:08:31] [build-stdout] > Task :app:processAiDebugUnitTestJavaRes
+[2026-10-21 09:09:01] [build-stdout] > Task :app:testAiDebugUnitTest
+[2026-10-21 09:09:01] [build-stdout] > Task :app:preOfflineDebugAndroidTestBuild SKIPPED
+[2026-10-21 09:09:01] [build-stdout] > Task :app:generateOfflineDebugAndroidTestResValues
+[2026-10-21 09:09:01] [build-stdout] > Task :app:generateOfflineDebugAndroidTestLintModel
+[2026-10-21 09:09:01] [build-stdout] > Task :app:extractProguardFiles
+[2026-10-21 09:09:01] [build-stdout] > Task :app:generateOfflineDebugLintReportModel
+[2026-10-21 09:09:01] [build-stdout] > Task :app:generateOfflineDebugUnitTestLintModel
+[2026-10-21 09:09:31] [build-stdout] > Task :app:lintAnalyzeOfflineDebug
+[2026-10-21 09:09:34] [build-stdout] > Task :app:lintAnalyzeOfflineDebugAndroidTest
+[2026-10-21 09:09:37] [build-stdout] > Task :app:lintAnalyzeOfflineDebugUnitTest
+[2026-10-21 09:09:37] [build-stdout] > Task :app:lintReportOfflineDebug
+[2026-10-21 09:09:37] [build-stdout] Wrote HTML report to file:///workspace/autophone/app/build/reports/lint-results-offlineDebug.html
+[2026-10-21 09:09:37] [build-stdout] > Task :app:lintOfflineDebug
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/AndroidManifest.xml:11: Warning: Expecting android:screenOrientation="unspecified" or "fullSensor" for this activity so the user can use the application in any orientation and provide a great experience on Chrome OS devices [LockedOrientationActivity]
+[2026-10-21 09:09:37] [build-stdout]         <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="portrait">
+[2026-10-21 09:09:37] [build-stdout]                                                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout]    Explanation for issues of type "LockedOrientationActivity":
+[2026-10-21 09:09:37] [build-stdout]    The <activity> element should not be locked to any orientation so that
+[2026-10-21 09:09:37] [build-stdout]    users can take advantage of the multi-window environments and larger
+[2026-10-21 09:09:37] [build-stdout]    screens available on Android. To fix the issue, consider declaring the
+[2026-10-21 09:09:37] [build-stdout]    corresponding activity element with `screenOrientation="unspecified"`or
+[2026-10-21 09:09:37] [build-stdout]    fullSensor attribute.
+[2026-10-21 09:09:37] [build-stdout]    https://developer.android.com/topic/arc/window-management
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/AndroidManifest.xml:11: Warning: Should not restrict activity to fixed orientation. This may not be suitable for different form factors, causing the app to be letterboxed. [DiscouragedApi]
+[2026-10-21 09:09:37] [build-stdout]         <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="portrait">
+[2026-10-21 09:09:37] [build-stdout]                                                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout]    Explanation for issues of type "DiscouragedApi":
+[2026-10-21 09:09:37] [build-stdout]    Discouraged APIs are allowed and are not deprecated, but they may be unfit
+[2026-10-21 09:09:37] [build-stdout]    for common use (e.g. due to slow performance or subtle behavior).
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/AndroidManifest.xml:9: Warning: The attribute android:allowBackup is deprecated from Android 12 and higher and may be removed in future versions. Consider adding the attribute android:dataExtractionRules specifying an @xml resource which configures cloud backups and device transfers on Android 12 and higher. [DataExtractionRules]
+[2026-10-21 09:09:37] [build-stdout]     <application android:allowBackup="false" android:label="Black Cat Remote" android:theme="@style/AppTheme" android:usesCleartextTraffic="false" android:icon="@mipmap/ic_launcher_black_cat" android:roundIcon="@mipmap/ic_launcher_black_cat">
+[2026-10-21 09:09:37] [build-stdout]                                       ~~~~~
+[2026-10-21 09:09:37] [build-stdout]    Explanation for issues of type "DataExtractionRules":
+[2026-10-21 09:09:37] [build-stdout]    Before Android 12, the attributes android:allowBackup and
+[2026-10-21 09:09:37] [build-stdout]    android:fullBackupContent were used to configure all forms of backup,
+[2026-10-21 09:09:37] [build-stdout]    including cloud backups, device-to-device transfers and adb backup.
+[2026-10-21 09:09:37] [build-stdout]    In Android 12 and higher, these attributes have been deprecated and will
+[2026-10-21 09:09:37] [build-stdout]    only apply to cloud backups. You should instead use the attribute
+[2026-10-21 09:09:37] [build-stdout]    android:dataExtractionRules, specifying an @xml resource that configures
+[2026-10-21 09:09:37] [build-stdout]    which files to back up, for cloud backups and for device-to-device
+[2026-10-21 09:09:37] [build-stdout]    transfers, separately. If your minSdkVersion supports older versions,
+[2026-10-21 09:09:37] [build-stdout]    you'll still want to specify an android:fullBackupContent resource if the
+[2026-10-21 09:09:37] [build-stdout]    default behavior is not right for your app.
+[2026-10-21 09:09:37] [build-stdout]    https://developer.android.com/about/versions/12/backup-restore#xml-changes
+[2026-10-21 09:09:37] [build-stdout]    https://goo.gle/DataExtractionRules
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/res/mipmap-anydpi-v26: Warning: This folder configuration (v26) is unnecessary; minSdkVersion is 28. Merge all the resources in this folder into mipmap-anydpi. [ObsoleteSdkInt]
+[2026-10-21 09:09:37] [build-stdout]    Explanation for issues of type "ObsoleteSdkInt":
+[2026-10-21 09:09:37] [build-stdout]    This check flags version checks that are not necessary, because the
+[2026-10-21 09:09:37] [build-stdout]    minSdkVersion (or surrounding known API level) is already at least as high
+[2026-10-21 09:09:37] [build-stdout]    as the version checked for.
+[2026-10-21 09:09:37] [build-stdout]    Similarly, it also looks for resources in -vNN folders, such as values-v14
+[2026-10-21 09:09:37] [build-stdout]    where the version qualifier is less than or equal to the minSdkVersion,
+[2026-10-21 09:09:37] [build-stdout]    where the contents should be merged into the best folder.
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/res/drawable-nodpi/black_cat_emblem.webp: Warning: The resource R.drawable.black_cat_emblem appears to be unused [UnusedResources]
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/res/drawable-nodpi/black_cat_portrait.webp: Warning: The resource R.drawable.black_cat_portrait appears to be unused [UnusedResources]
+[2026-10-21 09:09:37] [build-stdout]    Explanation for issues of type "UnusedResources":
+[2026-10-21 09:09:37] [build-stdout]    Unused resources make applications larger and slow down builds.
+[2026-10-21 09:09:37] [build-stdout]    The unused resource check can ignore tests. If you want to include
+[2026-10-21 09:09:37] [build-stdout]    resources that are only referenced from tests, consider packaging them in a
+[2026-10-21 09:09:37] [build-stdout]    test source set instead.
+[2026-10-21 09:09:37] [build-stdout]    You can include test sources in the unused resource check by setting the
+[2026-10-21 09:09:37] [build-stdout]    system property lint.unused-resources.include-tests =true, and to exclude
+[2026-10-21 09:09:37] [build-stdout]    them (usually for performance reasons), use
+[2026-10-21 09:09:37] [build-stdout]    lint.unused-resources.exclude-tests =true.
+[2026-10-21 09:09:37] [build-stdout]    ,
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/MainActivity.kt:185: Warning: Custom view `TextView` has setOnTouchListener called on it but does not override performClick [ClickableViewAccessibility]
+[2026-10-21 09:09:37] [build-stdout]   pad.setOnTouchListener{_,e->
+[2026-10-21 09:09:37] [build-stdout]   ^
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/MainActivity.kt:185: Warning: onTouch lambda should call View#performClick when a click is detected [ClickableViewAccessibility]
+[2026-10-21 09:09:37] [build-stdout]   pad.setOnTouchListener{_,e->
+[2026-10-21 09:09:37] [build-stdout]                         ^
+[2026-10-21 09:09:37] [build-stdout]    Explanation for issues of type "ClickableViewAccessibility":
+[2026-10-21 09:09:37] [build-stdout]    If a View that overrides onTouchEvent or uses an OnTouchListener does not
+[2026-10-21 09:09:37] [build-stdout]    also implement performClick and call it when clicks are detected, the View
+[2026-10-21 09:09:37] [build-stdout]    may not handle accessibility actions properly. Logic handling the click
+[2026-10-21 09:09:37] [build-stdout]    actions should ideally be placed in View#performClick as some accessibility
+[2026-10-21 09:09:37] [build-stdout]    services invoke performClick when a click action should occur.
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/offline/java/com/blackcat/remote/AiEntry.kt:93: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]             text = "Offline Linux Library"
+[2026-10-21 09:09:37] [build-stdout]                     ~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:159: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]                 countBadge.text = "${items.size} examples · ${learning.tools.size} tool groups · no API · no network"
+[2026-10-21 09:09:37] [build-stdout]                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:159: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]                 countBadge.text = "${items.size} examples · ${learning.tools.size} tool groups · no API · no network"
+[2026-10-21 09:09:37] [build-stdout]                                                 ~~~~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:159: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]                 countBadge.text = "${items.size} examples · ${learning.tools.size} tool groups · no API · no network"
+[2026-10-21 09:09:37] [build-stdout]                                                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:339: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]                     osButton.text = "Search OS: $searchOs ▾"
+[2026-10-21 09:09:37] [build-stdout]                                     ~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:339: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]                     osButton.text = "Search OS: $searchOs ▾"
+[2026-10-21 09:09:37] [build-stdout]                                      ~~~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:483: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]             searchOs = "Kali Linux"; osButton.text = "Search OS: $searchOs ▾"; resultKey = ""
+[2026-10-21 09:09:37] [build-stdout]                                                      ~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:483: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]             searchOs = "Kali Linux"; osButton.text = "Search OS: $searchOs ▾"; resultKey = ""
+[2026-10-21 09:09:37] [build-stdout]                                                       ~~~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:886: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]                 text = "Add to current plan"
+[2026-10-21 09:09:37] [build-stdout]                         ~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:898: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]             text = "Copy command"
+[2026-10-21 09:09:37] [build-stdout]                     ~~~~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:1078: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]         connectionText.text = "Typing reviewed text only · Enter excluded"
+[2026-10-21 09:09:37] [build-stdout]                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:1098: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]             connectionPill.text = "●  BROWSE"
+[2026-10-21 09:09:37] [build-stdout]                                    ~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:1103: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]                     "Offline browsing is ready. Pair Bluetooth before TYPE ONLY."
+[2026-10-21 09:09:37] [build-stdout]                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:1106: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]             connectionPill.text = "●  READY"
+[2026-10-21 09:09:37] [build-stdout]                                    ~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:1109: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]             if (!busy) connectionText.text = "Connected · ${host.label}"
+[2026-10-21 09:09:37] [build-stdout]                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:1109: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]             if (!busy) connectionText.text = "Connected · ${host.label}"
+[2026-10-21 09:09:37] [build-stdout]                                               ~~~~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/MainActivity.kt:172: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]     dictationStatus.text = "Transcript ready. Review or edit it, then tap Send Text."
+[2026-10-21 09:09:37] [build-stdout]                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/MainActivity.kt:182: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]   val pad=TextView(this).apply{text="Drag here to move pointer";gravity=Gravity.CENTER;textSize=15f;setTextColor(0xffdff1e2.toInt());typeface=Typeface.create(Typeface.DEFAULT,Typeface.BOLD);background=BlackCatStyle.round(this@MainActivity,0xff0b1411.toInt(),14,0xff30423b.toInt(),1)}
+[2026-10-21 09:09:37] [build-stdout]                                      ~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/MainActivity.kt:273: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]    text = "Clear"; BlackCatStyle.styleButton(this@MainActivity, this, false, true)
+[2026-10-21 09:09:37] [build-stdout]            ~~~~~
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/MainActivity.kt:323: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]   text = "$title\n$sub"; isAllCaps = false; textSize = 15f; gravity = Gravity.CENTER_VERTICAL
+[2026-10-21 09:09:37] [build-stdout]          ~~~~~~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/OfflineCommandComposer.kt:61: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]             text = "Prefix with sudo · a password may be requested"; minHeight = dp(48)
+[2026-10-21 09:09:37] [build-stdout]                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/OfflineCommandComposer.kt:128: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:09:37] [build-stdout]             preview.text = "Resolve the argument error to preview the exact command."
+[2026-10-21 09:09:37] [build-stdout]                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:09:37] [build-stdout]    Explanation for issues of type "SetTextI18n":
+[2026-10-21 09:09:37] [build-stdout]    When calling TextView#setText
+[2026-10-21 09:09:37] [build-stdout]    * Never call Number#toString() to format numbers; it will not handle
+[2026-10-21 09:09:37] [build-stdout]    fraction separators and locale-specific digits properly. Consider using
+[2026-10-21 09:09:37] [build-stdout]    String#format with proper format specifications (%d or %f) instead.
+[2026-10-21 09:09:37] [build-stdout]    * Do not pass a string literal (e.g. "Hello") to display text. Hardcoded
+[2026-10-21 09:09:37] [build-stdout]    text can not be properly translated to other languages. Consider using
+[2026-10-21 09:09:37] [build-stdout]    Android resource strings instead.
+[2026-10-21 09:09:37] [build-stdout]    * Do not build messages by concatenating text chunks. Such messages can not
+[2026-10-21 09:09:37] [build-stdout]    be properly translated.
+[2026-10-21 09:09:37] [build-stdout]    https://developer.android.com/guide/topics/resources/localization.html
+[2026-10-21 09:09:37] [build-stdout] 0 errors, 30 warnings
+[2026-10-21 09:09:37] [build-stdout] > Task :app:preAiDebugAndroidTestBuild SKIPPED
+[2026-10-21 09:09:37] [build-stdout] > Task :app:generateAiDebugAndroidTestResValues
+[2026-10-21 09:09:37] [build-stdout] > Task :app:generateAiDebugAndroidTestLintModel
+[2026-10-21 09:09:37] [build-stdout] > Task :app:generateAiDebugLintReportModel
+[2026-10-21 09:09:37] [build-stdout] > Task :app:generateAiDebugUnitTestLintModel
+[2026-10-21 09:10:04] [build-stdout] > Task :app:lintAnalyzeAiDebug
+[2026-10-21 09:10:10] [build-stdout] > Task :app:lintAnalyzeAiDebugAndroidTest
+[2026-10-21 09:10:15] [build-stdout] > Task :app:lintAnalyzeAiDebugUnitTest
+[2026-10-21 09:10:16] [build-stdout] > Task :app:lintReportAiDebug
+[2026-10-21 09:10:16] [build-stdout] Wrote HTML report to file:///workspace/autophone/app/build/reports/lint-results-aiDebug.html
+[2026-10-21 09:10:16] [build-stdout] > Task :app:lintAiDebug
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AiEntry.kt:795: Warning: Field requires API level 29 (current min is 28): android.graphics.text.LineBreaker#BREAK_STRATEGY_SIMPLE [InlinedApi]
+[2026-10-21 09:10:16] [build-stdout]                         breakStrategy = android.graphics.text.LineBreaker.BREAK_STRATEGY_SIMPLE
+[2026-10-21 09:10:16] [build-stdout]                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AiEntry.kt:795: Warning: Field requires API level 29 (current min is 28): android.graphics.text.LineBreaker#BREAK_STRATEGY_SIMPLE [InlinedApi]
+[2026-10-21 09:10:16] [build-stdout]                         breakStrategy = android.graphics.text.LineBreaker.BREAK_STRATEGY_SIMPLE
+[2026-10-21 09:10:16] [build-stdout]                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AiEntry.kt:1435: Warning: Field requires API level 29 (current min is 28): android.graphics.text.LineBreaker#BREAK_STRATEGY_SIMPLE [InlinedApi]
+[2026-10-21 09:10:16] [build-stdout]             breakStrategy = android.graphics.text.LineBreaker.BREAK_STRATEGY_SIMPLE
+[2026-10-21 09:10:16] [build-stdout]                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AiEntry.kt:1435: Warning: Field requires API level 29 (current min is 28): android.graphics.text.LineBreaker#BREAK_STRATEGY_SIMPLE [InlinedApi]
+[2026-10-21 09:10:16] [build-stdout]             breakStrategy = android.graphics.text.LineBreaker.BREAK_STRATEGY_SIMPLE
+[2026-10-21 09:10:16] [build-stdout]                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/LivePlanView.kt:88: Warning: Field requires API level 29 (current min is 28): android.graphics.text.LineBreaker#BREAK_STRATEGY_SIMPLE [InlinedApi]
+[2026-10-21 09:10:16] [build-stdout]                 breakStrategy = android.graphics.text.LineBreaker.BREAK_STRATEGY_SIMPLE
+[2026-10-21 09:10:16] [build-stdout]                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/LivePlanView.kt:88: Warning: Field requires API level 29 (current min is 28): android.graphics.text.LineBreaker#BREAK_STRATEGY_SIMPLE [InlinedApi]
+[2026-10-21 09:10:16] [build-stdout]                 breakStrategy = android.graphics.text.LineBreaker.BREAK_STRATEGY_SIMPLE
+[2026-10-21 09:10:16] [build-stdout]                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout]    Explanation for issues of type "InlinedApi":
+[2026-10-21 09:10:16] [build-stdout]    This check scans through all the Android API field references in the
+[2026-10-21 09:10:16] [build-stdout]    application and flags certain constants, such as static final integers and
+[2026-10-21 09:10:16] [build-stdout]    Strings, which were introduced in later versions. These will actually be
+[2026-10-21 09:10:16] [build-stdout]    copied into the class files rather than being referenced, which means that
+[2026-10-21 09:10:16] [build-stdout]    the value is available even when running on older devices. In some cases
+[2026-10-21 09:10:16] [build-stdout]    that's fine, and in other cases it can result in a runtime crash or
+[2026-10-21 09:10:16] [build-stdout]    incorrect behavior. It depends on the context, so consider the code
+[2026-10-21 09:10:16] [build-stdout]    carefully and decide whether it's safe and can be suppressed or whether the
+[2026-10-21 09:10:16] [build-stdout]    code needs to be guarded.
+[2026-10-21 09:10:16] [build-stdout]    If you really want to use this API and don't need to support older devices
+[2026-10-21 09:10:16] [build-stdout]    just set the minSdkVersion in your build.gradle or AndroidManifest.xml
+[2026-10-21 09:10:16] [build-stdout]    files.
+[2026-10-21 09:10:16] [build-stdout]    If your code is deliberately accessing newer APIs, and you have ensured
+[2026-10-21 09:10:16] [build-stdout]    (e.g. with conditional execution) that this code will only ever be called
+[2026-10-21 09:10:16] [build-stdout]    on a supported platform, then you can annotate your class or method with
+[2026-10-21 09:10:16] [build-stdout]    the @TargetApi annotation specifying the local minimum SDK to apply, such
+[2026-10-21 09:10:16] [build-stdout]    as @TargetApi(11), such that this check considers 11 rather than your
+[2026-10-21 09:10:16] [build-stdout]    manifest file's minimum SDK as the required API level.
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/AndroidManifest.xml:11: Warning: Expecting android:screenOrientation="unspecified" or "fullSensor" for this activity so the user can use the application in any orientation and provide a great experience on Chrome OS devices [LockedOrientationActivity]
+[2026-10-21 09:10:16] [build-stdout]         <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="portrait">
+[2026-10-21 09:10:16] [build-stdout]                                                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout]    Explanation for issues of type "LockedOrientationActivity":
+[2026-10-21 09:10:16] [build-stdout]    The <activity> element should not be locked to any orientation so that
+[2026-10-21 09:10:16] [build-stdout]    users can take advantage of the multi-window environments and larger
+[2026-10-21 09:10:16] [build-stdout]    screens available on Android. To fix the issue, consider declaring the
+[2026-10-21 09:10:16] [build-stdout]    corresponding activity element with `screenOrientation="unspecified"`or
+[2026-10-21 09:10:16] [build-stdout]    fullSensor attribute.
+[2026-10-21 09:10:16] [build-stdout]    https://developer.android.com/topic/arc/window-management
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/AndroidManifest.xml:11: Warning: Should not restrict activity to fixed orientation. This may not be suitable for different form factors, causing the app to be letterboxed. [DiscouragedApi]
+[2026-10-21 09:10:16] [build-stdout]         <activity android:name=".MainActivity" android:exported="true" android:screenOrientation="portrait">
+[2026-10-21 09:10:16] [build-stdout]                                                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout]    Explanation for issues of type "DiscouragedApi":
+[2026-10-21 09:10:16] [build-stdout]    Discouraged APIs are allowed and are not deprecated, but they may be unfit
+[2026-10-21 09:10:16] [build-stdout]    for common use (e.g. due to slow performance or subtle behavior).
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/AndroidManifest.xml:9: Warning: The attribute android:allowBackup is deprecated from Android 12 and higher and may be removed in future versions. Consider adding the attribute android:dataExtractionRules specifying an @xml resource which configures cloud backups and device transfers on Android 12 and higher. [DataExtractionRules]
+[2026-10-21 09:10:16] [build-stdout]     <application android:allowBackup="false" android:label="Black Cat Remote" android:theme="@style/AppTheme" android:usesCleartextTraffic="false" android:icon="@mipmap/ic_launcher_black_cat" android:roundIcon="@mipmap/ic_launcher_black_cat">
+[2026-10-21 09:10:16] [build-stdout]                                       ~~~~~
+[2026-10-21 09:10:16] [build-stdout]    Explanation for issues of type "DataExtractionRules":
+[2026-10-21 09:10:16] [build-stdout]    Before Android 12, the attributes android:allowBackup and
+[2026-10-21 09:10:16] [build-stdout]    android:fullBackupContent were used to configure all forms of backup,
+[2026-10-21 09:10:16] [build-stdout]    including cloud backups, device-to-device transfers and adb backup.
+[2026-10-21 09:10:16] [build-stdout]    In Android 12 and higher, these attributes have been deprecated and will
+[2026-10-21 09:10:16] [build-stdout]    only apply to cloud backups. You should instead use the attribute
+[2026-10-21 09:10:16] [build-stdout]    android:dataExtractionRules, specifying an @xml resource that configures
+[2026-10-21 09:10:16] [build-stdout]    which files to back up, for cloud backups and for device-to-device
+[2026-10-21 09:10:16] [build-stdout]    transfers, separately. If your minSdkVersion supports older versions,
+[2026-10-21 09:10:16] [build-stdout]    you'll still want to specify an android:fullBackupContent resource if the
+[2026-10-21 09:10:16] [build-stdout]    default behavior is not right for your app.
+[2026-10-21 09:10:16] [build-stdout]    https://developer.android.com/about/versions/12/backup-restore#xml-changes
+[2026-10-21 09:10:16] [build-stdout]    https://goo.gle/DataExtractionRules
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/res/mipmap-anydpi-v26: Warning: This folder configuration (v26) is unnecessary; minSdkVersion is 28. Merge all the resources in this folder into mipmap-anydpi. [ObsoleteSdkInt]
+[2026-10-21 09:10:16] [build-stdout]    Explanation for issues of type "ObsoleteSdkInt":
+[2026-10-21 09:10:16] [build-stdout]    This check flags version checks that are not necessary, because the
+[2026-10-21 09:10:16] [build-stdout]    minSdkVersion (or surrounding known API level) is already at least as high
+[2026-10-21 09:10:16] [build-stdout]    as the version checked for.
+[2026-10-21 09:10:16] [build-stdout]    Similarly, it also looks for resources in -vNN folders, such as values-v14
+[2026-10-21 09:10:16] [build-stdout]    where the version qualifier is less than or equal to the minSdkVersion,
+[2026-10-21 09:10:16] [build-stdout]    where the contents should be merged into the best folder.
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/res/drawable-nodpi/black_cat_emblem.webp: Warning: The resource R.drawable.black_cat_emblem appears to be unused [UnusedResources]
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/res/drawable-nodpi/black_cat_portrait.webp: Warning: The resource R.drawable.black_cat_portrait appears to be unused [UnusedResources]
+[2026-10-21 09:10:16] [build-stdout]    Explanation for issues of type "UnusedResources":
+[2026-10-21 09:10:16] [build-stdout]    Unused resources make applications larger and slow down builds.
+[2026-10-21 09:10:16] [build-stdout]    The unused resource check can ignore tests. If you want to include
+[2026-10-21 09:10:16] [build-stdout]    resources that are only referenced from tests, consider packaging them in a
+[2026-10-21 09:10:16] [build-stdout]    test source set instead.
+[2026-10-21 09:10:16] [build-stdout]    You can include test sources in the unused resource check by setting the
+[2026-10-21 09:10:16] [build-stdout]    system property lint.unused-resources.include-tests =true, and to exclude
+[2026-10-21 09:10:16] [build-stdout]    them (usually for performance reasons), use
+[2026-10-21 09:10:16] [build-stdout]    lint.unused-resources.exclude-tests =true.
+[2026-10-21 09:10:16] [build-stdout]    ,
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/MainActivity.kt:185: Warning: Custom view `TextView` has setOnTouchListener called on it but does not override performClick [ClickableViewAccessibility]
+[2026-10-21 09:10:16] [build-stdout]   pad.setOnTouchListener{_,e->
+[2026-10-21 09:10:16] [build-stdout]   ^
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/MainActivity.kt:185: Warning: onTouch lambda should call View#performClick when a click is detected [ClickableViewAccessibility]
+[2026-10-21 09:10:16] [build-stdout]   pad.setOnTouchListener{_,e->
+[2026-10-21 09:10:16] [build-stdout]                         ^
+[2026-10-21 09:10:16] [build-stdout]    Explanation for issues of type "ClickableViewAccessibility":
+[2026-10-21 09:10:16] [build-stdout]    If a View that overrides onTouchEvent or uses an OnTouchListener does not
+[2026-10-21 09:10:16] [build-stdout]    also implement performClick and call it when clicks are detected, the View
+[2026-10-21 09:10:16] [build-stdout]    may not handle accessibility actions properly. Logic handling the click
+[2026-10-21 09:10:16] [build-stdout]    actions should ideally be placed in View#performClick as some accessibility
+[2026-10-21 09:10:16] [build-stdout]    services invoke performClick when a click action should occur.
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AiEntry.kt:113: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             text = "Linux Assistant"
+[2026-10-21 09:10:16] [build-stdout]                     ~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AiEntry.kt:118: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             text = "Photo Feedback"
+[2026-10-21 09:10:16] [build-stdout]                     ~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AiEntry.kt:314: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]         targetLabel.text = "Target: $selectedTarget"
+[2026-10-21 09:10:16] [build-stdout]                            ~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AiEntry.kt:314: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]         targetLabel.text = "Target: $selectedTarget"
+[2026-10-21 09:10:16] [build-stdout]                             ~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AiEntry.kt:672: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             autoPlayButton.text = "▶ Auto Play · OFF"
+[2026-10-21 09:10:16] [build-stdout]                                    ~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AiEntry.kt:1376: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             statusPill.text = "●  READY"
+[2026-10-21 09:10:16] [build-stdout]                                ~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AiEntry.kt:1379: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             if (!busy && statusText.text.toString().startsWith("Bluetooth")) statusText.text = "Connected · ${host.label}"
+[2026-10-21 09:10:16] [build-stdout]                                                                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AiEntry.kt:1379: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             if (!busy && statusText.text.toString().startsWith("Bluetooth")) statusText.text = "Connected · ${host.label}"
+[2026-10-21 09:10:16] [build-stdout]                                                                                                 ~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AiEntry.kt:1381: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             statusPill.text = "●  PAIR"
+[2026-10-21 09:10:16] [build-stdout]                                ~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AiEntry.kt:1384: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             if (!busy && statusText.text.toString().startsWith("Connected")) statusText.text = "Bluetooth host not ready"
+[2026-10-21 09:10:16] [build-stdout]                                                                                                 ~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AiStandalonePanels.kt:353: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             text = "Remember encrypted key on this phone"
+[2026-10-21 09:10:16] [build-stdout]                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:83: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                 else status.text = "Review the goal and destination below, start the camera and enable session consent, then turn Auto on."
+[2026-10-21 09:10:16] [build-stdout]                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:91: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             if (isOn) { narrator.stop(); voiceStatus.text = "Voice off. Explanations remain visible." }
+[2026-10-21 09:10:16] [build-stdout]                                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:181: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             modeButton.text = "Mode · " + when (choiceIds.indexOf(checked)) { 1 -> "Read-only"; 2 -> "Guided"; else -> "Auto Play" }
+[2026-10-21 09:10:16] [build-stdout]                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:181: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             modeButton.text = "Mode · " + when (choiceIds.indexOf(checked)) { 1 -> "Read-only"; 2 -> "Guided"; else -> "Auto Play" }
+[2026-10-21 09:10:16] [build-stdout]                                ~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:202: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                 status.text = "Enter a key for this Auto session. To reuse it across plans, save it in Settings. It is checked with the first photo request."
+[2026-10-21 09:10:16] [build-stdout]                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:207: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             text = "I approve this goal and destination, automatic Enter, new diagnostic commands and plan changes for this goal, and automatic photos to OpenAI. The terminal is focused and the camera frame contains no secrets."
+[2026-10-21 09:10:16] [build-stdout]                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:229: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             status.text = "Grant camera permission in the photo screen first, then open Auto again."
+[2026-10-21 09:10:16] [build-stdout]                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:267: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]         status.text = "Frame the terminal clearly and remove secrets before starting."
+[2026-10-21 09:10:16] [build-stdout]                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:272: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]         if (!consent) { status.text = "Review the commands, destination and photo-upload consent first."; return }
+[2026-10-21 09:10:16] [build-stdout]                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:273: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]         if (!cameraStarted || previewFrames < 3) { status.text = "Start the live preview and wait until the terminal is visible."; return }
+[2026-10-21 09:10:16] [build-stdout]                                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:274: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]         val host = target.current() ?: run { status.text = "Connect Bluetooth first."; return }
+[2026-10-21 09:10:16] [build-stdout]                                                             ~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:276: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]         status.text = "Preparing your foreground session…"
+[2026-10-21 09:10:16] [build-stdout]                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:292: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                         status.text = "Your saved API key is unavailable. Close Auto and check the key in Settings, then start again."
+[2026-10-21 09:10:16] [build-stdout]                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:296: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                         status.text = "Enter an API key above and start again, or save one in Settings to reuse it across plans. A temporary key used to generate the plan has already been consumed."
+[2026-10-21 09:10:16] [build-stdout]                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:304: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                 status.text = "Checking the camera view for an idle terminal before sending any command…"
+[2026-10-21 09:10:16] [build-stdout]                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:336: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             status.text = "Plan ended · $checked tasks supported by photo evidence · $unresolved need attention. This is not a security guarantee."
+[2026-10-21 09:10:16] [build-stdout]                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:336: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             status.text = "Plan ended · $checked tasks supported by photo evidence · $unresolved need attention. This is not a security guarantee."
+[2026-10-21 09:10:16] [build-stdout]                            ~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:336: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             status.text = "Plan ended · $checked tasks supported by photo evidence · $unresolved need attention. This is not a security guarantee."
+[2026-10-21 09:10:16] [build-stdout]                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:336: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             status.text = "Plan ended · $checked tasks supported by photo evidence · $unresolved need attention. This is not a security guarantee."
+[2026-10-21 09:10:16] [build-stdout]                                                                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:447: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                 else status.text = "Text typed. Check it and press Enter on the computer when ready."
+[2026-10-21 09:10:16] [build-stdout]                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:457: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                 status.text = "Waiting 5 seconds for terminal output, then automatically capturing one photo."
+[2026-10-21 09:10:16] [build-stdout]                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:463: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                 status.text = "Checking the terminal photo with OpenAI. No next command is being typed."
+[2026-10-21 09:10:16] [build-stdout]                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:475: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                     status.text = "The command is still working. Checking again automatically ($repeatPhotos/12)."
+[2026-10-21 09:10:16] [build-stdout]                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:475: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                     status.text = "The command is still working. Checking again automatically ($repeatPhotos/12)."
+[2026-10-21 09:10:16] [build-stdout]                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:475: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                     status.text = "The command is still working. Checking again automatically ($repeatPhotos/12)."
+[2026-10-21 09:10:16] [build-stdout]                                                                                                             ~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:537: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                 else status.text = "The photo appears consistent with the expected result. Check it before moving on."
+[2026-10-21 09:10:16] [build-stdout]                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:556: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             status.text = "This step is outside the supported diagnostic contracts. Auto is paused; review it and use manual Enter if appropriate."
+[2026-10-21 09:10:16] [build-stdout]                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:572: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]         status.text = "The output needs attention. Updating the plan for your goal; this can take up to 3 minutes. Stop remains available."
+[2026-10-21 09:10:16] [build-stdout]                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:590: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                 status.text = "Updated the remaining plan for your goal from the collected evidence. Continuing with fresh command checks."
+[2026-10-21 09:10:16] [build-stdout]                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/AutoAssistPanel.kt:597: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]         status.text = "Updated plan proposed. Close Auto to review/apply it; a new session needs fresh approval."
+[2026-10-21 09:10:16] [build-stdout]                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:159: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                 countBadge.text = "${items.size} examples · ${learning.tools.size} tool groups · no API · no network"
+[2026-10-21 09:10:16] [build-stdout]                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:159: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                 countBadge.text = "${items.size} examples · ${learning.tools.size} tool groups · no API · no network"
+[2026-10-21 09:10:16] [build-stdout]                                                 ~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:159: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                 countBadge.text = "${items.size} examples · ${learning.tools.size} tool groups · no API · no network"
+[2026-10-21 09:10:16] [build-stdout]                                                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:339: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                     osButton.text = "Search OS: $searchOs ▾"
+[2026-10-21 09:10:16] [build-stdout]                                     ~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:339: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                     osButton.text = "Search OS: $searchOs ▾"
+[2026-10-21 09:10:16] [build-stdout]                                      ~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:483: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             searchOs = "Kali Linux"; osButton.text = "Search OS: $searchOs ▾"; resultKey = ""
+[2026-10-21 09:10:16] [build-stdout]                                                      ~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:483: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             searchOs = "Kali Linux"; osButton.text = "Search OS: $searchOs ▾"; resultKey = ""
+[2026-10-21 09:10:16] [build-stdout]                                                       ~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:886: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                 text = "Add to current plan"
+[2026-10-21 09:10:16] [build-stdout]                         ~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:898: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             text = "Copy command"
+[2026-10-21 09:10:16] [build-stdout]                     ~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:1078: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]         connectionText.text = "Typing reviewed text only · Enter excluded"
+[2026-10-21 09:10:16] [build-stdout]                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:1098: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             connectionPill.text = "●  BROWSE"
+[2026-10-21 09:10:16] [build-stdout]                                    ~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:1103: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                     "Offline browsing is ready. Pair Bluetooth before TYPE ONLY."
+[2026-10-21 09:10:16] [build-stdout]                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:1106: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             connectionPill.text = "●  READY"
+[2026-10-21 09:10:16] [build-stdout]                                    ~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:1109: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             if (!busy) connectionText.text = "Connected · ${host.label}"
+[2026-10-21 09:10:16] [build-stdout]                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/LinuxCommandLibraryPanel.kt:1109: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             if (!busy) connectionText.text = "Connected · ${host.label}"
+[2026-10-21 09:10:16] [build-stdout]                                               ~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/MainActivity.kt:172: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]     dictationStatus.text = "Transcript ready. Review or edit it, then tap Send Text."
+[2026-10-21 09:10:16] [build-stdout]                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/MainActivity.kt:182: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]   val pad=TextView(this).apply{text="Drag here to move pointer";gravity=Gravity.CENTER;textSize=15f;setTextColor(0xffdff1e2.toInt());typeface=Typeface.create(Typeface.DEFAULT,Typeface.BOLD);background=BlackCatStyle.round(this@MainActivity,0xff0b1411.toInt(),14,0xff30423b.toInt(),1)}
+[2026-10-21 09:10:16] [build-stdout]                                      ~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/MainActivity.kt:273: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]    text = "Clear"; BlackCatStyle.styleButton(this@MainActivity, this, false, true)
+[2026-10-21 09:10:16] [build-stdout]            ~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/MainActivity.kt:323: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]   text = "$title\n$sub"; isAllCaps = false; textSize = 15f; gravity = Gravity.CENTER_VERTICAL
+[2026-10-21 09:10:16] [build-stdout]          ~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/OfflineCommandComposer.kt:61: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             text = "Prefix with sudo · a password may be requested"; minHeight = dp(48)
+[2026-10-21 09:10:16] [build-stdout]                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/main/java/com/blackcat/remote/OfflineCommandComposer.kt:128: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             preview.text = "Resolve the argument error to preview the exact command."
+[2026-10-21 09:10:16] [build-stdout]                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/PhotoFeedbackPanel.kt:181: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                     text = "Take photo"
+[2026-10-21 09:10:16] [build-stdout]                             ~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/PhotoFeedbackPanel.kt:238: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             text = "Retake"
+[2026-10-21 09:10:16] [build-stdout]                     ~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/PhotoFeedbackPanel.kt:245: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             text = "Send photo to OpenAI"
+[2026-10-21 09:10:16] [build-stdout]                     ~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/PhotoFeedbackPanel.kt:310: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             text = "Cancel"
+[2026-10-21 09:10:16] [build-stdout]                     ~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/PhotoFeedbackPanel.kt:389: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                 text = "Use photo feedback in plan"
+[2026-10-21 09:10:16] [build-stdout]                         ~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/PhotoFeedbackPanel.kt:397: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             text = "Take another photo"
+[2026-10-21 09:10:16] [build-stdout]                     ~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/UpdateActivity.kt:62: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]         action(body, "Cancel / discard download") { stop(); status.text = "Update cancelled. Check again when you are ready." }
+[2026-10-21 09:10:16] [build-stdout]                                                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/UpdateActivity.kt:91: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             if (found.version == installed.version) status.text = "This signed release is already installed. No APK downloaded."
+[2026-10-21 09:10:16] [build-stdout]                                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/UpdateActivity.kt:93: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                 status.text = "Available: ${found.versionName} (${found.version}). Signed metadata accepted. APK size: ${found.size} bytes. Download it to verify its contents before saving."
+[2026-10-21 09:10:16] [build-stdout]                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/UpdateActivity.kt:93: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                 status.text = "Available: ${found.versionName} (${found.version}). Signed metadata accepted. APK size: ${found.size} bytes. Download it to verify its contents before saving."
+[2026-10-21 09:10:16] [build-stdout]                                ~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/UpdateActivity.kt:93: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                 status.text = "Available: ${found.versionName} (${found.version}). Signed metadata accepted. APK size: ${found.size} bytes. Download it to verify its contents before saving."
+[2026-10-21 09:10:16] [build-stdout]                                                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/UpdateActivity.kt:93: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                 status.text = "Available: ${found.versionName} (${found.version}). Signed metadata accepted. APK size: ${found.size} bytes. Download it to verify its contents before saving."
+[2026-10-21 09:10:16] [build-stdout]                                                                                                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/UpdateActivity.kt:105: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             status.text = "Verified ${found.versionName}. Package, capabilities and original signer match this app. SHA-256: ${found.hash}\nSave the APK if you want to install it yourself."
+[2026-10-21 09:10:16] [build-stdout]                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/UpdateActivity.kt:105: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             status.text = "Verified ${found.versionName}. Package, capabilities and original signer match this app. SHA-256: ${found.hash}\nSave the APK if you want to install it yourself."
+[2026-10-21 09:10:16] [build-stdout]                            ~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/UpdateActivity.kt:105: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             status.text = "Verified ${found.versionName}. Package, capabilities and original signer match this app. SHA-256: ${found.hash}\nSave the APK if you want to install it yourself."
+[2026-10-21 09:10:16] [build-stdout]                                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/UpdateActivity.kt:105: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             status.text = "Verified ${found.versionName}. Package, capabilities and original signer match this app. SHA-256: ${found.hash}\nSave the APK if you want to install it yourself."
+[2026-10-21 09:10:16] [build-stdout]                                                                                                                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/UpdateActivity.kt:123: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             status.text = "No file picker is available. The private download was discarded."
+[2026-10-21 09:10:16] [build-stdout]                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/UpdateActivity.kt:137: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             stop(); status.text = "Saving cancelled. The private download was discarded."; return
+[2026-10-21 09:10:16] [build-stdout]                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/UpdateActivity.kt:142: Warning: Do not concatenate text displayed with setText. Use resource string with placeholders. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             status.text = "Verified APK saved. Open it yourself in Files if you choose to install. SHA-256: ${found.hash}"
+[2026-10-21 09:10:16] [build-stdout]                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/UpdateActivity.kt:142: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             status.text = "Verified APK saved. Open it yourself in Files if you choose to install. SHA-256: ${found.hash}"
+[2026-10-21 09:10:16] [build-stdout]                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/UpdateActivity.kt:185: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]                     status.text = "Update verification or saving failed. No installation was started. Check the network, device time and release trust configuration. If saving failed, delete any incomplete file left by the file provider."
+[2026-10-21 09:10:16] [build-stdout]                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout] /workspace/autophone/app/src/ai/java/com/blackcat/remote/UpdateActivity.kt:200: Warning: String literal in setText can not be translated. Use Android resources instead. [SetTextI18n]
+[2026-10-21 09:10:16] [build-stdout]             status.text = "Update work stopped when the app left the foreground. Check again to continue."
+[2026-10-21 09:10:16] [build-stdout]                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-10-21 09:10:16] [build-stdout]    Explanation for issues of type "SetTextI18n":
+[2026-10-21 09:10:16] [build-stdout]    When calling TextView#setText
+[2026-10-21 09:10:16] [build-stdout]    * Never call Number#toString() to format numbers; it will not handle
+[2026-10-21 09:10:16] [build-stdout]    fraction separators and locale-specific digits properly. Consider using
+[2026-10-21 09:10:16] [build-stdout]    String#format with proper format specifications (%d or %f) instead.
+[2026-10-21 09:10:16] [build-stdout]    * Do not pass a string literal (e.g. "Hello") to display text. Hardcoded
+[2026-10-21 09:10:16] [build-stdout]    text can not be properly translated to other languages. Consider using
+[2026-10-21 09:10:16] [build-stdout]    Android resource strings instead.
+[2026-10-21 09:10:16] [build-stdout]    * Do not build messages by concatenating text chunks. Such messages can not
+[2026-10-21 09:10:16] [build-stdout]    be properly translated.
+[2026-10-21 09:10:16] [build-stdout]    https://developer.android.com/guide/topics/resources/localization.html
+[2026-10-21 09:10:16] [build-stdout] 0 errors, 98 warnings
+[2026-10-21 09:10:16] [build-stdout] > Task :app:generateOfflineDebugLintVitalReportModel
+[2026-10-21 09:10:24] [build-stdout] > Task :app:lintVitalAnalyzeOfflineDebug
+[2026-10-21 09:10:24] [build-stdout] > Task :app:lintVitalReportOfflineDebug SKIPPED
+[2026-10-21 09:10:24] [build-stdout] > Task :app:lintVitalOfflineDebug SKIPPED
+[2026-10-21 09:10:24] [build-stdout] > Task :app:mergeOfflineDebugJniLibFolders
+[2026-10-21 09:10:24] [build-stdout] > Task :app:mergeOfflineDebugNativeLibs NO-SOURCE
+[2026-10-21 09:10:24] [build-stdout] > Task :app:stripOfflineDebugDebugSymbols NO-SOURCE
+[2026-10-21 09:10:24] [build-stdout] > Task :app:extractOfflineDebugNativeSymbolTables NO-SOURCE
+[2026-10-21 09:10:24] [build-stdout] > Task :app:mergeOfflineDebugNativeDebugMetadata NO-SOURCE
+[2026-10-21 09:10:25] [build-stdout] > Task :app:checkOfflineDebugDuplicateClasses
+[2026-10-21 09:10:29] [build-stdout] > Task :app:dexBuilderOfflineDebug
+[2026-10-21 09:10:29] [build-stdout] > Task :app:desugarOfflineDebugFileDependencies
+[2026-10-21 09:10:29] [build-stdout] > Task :app:mergeOfflineDebugStartupProfile UP-TO-DATE
+[2026-10-21 09:10:30] [build-stdout] > Task :app:mergeExtDexOfflineDebug
+[2026-10-21 09:10:31] [build-stdout] > Task :app:mergeDexOfflineDebug
+[2026-10-21 09:10:31] [build-stdout] > Task :app:mergeOfflineDebugArtProfile UP-TO-DATE
+[2026-10-21 09:10:31] [build-stdout] > Task :app:mergeOfflineDebugGlobalSynthetics
+[2026-10-21 09:10:31] [build-stdout] > Task :app:compileOfflineDebugArtProfile
+[2026-10-21 09:10:31] [build-stdout] > Task :app:mergeOfflineDebugShaders
+[2026-10-21 09:10:31] [build-stdout] > Task :app:compileOfflineDebugShaders NO-SOURCE
+[2026-10-21 09:10:31] [build-stdout] > Task :app:generateOfflineDebugAssets UP-TO-DATE
+[2026-10-21 09:10:31] [build-stdout] > Task :app:mergeOfflineDebugAssets
+[2026-10-21 09:10:31] [build-stdout] > Task :app:compressOfflineDebugAssets
+[2026-10-21 09:10:31] [build-stdout] > Task :app:extractOfflineDebugVersionControlInfo
+[2026-10-21 09:10:31] [build-stdout] > Task :app:mergeOfflineDebugJavaResource
+[2026-10-21 09:10:32] [build-stdout] > Task :app:optimizeOfflineDebugResources
+[2026-10-21 09:10:32] [build-stdout] > Task :app:collectOfflineDebugDependencies
+[2026-10-21 09:10:32] [build-stdout] > Task :app:sdkOfflineDebugDependencyData
+[2026-10-21 09:10:32] [build-stdout] > Task :app:validateSigningOfflineDebug
+[2026-10-21 09:10:32] [build-stdout] > Task :app:writeOfflineDebugAppMetadata
+[2026-10-21 09:10:32] [build-stdout] > Task :app:writeOfflineDebugSigningConfigVersions
+[2026-10-21 09:10:32] [build-stdout] > Task :app:packageOfflineDebug
+[2026-10-21 09:10:32] [build-stdout] > Task :app:createOfflineDebugApkListingFileRedirect
+[2026-10-21 09:10:32] [build-stdout] > Task :app:assembleOfflineDebug
+[2026-10-21 09:10:32] [build-stdout] > Task :app:generateAiDebugLintVitalReportModel
+[2026-10-21 09:10:50] [build-stdout] > Task :app:lintVitalAnalyzeAiDebug
+[2026-10-21 09:10:50] [build-stdout] > Task :app:lintVitalReportAiDebug SKIPPED
+[2026-10-21 09:10:50] [build-stdout] > Task :app:lintVitalAiDebug SKIPPED
+[2026-10-21 09:10:50] [build-stdout] > Task :app:mergeAiDebugJniLibFolders
+[2026-10-21 09:10:50] [build-stdout] > Task :app:mergeAiDebugNativeLibs NO-SOURCE
+[2026-10-21 09:10:50] [build-stdout] > Task :app:stripAiDebugDebugSymbols NO-SOURCE
+[2026-10-21 09:10:50] [build-stdout] > Task :app:extractAiDebugNativeSymbolTables NO-SOURCE
+[2026-10-21 09:10:50] [build-stdout] > Task :app:mergeAiDebugNativeDebugMetadata NO-SOURCE
+[2026-10-21 09:10:50] [build-stdout] > Task :app:mergeAiDebugArtProfile UP-TO-DATE
+[2026-10-21 09:10:50] [build-stdout] > Task :app:desugarAiDebugFileDependencies
+[2026-10-21 09:10:54] [build-stdout] > Task :app:dexBuilderAiDebug
+[2026-10-21 09:10:54] [build-stdout] > Task :app:mergeAiDebugGlobalSynthetics
+[2026-10-21 09:10:54] [build-stdout] > Task :app:checkAiDebugDuplicateClasses
+[2026-10-21 09:10:54] [build-stdout] > Task :app:mergeAiDebugStartupProfile UP-TO-DATE
+[2026-10-21 09:10:55] [build-stdout] > Task :app:mergeExtDexAiDebug
+[2026-10-21 09:10:56] [build-stdout] > Task :app:mergeDexAiDebug
+[2026-10-21 09:10:56] [build-stdout] > Task :app:compileAiDebugArtProfile
+[2026-10-21 09:10:56] [build-stdout] > Task :app:mergeAiDebugShaders
+[2026-10-21 09:10:56] [build-stdout] > Task :app:compileAiDebugShaders NO-SOURCE
+[2026-10-21 09:10:56] [build-stdout] > Task :app:generateAiDebugAssets UP-TO-DATE
+[2026-10-21 09:10:56] [build-stdout] > Task :app:mergeAiDebugAssets
+[2026-10-21 09:10:56] [build-stdout] > Task :app:compressAiDebugAssets
+[2026-10-21 09:10:56] [build-stdout] > Task :app:extractAiDebugVersionControlInfo
+[2026-10-21 09:10:56] [build-stdout] > Task :app:mergeAiDebugJavaResource
+[2026-10-21 09:10:56] [build-stdout] > Task :app:optimizeAiDebugResources
+[2026-10-21 09:10:56] [build-stdout] > Task :app:collectAiDebugDependencies
+[2026-10-21 09:10:56] [build-stdout] > Task :app:sdkAiDebugDependencyData
+[2026-10-21 09:10:56] [build-stdout] > Task :app:validateSigningAiDebug
+[2026-10-21 09:10:56] [build-stdout] > Task :app:writeAiDebugAppMetadata
+[2026-10-21 09:10:56] [build-stdout] > Task :app:writeAiDebugSigningConfigVersions
+[2026-10-21 09:10:56] [build-stdout] > Task :app:packageAiDebug
+[2026-10-21 09:10:56] [build-stdout] > Task :app:createAiDebugApkListingFileRedirect
+[2026-10-21 09:10:56] [build-stdout] > Task :app:assembleAiDebug
+[2026-10-21 09:10:56] [build-stdout] > Task :app:checkAiDebugAndroidTestAarMetadata
+[2026-10-21 09:10:56] [build-stdout] > Task :app:mapAiDebugAndroidTestSourceSetPaths
+[2026-10-21 09:10:56] [build-stdout] > Task :app:generateAiDebugAndroidTestResources
+[2026-10-21 09:10:56] [build-stdout] > Task :app:mergeAiDebugAndroidTestResources
+[2026-10-21 09:10:56] [build-stdout] > Task :app:processAiDebugAndroidTestManifest
+[2026-10-21 09:10:56] [build-stdout] > Task :app:processAiDebugAndroidTestResources
+[2026-10-21 09:11:18] [build-stdout] > Task :app:compileAiDebugAndroidTestKotlin
+[2026-10-21 09:11:18] [build-stdout] w: file:///workspace/autophone/app/src/androidTestAi/java/com/blackcat/remote/FeedbackSmokeInstrumentation.kt:903:33 Unreachable code
+[2026-10-21 09:11:18] [build-stdout] w: file:///workspace/autophone/app/src/androidTestAi/java/com/blackcat/remote/FeedbackSmokeInstrumentation.kt:1104:36 'updateConfiguration(Configuration!, DisplayMetrics!): Unit' is deprecated. Deprecated in Java
+[2026-10-21 09:11:18] [build-stdout] w: file:///workspace/autophone/app/src/androidTestAi/java/com/blackcat/remote/FeedbackSmokeInstrumentation.kt:1123:37 'updateConfiguration(Configuration!, DisplayMetrics!): Unit' is deprecated. Deprecated in Java
+[2026-10-21 09:11:18] [build-stdout] w: file:///workspace/autophone/app/src/androidTestAi/java/com/blackcat/remote/FeedbackSmokeInstrumentation.kt:1237:36 'updateConfiguration(Configuration!, DisplayMetrics!): Unit' is deprecated. Deprecated in Java
+[2026-10-21 09:11:18] [build-stdout] w: file:///workspace/autophone/app/src/androidTestAi/java/com/blackcat/remote/FeedbackSmokeInstrumentation.kt:1283:32 'updateConfiguration(Configuration!, DisplayMetrics!): Unit' is deprecated. Deprecated in Java
+[2026-10-21 09:11:18] [build-stdout] w: file:///workspace/autophone/app/src/androidTestAi/java/com/blackcat/remote/FeedbackSmokeInstrumentation.kt:1398:36 'updateConfiguration(Configuration!, DisplayMetrics!): Unit' is deprecated. Deprecated in Java
+[2026-10-21 09:11:18] [build-stdout] w: file:///workspace/autophone/app/src/androidTestAi/java/com/blackcat/remote/FeedbackSmokeInstrumentation.kt:1420:63 'updateConfiguration(Configuration!, DisplayMetrics!): Unit' is deprecated. Deprecated in Java
+[2026-10-21 09:11:18] [build-stdout] > Task :app:javaPreCompileAiDebugAndroidTest
+[2026-10-21 09:11:18] [build-stdout] > Task :app:compileAiDebugAndroidTestJavaWithJavac NO-SOURCE
+[2026-10-21 09:11:18] [build-stdout] > Task :app:mergeAiDebugAndroidTestShaders
+[2026-10-21 09:11:18] [build-stdout] > Task :app:compileAiDebugAndroidTestShaders NO-SOURCE
+[2026-10-21 09:11:18] [build-stdout] > Task :app:generateAiDebugAndroidTestAssets UP-TO-DATE
+[2026-10-21 09:11:18] [build-stdout] > Task :app:mergeAiDebugAndroidTestAssets
+[2026-10-21 09:11:18] [build-stdout] > Task :app:compressAiDebugAndroidTestAssets
+[2026-10-21 09:11:18] [build-stdout] > Task :app:desugarAiDebugAndroidTestFileDependencies
+[2026-10-21 09:11:19] [build-stdout] > Task :app:dexBuilderAiDebugAndroidTest
+[2026-10-21 09:11:19] [build-stdout] > Task :app:mergeAiDebugAndroidTestGlobalSynthetics
+[2026-10-21 09:11:19] [build-stdout] > Task :app:processAiDebugAndroidTestJavaRes
+[2026-10-21 09:11:19] [build-stdout] > Task :app:mergeAiDebugAndroidTestJavaResource
+[2026-10-21 09:11:19] [build-stdout] > Task :app:checkAiDebugAndroidTestDuplicateClasses
+[2026-10-21 09:11:19] [build-stdout] > Task :app:mergeExtDexAiDebugAndroidTest
+[2026-10-21 09:11:19] [build-stdout] > Task :app:mergeDexAiDebugAndroidTest
+[2026-10-21 09:11:19] [build-stdout] > Task :app:mergeAiDebugAndroidTestJniLibFolders
+[2026-10-21 09:11:19] [build-stdout] > Task :app:mergeAiDebugAndroidTestNativeLibs NO-SOURCE
+[2026-10-21 09:11:19] [build-stdout] > Task :app:stripAiDebugAndroidTestDebugSymbols NO-SOURCE
+[2026-10-21 09:11:19] [build-stdout] > Task :app:validateSigningAiDebugAndroidTest
+[2026-10-21 09:11:19] [build-stdout] > Task :app:writeAiDebugAndroidTestSigningConfigVersions
+[2026-10-21 09:11:19] [build-stdout] > Task :app:packageAiDebugAndroidTest
+[2026-10-21 09:11:19] [build-stdout] > Task :app:createAiDebugAndroidTestApkListingFileRedirect
+[2026-10-21 09:11:19] [build-stdout] > Task :app:assembleAiDebugAndroidTest
+[2026-10-21 09:11:19] [build-stdout] BUILD SUCCESSFUL in 5m 35s
+[2026-10-21 09:11:19] [build-stdout] 140 actionable tasks: 136 executed, 4 up-to-date
+Finalizing database at /workspace/security-review/ui20/final-codeql-db.
+Running pre-finalize script /workspace/.autophone-tools/codeql/java/tools/pre-finalize.sh in /workspace/autophone.
+Running command in /workspace/autophone: [/workspace/.autophone-tools/codeql/java/tools/pre-finalize.sh]
+[2026-10-21 09:11:22] [build-stderr] Scanning for files in /workspace/autophone...
+[2026-10-21 09:11:22] [build-stderr] /workspace/security-review/ui20/final-codeql-db: Indexing files in in /workspace/autophone...
+[2026-10-21 09:11:22] [build-stderr] Running command in /workspace/autophone: [/workspace/.autophone-tools/codeql/xml/tools/index-files.sh, /workspace/security-review/ui20/final-codeql-db/working/files-to-index9019005268237733684.list]
+[2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [WARN] Parsing error in file /workspace/autophone/app/build/intermediates/lint_partial_results/aiDebug/lintAnalyzeAiDebug/out/lint-resources.xml: Unexpected character 'h' (code 104) in prolog; expected '<'
+[2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [build-stdout]                               at [row,col {unknown-source}]: [1,1]
+[2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [build-stdout] 09:11:23.123 [main] WARN com.semmle.extractor.xml.StAXXmlPopulator -- Parsing error in file /workspace/autophone/app/build/intermediates/lint_partial_results/aiDebug/lintAnalyzeAiDebug/out/lint-resources.xml: Unexpected character 'h' (code 104) in prolog; expected '<'
+[2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [build-stdout]  at [row,col {unknown-source}]: [1,1]
+[2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [WARN] Parsing error in file /workspace/autophone/app/build/intermediates/lint_partial_results/offlineDebug/lintAnalyzeOfflineDebug/out/lint-resources.xml: Unexpected character 'h' (code 104) in prolog; expected '<'
+[2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [build-stdout]                               at [row,col {unknown-source}]: [1,1]
+[2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [build-stdout] 09:11:23.145 [main] WARN com.semmle.extractor.xml.StAXXmlPopulator -- Parsing error in file /workspace/autophone/app/build/intermediates/lint_partial_results/offlineDebug/lintAnalyzeOfflineDebug/out/lint-resources.xml: Unexpected character 'h' (code 104) in prolog; expected '<'
+[2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [build-stdout]  at [row,col {unknown-source}]: [1,1]
+[2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [WARN] Parsing error in file /workspace/autophone/app/build/intermediates/lint_vital_partial_results/aiDebug/lintVitalAnalyzeAiDebug/out/lint-resources.xml: Unexpected character 'h' (code 104) in prolog; expected '<'
+[2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [build-stdout]                               at [row,col {unknown-source}]: [1,1]
+[2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [build-stdout] 09:11:23.164 [main] WARN com.semmle.extractor.xml.StAXXmlPopulator -- Parsing error in file /workspace/autophone/app/build/intermediates/lint_vital_partial_results/aiDebug/lintVitalAnalyzeAiDebug/out/lint-resources.xml: Unexpected character 'h' (code 104) in prolog; expected '<'
+[2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [build-stdout]  at [row,col {unknown-source}]: [1,1]
+[2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [WARN] Parsing error in file /workspace/autophone/app/build/intermediates/lint_vital_partial_results/offlineDebug/lintVitalAnalyzeOfflineDebug/out/lint-resources.xml: Unexpected character 'h' (code 104) in prolog; expected '<'
+[2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [build-stdout]                               at [row,col {unknown-source}]: [1,1]
+[2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [build-stdout] 09:11:23.168 [main] WARN com.semmle.extractor.xml.StAXXmlPopulator -- Parsing error in file /workspace/autophone/app/build/intermediates/lint_vital_partial_results/offlineDebug/lintVitalAnalyzeOfflineDebug/out/lint-resources.xml: Unexpected character 'h' (code 104) in prolog; expected '<'
+[2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [build-stdout]  at [row,col {unknown-source}]: [1,1]
+[2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [XMLExtractor] Processed 149 files in 636 ms; produced 72222 bytes of compressed TRAP
+[2026-10-21 09:11:23] [build-stdout] [2026-10-21 09:11:23] [build-stdout] 09:11:23.466 [main] INFO com.semmle.cli.SimpleExtractor.Stats -- Processed 149 files in 636 ms; produced 72222 bytes of compressed TRAP
+[2026-10-21 09:11:24] [build-stderr] Scanning for files in /workspace/autophone...
+[2026-10-21 09:11:24] [build-stderr] /workspace/security-review/ui20/final-codeql-db: Indexing files in in /workspace/autophone...
+[2026-10-21 09:11:24] [build-stderr] Running command in /workspace/autophone: [/workspace/.autophone-tools/codeql/properties/tools/index-files.sh, /workspace/security-review/ui20/final-codeql-db/working/files-to-index13250467444209045263.list]
+[2026-10-21 09:11:25] [build-stdout] [2026-10-21 09:11:25] [build-stdout] [2026-10-21 09:11:25] [PropertiesExtractor] Processed 11 files in 76 ms; produced 0 bytes of compressed TRAP
+Pre-finalize script /workspace/.autophone-tools/codeql/java/tools/pre-finalize.sh completed in 4839 ms.
+Running TRAP import for CodeQL database at /workspace/security-review/ui20/final-codeql-db...
+Importing TRAP files
+Merging relations
+Finished writing database (relations: 3.64 MiB; string pool: 5.53 MiB).
+TRAP import complete (5.1s).
+Finished zipping source archive (391.44 KiB).
+Successfully created database at /workspace/security-review/ui20/final-codeql-db.

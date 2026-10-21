@@ -54,6 +54,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
     private var workflowsOnly = false
     private var searchStreamOnly = false
     private var evidenceOnly = false
+    private var updatesOnly = false
 
     override fun onCreate(arguments: Bundle?) {
         super.onCreate(arguments)
@@ -64,6 +65,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         workflowsOnly = arguments?.getString("scenario") == "workflows"
         searchStreamOnly = arguments?.getString("scenario") == "search-stream"
         evidenceOnly = arguments?.getString("scenario") == "evidence"
+        updatesOnly = arguments?.getString("scenario") == "updates"
         timeoutOnly = arguments?.getString("scenario") == "timeout"
         imageAuto = arguments?.getString("scenario") == "image-auto" || injectedImages
         layoutOnly = arguments?.getString("scenario") == "layout"
@@ -102,6 +104,12 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                 decor.isShown && decor.isAttachedToWindow && decor.isLaidOut && SystemClock.uptimeMillis() - stableSince >= 2000
             }
             startupSettled = true
+            if (updatesOnly) {
+                captureUpdates()
+                result.putString("stream", "\nUI20_UPDATES_PASS ${checks.size}\n" + checks.joinToString("\n"))
+                finish(Activity.RESULT_OK, result)
+                return
+            }
             if (evidenceOnly) {
                 captureEvidenceAuto()
                 result.putString("stream", "\nUI19_EVIDENCE_PASS ${checks.size}\n" + checks.joinToString("\n"))
@@ -722,6 +730,76 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         }
         screenshot("auto-initial-error", autoDialog)
         onMain { auto!!.dismiss() }
+    }
+
+    private fun captureUpdates() {
+        val installed = AndroidUpdateSecurity.installed(targetContext)
+        check(installed.signer == "fc5c0b42b9da40c2507d8f2e77ed92db9e023740aa1a44d1a3b2c14a6e9f4764")
+        val snapshot = AndroidUpdateSecurity.inspect(targetContext, File(AndroidUpdateSecurity.packageInfo(targetContext).applicationInfo!!.sourceDir))
+        check(snapshot.packageName == installed.packageName && snapshot.version == installed.version && snapshot.signers == setOf(installed.signer))
+        pass("On-device apksig and PackageManager agree on installed APK identity and original signer")
+        val directory = File(targetContext.cacheDir, "ui20-ledger-fixture")
+        check(!directory.exists() || directory.listFiles().isNullOrEmpty())
+        directory.mkdirs()
+        val context = object : android.content.ContextWrapper(targetContext) {
+            override fun getNoBackupFilesDir() = directory
+        }
+        val now = System.currentTimeMillis() / 1000
+        val release = UpdateRelease(10, now - 60, now + 3600, installed.version + 1, "fixture-only", installed.packageName,
+            "ai", "testing", 1, "a".repeat(64), installed.signer, "https://example.test/unused.apk", "b".repeat(64))
+        val state = File(directory, "signed-updates/floor-v1")
+        fun refused(action: () -> Unit) {
+            var failed = false
+            try { action() } catch (_: Exception) { failed = true }
+            check(failed)
+        }
+        try {
+            AndroidUpdateLedger(context).accept(release, installed, now)
+            AndroidUpdateLedger(context).accept(release, installed, now)
+            refused { AndroidUpdateLedger(context).accept(release.copy(sequence = 9), installed, now) }
+            refused { AndroidUpdateLedger(context).accept(release.copy(payloadHash = "c".repeat(64)), installed, now) }
+            pass("Atomic rollback floor survives ledger recreation and rejects older or equivocal metadata")
+            state.writeText("damaged")
+            refused { AndroidUpdateLedger(context).accept(release, installed, now) }
+            check(state.readText() == "damaged")
+            pass("Corrupt on-device rollback state fails closed without resetting the floor")
+        } finally {
+            // Only files within this explicitly owned disposable fixture are removed.
+            state.parentFile!!.listFiles()?.forEach { check(it.isFile); it.delete() }
+            state.parentFile!!.delete(); directory.delete()
+        }
+        val monitor = addMonitor(UpdateActivity::class.java.name, null, false)
+        onMain { activity.startActivity(Intent(activity, UpdateActivity::class.java)) }
+        val updates = waitForMonitorWithTimeout(monitor, 15000) ?: error("Update screen did not open")
+        waitForIdleSync()
+        runOnMainSync {
+            val root = updates.window.decorView
+            check(descendants(root).filterIsInstance<TextView>().any { it.text.toString() == UpdateActivity.NOT_PROVISIONED })
+            findButton(root, "Check for updates").performClick()
+            check(!findButton(root, "Download & verify APK").isEnabled)
+            check(!findButton(root, "Save verified APK…").isEnabled)
+            check(descendants(root).filterIsInstance<TextView>().any { it.text.toString() == UpdateActivity.NOT_PROVISIONED })
+        }
+        pass("Unprovisioned production screen exposes no download, save or installer path")
+        // Capture the real Activity Window with PixelCopy; only this fixture clears FLAG_SECURE.
+        val copied = CountDownLatch(1)
+        var code = -1
+        lateinit var bitmap: Bitmap
+        runOnMainSync {
+            val window = updates.window
+            window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            val decor = window.decorView
+            bitmap = Bitmap.createBitmap(decor.width, decor.height, Bitmap.Config.ARGB_8888)
+            decor.postDelayed({ PixelCopy.request(window, bitmap, { code = it; copied.countDown() }, Handler(Looper.getMainLooper())) }, 500)
+        }
+        check(copied.await(10, TimeUnit.SECONDS) && code == PixelCopy.SUCCESS)
+        File(targetContext.filesDir, "ui12-rendered").apply { mkdirs() }.let { dir ->
+            File(dir, "ui20-updates-unprovisioned.png").outputStream().use { check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)) }
+        }
+        bitmap.recycle()
+        pass("Actual update Activity window rendered and captured; no placeholder trust installed")
+        runOnMainSync { updates.finish() }
+        removeMonitor(monitor)
     }
 
     private fun captureEvidenceAuto() {

@@ -1,0 +1,45 @@
+{
+  "completed": true,
+  "security_findings": 5,
+  "quality_notes": 30,
+  "covered_kotlin_files": 67,
+  "cli_coverage": "67/68 Java/Kotlin; every checked-in Kotlin file covered",
+  "security_triage": [
+    {
+      "rule": "java/android/missing-certificate-pinning",
+      "file": "app/src/ai/java/com/blackcat/remote/AssistantNarrator.kt",
+      "line": 137,
+      "security_severity": 5.9,
+      "disposition": "Open; unchanged OpenAI client uses platform TLS without certificate pinning. Newly surfaced in this run. Not suppressed or fixed in updater scope."
+    },
+    {
+      "rule": "java/android/missing-certificate-pinning",
+      "file": "app/src/ai/java/com/blackcat/remote/OpenAiAutoObserver.kt",
+      "line": 27,
+      "security_severity": 5.9,
+      "disposition": "Open; unchanged OpenAI client uses platform TLS without certificate pinning. Newly surfaced in this run. Not suppressed or fixed in updater scope."
+    },
+    {
+      "rule": "java/android/missing-certificate-pinning",
+      "file": "app/src/ai/java/com/blackcat/remote/OpenAiKeyChecker.kt",
+      "line": 40,
+      "security_severity": 5.9,
+      "disposition": "Open; unchanged OpenAI client uses platform TLS without certificate pinning. Newly surfaced in this run. Not suppressed or fixed in updater scope."
+    },
+    {
+      "rule": "java/android/missing-certificate-pinning",
+      "file": "app/src/ai/java/com/blackcat/remote/OpenAiPhotoAnalyzer.kt",
+      "line": 31,
+      "security_severity": 5.9,
+      "disposition": "Open; unchanged OpenAI client uses platform TLS without certificate pinning. Newly surfaced in this run. Not suppressed or fixed in updater scope."
+    },
+    {
+      "rule": "java/android/missing-certificate-pinning",
+      "file": "app/src/ai/java/com/blackcat/remote/OpenAiPlanner.kt",
+      "line": 24,
+      "security_severity": 5.9,
+      "disposition": "Open; unchanged OpenAI client uses platform TLS without certificate pinning. Newly surfaced in this run. Not suppressed or fixed in updater scope."
+    }
+  ],
+  "clean_security_gate": false
+}

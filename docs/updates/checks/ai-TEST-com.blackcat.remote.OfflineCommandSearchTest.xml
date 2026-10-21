@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blackcat.remote.OfflineCommandSearchTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-21T09:08:43" hostname="447eb30ef900" time="1.92">
+  <properties/>
+  <testcase name="conversationalCheckDoesNotAddUnrelatedTopicsJustContainingThatVerb" classname="com.blackcat.remote.OfflineCommandSearchTest" time="1.454"/>
+  <testcase name="unicodeWordsAndSupplementaryLettersRemainSearchableAlongsideCommandPunctuation" classname="com.blackcat.remote.OfflineCommandSearchTest" time="0.177"/>
+  <testcase name="osScopeIncludesCommonLinuxAndExcludesUnverifiedKaliOnlyTools" classname="com.blackcat.remote.OfflineCommandSearchTest" time="0.069"/>
+  <testcase name="exactSubcommandsAndSingleCharacterBuiltinsRemainFindable" classname="com.blackcat.remote.OfflineCommandSearchTest" time="0.105"/>
+  <testcase name="ordinaryTaskLanguageFindsConnectionInspectionBeforeRiskierChanges" classname="com.blackcat.remote.OfflineCommandSearchTest" time="0.007"/>
+  <testcase name="commonTasksFindRealCommandsAndRetainTheirTopics" classname="com.blackcat.remote.OfflineCommandSearchTest" time="0.085"/>
+  <testcase name="searchIsBoundedDeterministicAndDoesNotInventCommands" classname="com.blackcat.remote.OfflineCommandSearchTest" time="0.02"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

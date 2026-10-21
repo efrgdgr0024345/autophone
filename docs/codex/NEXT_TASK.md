@@ -1,4 +1,20 @@
-# Current UI19 continuation
+# Current continuation: signed update checks and OCR evaluation
+
+Tested feature source: `64d3caae9d807bcd07c0caf5e8b0d23c576d3fee` on
+`feature/ui20-authenticated-updates`, from approved CatAI-19 lineage
+`bd7f38295404721c984ede7813a363a46ae02aba`.
+
+See [update security design](../updates/SECURITY-DESIGN.md),
+[exact-commit evidence](../updates/EVIDENCE.json) and
+[OCR evaluation only](../updates/OCR-EVALUATION.md). Production update trust is
+deliberately unprovisioned; no new APK/release or signing change is authorized by
+this delivery. Next work needs reviewed public metadata trust and release-host
+provisioning. Do not create production keys, change signing configuration, add
+installation permissions, or implement OCR/observation timing changes without
+the user's separate approval. Five newly surfaced CodeQL certificate-pinning
+warnings in unchanged OpenAI clients remain open for a separate review.
+
+# Previous UI19 continuation
 
 Latest source: `173946bb1172cea930dfd78ed032967b022d8fcf` on `feature/ui19-evidence-driven-auto`.
 

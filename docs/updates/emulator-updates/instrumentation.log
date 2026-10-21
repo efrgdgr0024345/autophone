@@ -1,0 +1,13 @@
+UI12_SMOKE_START
+PASS: On-device apksig and PackageManager agree on installed APK identity and original signer
+PASS: Atomic rollback floor survives ledger recreation and rejects older or equivocal metadata
+PASS: Corrupt on-device rollback state fails closed without resetting the floor
+PASS: Unprovisioned production screen exposes no download, save or installer path
+PASS: Actual update Activity window rendered and captured; no placeholder trust installed
+
+UI20_UPDATES_PASS 5
+PASS: On-device apksig and PackageManager agree on installed APK identity and original signer
+PASS: Atomic rollback floor survives ledger recreation and rejects older or equivocal metadata
+PASS: Corrupt on-device rollback state fails closed without resetting the floor
+PASS: Unprovisioned production screen exposes no download, save or installer path
+PASS: Actual update Activity window rendered and captured; no placeholder trust installed
