@@ -37,8 +37,18 @@ class AutoImageHarnessTests(unittest.TestCase):
         self.assertEqual('captured', self.observed('0_DONE')['page_state'])
         value = self.observed('0_TRUNCATED')
         self.assertEqual('truncated', value['page_state'])
+        self.assertTrue(value['page_marker'].endswith('_0_TRUNCATED'))
         self.assertEqual('unclear', value['outcome'])
         self.assertTrue(value['revision_needed'])
+
+    def test_cleanup_returns_the_full_printed_footer_to_exercise_production_normalization(self):
+        marker = 'BC' + 'a' * 24 + '_CLEAN'
+        request = {'kind': 'observation', 'preflight': False, 'production_schema': {},
+                   'collection_context': json.dumps({'expected_marker': marker, 'page': -1})}
+        response = ocr_reply(Path('/unused-test-output'), request, f'{marker}_0\ndemo@linux:~$ ')
+        value = json.loads(response['output'][0]['content'][0]['text'])
+        self.assertEqual(marker + '_0', value['page_marker'])
+        self.assertEqual('cleaned', value['page_state'])
 
     def test_wrong_capture_id_is_rejected(self):
         marker = 'BC' + 'a' * 24 + '_CAP'

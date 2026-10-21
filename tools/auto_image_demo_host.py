@@ -93,7 +93,10 @@ def ocr_reply(output, request, text_override=None):
         matches = [re.fullmatch(re.escape(marker_key) + suffix, line) for line in normalized]
         match = next((m for m in matches if m), None)
         if match and prompt:
-            value.update(page_marker=marker, page_state='cleaned' if page < 0 else 'captured',
+            # Exercise the full printed-footer form returned by the live provider.
+            # The app must normalize it only when separate code/state fields agree.
+            printed_marker = marker + '_' + match[1] + ('_' + match[2] if page == 0 else '')
+            value.update(page_marker=printed_marker, page_state='cleaned' if page < 0 else 'captured',
                          exit_code=match[1], outcome='appears_complete', explanation='The visible completion marker and idle prompt match this operation.')
             if page == 0 and match[2] == 'TRUNCATED':
                 value.update(page_state='truncated', outcome='unclear', revision_needed=True,
