@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blackcat.remote.OfflineWorkflowsTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2026-10-21T09:08:51" hostname="447eb30ef900" time="7.775">
+  <properties/>
+  <testcase name="fakeExecutableCannotBeSubstitutedIntoAWorkflow" classname="com.blackcat.remote.OfflineWorkflowsTest" time="0.712"/>
+  <testcase name="administratorPrefixIsExplicitAndVisibleInTheExactCommand" classname="com.blackcat.remote.OfflineWorkflowsTest" time="0.748"/>
+  <testcase name="controlsAndLongArgumentsAreRejectedBeforePreparation" classname="com.blackcat.remote.OfflineWorkflowsTest" time="0.718"/>
+  <testcase name="taskArgumentsCannotBecomeOuterShellSyntaxAndEmptyArgumentsSurvive" classname="com.blackcat.remote.OfflineWorkflowsTest" time="0.693"/>
+  <testcase name="missingHelpIsNotInventedAndKnownHelpMustMatchTheInvocation" classname="com.blackcat.remote.OfflineWorkflowsTest" time="0.681"/>
+  <testcase name="aMissingWorkflowCannotMasqueradeAsFullCoverage" classname="com.blackcat.remote.OfflineWorkflowsTest" time="0.686"/>
+  <testcase name="falseCoverageNumbersAreRejected" classname="com.blackcat.remote.OfflineWorkflowsTest" time="0.69"/>
+  <testcase name="packageOnlyGroupsRemainUsefulWithoutInventedExecutables" classname="com.blackcat.remote.OfflineWorkflowsTest" time="0.7"/>
+  <testcase name="everyKaliCommandAndToolHasAUsableSourceLinkedRoute" classname="com.blackcat.remote.OfflineWorkflowsTest" time="0.77"/>
+  <testcase name="subcommandsLocateTheBackingBinaryAndUseTheirOwnManual" classname="com.blackcat.remote.OfflineWorkflowsTest" time="0.713"/>
+  <testcase name="sourceDataCannotReplaceADiscoveryCheckWithAnOperation" classname="com.blackcat.remote.OfflineWorkflowsTest" time="0.663"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

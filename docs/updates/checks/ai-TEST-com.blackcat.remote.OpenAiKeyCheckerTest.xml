@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blackcat.remote.OpenAiKeyCheckerTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-10-21T09:08:58" hostname="447eb30ef900" time="0.003">
+  <properties/>
+  <testcase name="malformedSuccessBodyIsNotSuccess" classname="com.blackcat.remote.OpenAiKeyCheckerTest" time="0.002"/>
+  <testcase name="forbiddenDoesNotClaimKeyIsIncorrect" classname="com.blackcat.remote.OpenAiKeyCheckerTest" time="0.0"/>
+  <testcase name="fixedModelEndpointRequiresHttps" classname="com.blackcat.remote.OpenAiKeyCheckerTest" time="0.0"/>
+  <testcase name="authenticationRejectionIsNotModelAccessFailure" classname="com.blackcat.remote.OpenAiKeyCheckerTest" time="0.0"/>
+  <testcase name="unavailableModelIsDistinctFromRejectedKey" classname="com.blackcat.remote.OpenAiKeyCheckerTest" time="0.0"/>
+  <testcase name="unsupportedModelCannotBeVerified" classname="com.blackcat.remote.OpenAiKeyCheckerTest" time="0.001"/>
+  <testcase name="rateLimitCannotProduceVerification" classname="com.blackcat.remote.OpenAiKeyCheckerTest" time="0.0"/>
+  <testcase name="redirectCannotProduceVerificationOrEchoProviderText" classname="com.blackcat.remote.OpenAiKeyCheckerTest" time="0.0"/>
+  <testcase name="mismatchedModelMetadataIsNotSuccess" classname="com.blackcat.remote.OpenAiKeyCheckerTest" time="0.0"/>
+  <testcase name="validModelMetadataVerifiesAuthenticationWithExplicitLimits" classname="com.blackcat.remote.OpenAiKeyCheckerTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

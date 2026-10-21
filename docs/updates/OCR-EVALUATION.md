@@ -72,6 +72,9 @@ files, preferences, analytics or crash reports. Tests may save explicitly synthe
 fixtures. Keep a short bounded in-memory evidence window and clear it on stop.
 Exact timestamps and image digests alone do not prove the terminal display is live;
 the current operation's unpredictable nonce and expected markers remain necessary.
+Do not assume a Camera2 timestamp shares SystemClock's timebase when the camera's
+timestamp-source characteristics do not guarantee it. Even complete, stable text
+cannot establish keyboard focus or authorize another command.
 
 ## Exact marker and completeness boundary
 

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blackcat.remote.PhotoAnalysisTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-10-21T09:08:58" hostname="447eb30ef900" time="0.001">
+  <properties/>
+  <testcase name="imageSchemaCannotMixQuestionsWithCommands" classname="com.blackcat.remote.PhotoAnalysisTest" time="0.0"/>
+  <testcase name="parsesReadableAnalysis" classname="com.blackcat.remote.PhotoAnalysisTest" time="0.0"/>
+  <testcase name="incompletePhotoCannotSupplyCommands" classname="com.blackcat.remote.PhotoAnalysisTest" time="0.001"/>
+  <testcase name="allowsUnreadableImageToAskWithoutCommands" classname="com.blackcat.remote.PhotoAnalysisTest" time="0.0"/>
+  <testcase name="rejectsMoreThanEightPhotoCommands" classname="com.blackcat.remote.PhotoAnalysisTest" time="0.0"/>
+  <testcase name="rejectsControlCharactersInCommand" classname="com.blackcat.remote.PhotoAnalysisTest" time="0.0"/>
+  <testcase name="requestContainsReviewedImageAndNoTools" classname="com.blackcat.remote.PhotoAnalysisTest" time="0.0"/>
+  <testcase name="rejectsQuestionsMixedWithCommands" classname="com.blackcat.remote.PhotoAnalysisTest" time="0.0"/>
+  <testcase name="rejectsInventedSuccessField" classname="com.blackcat.remote.PhotoAnalysisTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

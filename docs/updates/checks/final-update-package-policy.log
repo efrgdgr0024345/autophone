@@ -1,0 +1,2 @@
+PASS: unprovisioned trust, isolated updater, unchanged camera/Auto/planner/offline, no install capability
+PASS: AI-only packaged updater/apksig; no test metadata authority, endpoint or ML Kit in app APKs

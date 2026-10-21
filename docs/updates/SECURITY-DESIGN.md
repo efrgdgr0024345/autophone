@@ -4,6 +4,8 @@ Status: implemented verifier; **production trust is unprovisioned**. No producti
 metadata keys were generated, no signing configuration changed, no installation
 permission added. This is source for review, not an enabled update channel.
 
+Tested source: `64d3caae9d807bcd07c0caf5e8b0d23c576d3fee`.
+
 Starting point/rollback: `bd7f38295404721c984ede7813a363a46ae02aba` on
 `feature/ui19-evidence-driven-auto`; its APK app source is
 `173946bb1172cea930dfd78ed032967b022d8fcf`. Work is isolated on
@@ -149,6 +151,26 @@ server offered the newest release. A file provider can alter an exported copy;
 verification guarantees the bytes written by this app, not permanent control of a
 user-selected external document. Android still checks package signatures on install.
 No claim is made that an unprovisioned channel has been tested live.
+
+## Existing signing identity and scanner findings
+
+Both retained CatAI-19/CatBT-19 APKs and both new test APKs pass signature verification
+with public certificate SHA-256
+`fc5c0b42b9da40c2507d8f2e77ed92db9e023740aa1a44d1a3b2c14a6e9f4764`.
+This is the existing **Android Debug** identity. Continuity does not certify production
+key custody or harden that identity. No keystore, private key or password is exported;
+production signing changes require the user's separate approval.
+
+The final CodeQL scan completed with five open `java/android/missing-certificate-pinning`
+findings (security severity 5.9), in AssistantNarrator, OpenAiAutoObserver,
+OpenAiKeyChecker, OpenAiPhotoAnalyzer and OpenAiPlanner. All five files match the
+approved baseline byte-for-byte. These findings are newly surfaced by this run;
+the previous report's zero count is not repeated as the current result. Platform
+TLS remains in use. There is no suppression, invented certificate pin or change
+to those working clients in this task. They require a separate transport/pin-
+lifecycle review; this source is not described as having a clean security gate.
+Thirty other CodeQL quality notes remain. Lint has no errors, with 98 AI/30 offline
+warnings; the 16 added warnings concern translation of the new English UI strings.
 
 ## Test record
 

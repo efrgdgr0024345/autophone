@@ -1,3 +1,16 @@
+## Development: authenticated update checks
+
+The latest approved CatAI-19 source now has an isolated Settings update-check feature
+on `feature/ui20-authenticated-updates`. **Production update trust is unprovisioned**:
+no network check/download is enabled until a reviewed public metadata key, endpoint
+and host policy are provided. No new APK is published; the UI19 download below stays
+the testing release. Installation remains manual and no installation permission or
+signing change was added. [Security design and exact-commit evidence](docs/updates/SECURITY-DESIGN.md).
+
+The final scan also surfaced five certificate-pinning warnings in unchanged OpenAI
+clients; they are recorded for review. [Local OCR evaluation](docs/updates/OCR-EVALUATION.md)
+is a proposal only: Camera2, the five-second wait and exact nonce/page checks are unchanged.
+
 ## UI19 test download — evidence-driven diagnostics
 
 Full direct APK download URL:

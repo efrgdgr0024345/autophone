@@ -1,0 +1,179 @@
+{
+  "tested_source": "64d3caae9d807bcd07c0caf5e8b0d23c576d3fee",
+  "rollback": "bd7f38295404721c984ede7813a363a46ae02aba",
+  "branch": "feature/ui20-authenticated-updates",
+  "production_update_trust": "UNPROVISIONED \u2014 configured() returns null; no network or download",
+  "production_keys_created": false,
+  "signing_configuration_changed": false,
+  "installation_permissions_added": false,
+  "new_apk_published": false,
+  "apk_version_code": 22,
+  "apk_version_name": "19.0-evidence-auto",
+  "ocr": {
+    "evaluation_only": true,
+    "mlkit_dependency_added": false,
+    "camera_pipeline_changed": false,
+    "five_second_delay_changed": false,
+    "nonce_page_completeness_checks_changed": false,
+    "official_sample_commit": "4a015dba205bf1664da7a241d8b4754c1e1a579c",
+    "developers_google_com_guide": "Blocked by outbound proxy HTTP403; official GitHub samples read"
+  },
+  "toolchain": {
+    "java": "17.0.20.1",
+    "gradle": "8.9",
+    "agp": "8.7.3",
+    "kotlin": "1.9.23",
+    "compile_target_sdk": 35,
+    "min_sdk": 28,
+    "codeql": "2.27.2",
+    "query_suite": "java-security-and-quality.qls",
+    "java_queries": "1.11.12",
+    "new_ai_only_dependency": "com.android.tools.build:apksig:8.7.3"
+  },
+  "android_unit_tests": {
+    "ai": {
+      "tests": 216,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "offline": {
+      "tests": 27,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "updater_unit_tests": 30,
+  "python_tests": {
+    "tests": 105,
+    "passed": true
+  },
+  "planner_tests": {
+    "tests": 40,
+    "passed": true
+  },
+  "lint": {
+    "ai": {
+      "Warning": 98
+    },
+    "offline": {
+      "Warning": 30
+    }
+  },
+  "signing_continuity": {
+    "public_certificate_sha256": "fc5c0b42b9da40c2507d8f2e77ed92db9e023740aa1a44d1a3b2c14a6e9f4764",
+    "previous_ai_and_offline_apks_verified": true,
+    "new_ai_and_offline_apks_verified": true,
+    "identity": "Existing Android Debug certificate; continuity is not production-key hardening",
+    "private_key_password_or_keystore_exported": false
+  },
+  "apks": {
+    "ai": {
+      "sha256": "76a2249d942c2c0404b9c172d0042c00b7cf0a44bca8e9be7756ff8cb952705f",
+      "size": 6970288,
+      "published": false,
+      "private_test_artifact": "/workspace/security-review/ui20/final-tested-ai.apk"
+    },
+    "offline": {
+      "sha256": "181c56e5af187c1f08a5b7fd5102ac90a846e0702d1bf5446a6bb4765bf10140",
+      "size": 6097885,
+      "published": false,
+      "private_test_artifact": "/workspace/security-review/ui20/final-tested-offline.apk"
+    }
+  },
+  "native_emulator": {
+    "api": 31,
+    "android": "12",
+    "avd": "blackcat-atd31",
+    "software_tcg": true,
+    "suites": {
+      "updates": {
+        "checks": 5,
+        "screenshots": 1,
+        "installed_apk_sha256": "76a2249d942c2c0404b9c172d0042c00b7cf0a44bca8e9be7756ff8cb952705f",
+        "passed": true
+      },
+      "evidence": {
+        "checks": 5,
+        "screenshots": 2,
+        "installed_apk_sha256": "76a2249d942c2c0404b9c172d0042c00b7cf0a44bca8e9be7756ff8cb952705f",
+        "passed": true
+      },
+      "all": {
+        "checks": 22,
+        "screenshots": 38,
+        "installed_apk_sha256": "76a2249d942c2c0404b9c172d0042c00b7cf0a44bca8e9be7756ff8cb952705f",
+        "passed": true
+      }
+    },
+    "total_checks": 32,
+    "providers_and_hid": "Synthetic fixtures; real Android Camera2 JPEG/Keystore/window rendering",
+    "production_signed_release_service": "Not tested: real trust is unprovisioned",
+    "successful_saf_export_and_user_install_of_authenticated_network_release": "Not tested: trust provisioning required"
+  },
+  "codeql": {
+    "completed": true,
+    "security_findings": 5,
+    "quality_notes": 30,
+    "covered_kotlin_files": 67,
+    "cli_coverage": "67/68 Java/Kotlin; every checked-in Kotlin file covered",
+    "security_triage": [
+      {
+        "rule": "java/android/missing-certificate-pinning",
+        "file": "app/src/ai/java/com/blackcat/remote/AssistantNarrator.kt",
+        "line": 137,
+        "security_severity": 5.9,
+        "disposition": "Open; unchanged OpenAI client uses platform TLS without certificate pinning. Newly surfaced in this run. Not suppressed or fixed in updater scope."
+      },
+      {
+        "rule": "java/android/missing-certificate-pinning",
+        "file": "app/src/ai/java/com/blackcat/remote/OpenAiAutoObserver.kt",
+        "line": 27,
+        "security_severity": 5.9,
+        "disposition": "Open; unchanged OpenAI client uses platform TLS without certificate pinning. Newly surfaced in this run. Not suppressed or fixed in updater scope."
+      },
+      {
+        "rule": "java/android/missing-certificate-pinning",
+        "file": "app/src/ai/java/com/blackcat/remote/OpenAiKeyChecker.kt",
+        "line": 40,
+        "security_severity": 5.9,
+        "disposition": "Open; unchanged OpenAI client uses platform TLS without certificate pinning. Newly surfaced in this run. Not suppressed or fixed in updater scope."
+      },
+      {
+        "rule": "java/android/missing-certificate-pinning",
+        "file": "app/src/ai/java/com/blackcat/remote/OpenAiPhotoAnalyzer.kt",
+        "line": 31,
+        "security_severity": 5.9,
+        "disposition": "Open; unchanged OpenAI client uses platform TLS without certificate pinning. Newly surfaced in this run. Not suppressed or fixed in updater scope."
+      },
+      {
+        "rule": "java/android/missing-certificate-pinning",
+        "file": "app/src/ai/java/com/blackcat/remote/OpenAiPlanner.kt",
+        "line": 24,
+        "security_severity": 5.9,
+        "disposition": "Open; unchanged OpenAI client uses platform TLS without certificate pinning. Newly surfaced in this run. Not suppressed or fixed in updater scope."
+      }
+    ],
+    "clean_security_gate": false
+  },
+  "trust_provisioning_blockers": [
+    "Reviewed metadata-verification public key/key ID and owner-operated signing/rotation process",
+    "Reviewed HTTPS metadata endpoint, metadata/APK host allowlists and channel",
+    "Authentically signed metadata for exact final release APK bytes",
+    "Bootstrap trust-enabled build and live valid/invalid service, file-picker and physical update-install acceptance"
+  ],
+  "other_limits": [
+    "Five newly surfaced CodeQL certificate-pinning warnings remain open in unchanged OpenAI clients",
+    "App-local rollback history resets with data clearing/uninstall or privileged filesystem rollback; installed version remains a separate floor",
+    "Physical Bluetooth, camera optics, phone audio and real handoff/install not validated by emulator",
+    "Existing Android Debug signer retained; no production signing migration or version bump",
+    "OCR is a design evaluation only; no accuracy/latency/SDK-network tests were run"
+  ],
+  "dependency_artifacts": {
+    "apksig_8_7_3_jar_sha256": "c070ed1394629d74641aa0906f60b2ffa1ee77e6366a1f93437f59717b1aeb89",
+    "upstream_license_asset_sha256": "39961513f07c54e796b0fec574e8d64c75e1f0f83736061f114b6f6be1d91e6b",
+    "license_packaged_ai_only": true
+  },
+  "published_log_formatting": "Trailing whitespace removed from Gradle/CodeQL build-log copy only; original raw log retained in private QA directory."
+}
