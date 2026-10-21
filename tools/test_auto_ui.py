@@ -18,6 +18,10 @@ class AutoBoundaryTests(unittest.TestCase):
             with self.assertRaises(AssertionError): verify(dst)
 
     def test_current_tree(self): verify(ROOT)
+    def test_auto_requires_positive_argument_contract(self):
+        self.mutate('app/src/ai/java/com/blackcat/remote/AutoRunSession.kt', 'AutoActionContracts.match(words) != null', 'true')
+    def test_truncation_cannot_become_success(self):
+        self.mutate('app/src/ai/java/com/blackcat/remote/AutoRunSession.kt', '!op.ticket.truncated', 'true')
     def test_no_enter_in_ordinary_sender(self):
         self.mutate('app/src/main/java/com/blackcat/remote/CommandSafety.kt',
                     'delay(20)', 'target.sendKey(approval.host, 0, 40); delay(20)')

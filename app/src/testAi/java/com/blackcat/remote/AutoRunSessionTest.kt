@@ -37,7 +37,8 @@ class AutoRunSessionTest {
         assertTrue(AutoRunPolicy.canRun(step("systemctl --failed --no-pager")))
     }
     @Test fun fullAutoSupportsReviewedChangesButRejectsDestructiveOrCompoundInput() {
-        assertTrue(AutoRunPolicy.canRunReviewed(step("sudo -n ufw allow 22/tcp", "high", true)))
+        assertFalse(AutoRunPolicy.canRunReviewed(step("sudo -n ufw allow 22/tcp", "high", true)))
+        assertTrue(AutoRunPolicy.canRunReviewed(step("sudo -n ufw status", "high", true)))
         for (text in listOf("sudo reboot", "rm -rf /", "apt-get purge openssh-server", "systemctl stop ssh",
             "systemctl 'stop' ssh", "systemctl st'o'p ssh", "systemctl \"stop\" ssh", "sudo chmod -R 000 /", "cat 'unfinished",
             "id; whoami", "echo $(id)", "sh -c id", "sudo /tmp/script", "find /tmp -exec sh {} +", "sed '1e id' /etc/hosts"))
@@ -72,14 +73,15 @@ class AutoRunSessionTest {
         assertTrue(value.typed(approval))
         assertEquals(AutoStage.WAITING, value.stage)
     }
-    @Test fun fullAutoRequiresSessionConsentForAReviewedChange() = runBlocking {
+    @Test fun diagnosticAutoCannotExecuteAChangeEvenAfterSessionConsent() = runBlocking {
         val steps = listOf(step("sudo -n ufw allow 22/tcp", "high", true))
         assertNull(session(auto = true, steps = steps).approve(host, 7, false))
         val value = session(full = true, steps = steps)
         val target = Target(host)
-        val approval = value.approve(host, 7, false)!!
+        assertNull(value.approve(host, 7, false))
+        val approval = value.approve(host, 7, true)!!
         assertEquals(SendOutcome.REPORTS_ACCEPTED, AutoReadOnlySender.send(approval, value, target) { 7 })
-        assertEquals(1, target.reports.count { it.second == 40 })
+        assertEquals(0, target.reports.count { it.second == 40 })
     }
     @Test fun stoppingBetweenTypingAndEnterBlocksExecution() = runBlocking {
         val value = session(auto = true)
@@ -105,8 +107,9 @@ class AutoRunSessionTest {
         assertEquals(SendOutcome.ALREADY_USED, AutoReadOnlySender.send(approval, value, target) { 7 })
     }
     private fun observe(value: AutoRunSession): Long {
-        val approval = value.approve(host, value.revision, false)!!
+        val approval = value.approve(host, value.revision, human = !value.canRun(value.current!!))!!
         value.typed(approval)
+        if (value.stage == AutoStage.MANUAL_ENTER) value.userRanCommand()
         return value.captured()!!
     }
     @Test fun noStepAdvanceBeforePhotoOrAfterUncertainEvidence() {
@@ -132,7 +135,7 @@ class AutoRunSessionTest {
         val value = session(full = true, steps = listOf(step("sudo -n ufw allow 22/tcp", "high", true), step("whoami")))
         value.observed(observe(value))
         fun plan(command: String) = CommandPlan("Update", emptyList(), emptyList(), listOf(step(command)))
-        assertTrue(value.canAdopt(plan("sudo -n ufw allow 443/tcp")))
+        assertFalse(value.canAdopt(plan("sudo -n ufw allow 443/tcp")))
         assertTrue(value.canAdopt(plan("journalctl -n 30 --no-pager")))
         assertFalse(value.canAdopt(plan("sudo -n ufw allow 22/tcp")))
         assertTrue(value.canAdopt(plan("id")))

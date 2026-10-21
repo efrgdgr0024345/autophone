@@ -192,9 +192,11 @@ internal class AutoImageDemo(private val instrumentation: Instrumentation, priva
                 val session = field(auto, "session") as AutoRunSession
                 check(revisions >= 1 && session.transmitted.contains("cat /etc/os-release"))
                 check(!session.transmitted.contains("whoami"))
+                check(session.history.tasks.map { it.state } == listOf(AutoTaskState.FAILED, AutoTaskState.REPLACED, AutoTaskState.OBSERVED))
                 check(field(auto, "camera") == null && field(auto, "key") == "")
                 write("result.json", JSONObject().put("passed", true).put("observations", observations)
                     .put("commands_executed", commandNumber).put("plan_revisions", revisions)
+                    .put("task_states", JSONArray(session.history.tasks.map { it.state.name }))
                     .put("injected_vision_frames", injectedFrames)
                     .put("app_openai_network_tested", false).put("physical_bluetooth_tested", false).toString(2))
             }

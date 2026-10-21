@@ -61,7 +61,7 @@ def ocr_reply(output, request, text_override=None):
             value = json.loads(reply['output'][0]['content'][0]['text'])
             item = (reply, text, mode, ascii_only)
             if value['terminal_state'] == 'shell_prompt' and (
-                    request['preflight'] or value['page_state'] in ('captured', 'cleaned', 'more', 'done', 'limit')):
+                    request['preflight'] or value['page_state'] in ('captured', 'truncated', 'cleaned', 'more', 'done', 'limit')):
                 fallback = item
                 break
             if fallback is None or value['page_state'] == 'unreadable':
@@ -89,11 +89,15 @@ def ocr_reply(output, request, text_override=None):
     normalized = [re.sub(r'[\s_]+', '', line) for line in lines]
     marker_key = marker.replace('_', '')
     if page <= 0:
-        matches = [re.fullmatch(re.escape(marker_key) + r'(\d{1,3})', line) for line in normalized]
+        suffix = r'(\d{1,3})(DONE|TRUNCATED)' if page == 0 else r'(\d{1,3})'
+        matches = [re.fullmatch(re.escape(marker_key) + suffix, line) for line in normalized]
         match = next((m for m in matches if m), None)
         if match and prompt:
             value.update(page_marker=marker, page_state='cleaned' if page < 0 else 'captured',
                          exit_code=match[1], outcome='appears_complete', explanation='The visible completion marker and idle prompt match this operation.')
+            if page == 0 and match[2] == 'TRUNCATED':
+                value.update(page_state='truncated', outcome='unclear', revision_needed=True,
+                             explanation='The capture exceeded its byte limit. Some output is missing, so a narrower diagnostic is needed.')
     else:
         footer = next(((i, re.fullmatch(re.escape(marker_key) + r'END(\d{1,3})(MORE|DONE|LIMIT)', line))
                        for i, line in enumerate(normalized) if re.fullmatch(re.escape(marker_key) + r'END(\d{1,3})(MORE|DONE|LIMIT)', line)), None)
@@ -142,17 +146,37 @@ def render(output, text, clipped=False, full_width=False):
 def allowed(command, tickets):
     capture = re.search(r'b=(/tmp/bc-[0-9a-f]{24}); mkdir', command)
     if capture:
-        if not command.startswith('(umask 077; ') or not any(
-                'env TERM=dumb PAGER=cat SYSTEMD_PAGER=cat ' + original + ' </dev/null;' in command
-                for original in ORIGINALS):
+        path = capture[1]
+        token = path.removeprefix('/tmp/bc-')
+        expected = [f'(umask 077; b={path}; mkdir "$b" && cd "$b" && {{ '
+                    f'{{ env TERM=dumb PAGER=cat SYSTEMD_PAGER=cat {original} </dev/null; echo $? >s; }} 2>&1 | '
+                    '{ head -c 1048577 >r; cat >/dev/null; }; LC_ALL=C cat -v r | fold -w 64 >o; '
+                    f"printf '\\nBC{token}_CAP_'; tr -d '\\n' <s; "
+                    'if [ $(wc -c <r) -le 1048576 ]; then echo _DONE; else echo _TRUNCATED; fi; })'
+                    for original in ORIGINALS]
+        if command not in expected:
             return False
-        if any(token in command for token in ('sudo', 'curl', 'wget', 'chmod', 'chown')):
-            return False
-        tickets.add(capture[1])
+        tickets.add(path)
         return True
-    return any(command.startswith(f'(b={path}; printf ') or
-               command.startswith(f'rm -- {path}/r {path}/s {path}/o && rmdir -- {path} && printf ')
-               for path in tickets)
+    for path in tickets:
+        token = path.removeprefix('/tmp/bc-')
+        cleanup = f"rm -- {path}/r {path}/s {path}/o && rmdir -- {path} && printf '\\nBC{token}_CLEAN_0\\n'"
+        if command == cleanup:
+            return True
+        match = re.search(rf'BC{token}_P(\d+)_(\d+)_(\d+)_BEGIN', command)
+        if not match:
+            continue
+        page, first, last = map(int, match.groups())
+        if not (1 <= page <= 16 and 1 <= first <= last <= 128 and last - first < 8):
+            continue
+        marker = f'BC{token}_P{page}_{first}_{last}'
+        state = 'LIMIT' if page == 16 else 'MORE'
+        expected = (f"(b={path}; printf '\\n{marker}_BEGIN\\n'; sed -n '{first},{last}p' \"$b/o\"; "
+                    f"printf '\\n{marker}_END_'; tr -d '\\n' <\"$b/s\"; "
+                    f'if [ "$(awk \'END{{print NR}}\' <"$b/o")" -gt {last} ]; then echo _{state}; else echo _DONE; fi)')
+        if command == expected:
+            return True
+    return False
 
 
 def main():

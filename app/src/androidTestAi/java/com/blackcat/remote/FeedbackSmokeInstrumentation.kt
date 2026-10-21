@@ -5,6 +5,7 @@ import android.app.ActivityManager
 import android.app.AlertDialog
 import android.app.Dialog
 import android.app.Instrumentation
+import org.json.JSONObject
 import android.content.Intent
 import android.content.IntentFilter
 import android.bluetooth.BluetoothAdapter
@@ -52,6 +53,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
     private var learningOnly = false
     private var workflowsOnly = false
     private var searchStreamOnly = false
+    private var evidenceOnly = false
 
     override fun onCreate(arguments: Bundle?) {
         super.onCreate(arguments)
@@ -61,6 +63,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         learningOnly = arguments?.getString("scenario") == "learning"
         workflowsOnly = arguments?.getString("scenario") == "workflows"
         searchStreamOnly = arguments?.getString("scenario") == "search-stream"
+        evidenceOnly = arguments?.getString("scenario") == "evidence"
         timeoutOnly = arguments?.getString("scenario") == "timeout"
         imageAuto = arguments?.getString("scenario") == "image-auto" || injectedImages
         layoutOnly = arguments?.getString("scenario") == "layout"
@@ -99,6 +102,12 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                 decor.isShown && decor.isAttachedToWindow && decor.isLaidOut && SystemClock.uptimeMillis() - stableSince >= 2000
             }
             startupSettled = true
+            if (evidenceOnly) {
+                captureEvidenceAuto()
+                result.putString("stream", "\nUI19_EVIDENCE_PASS ${checks.size}\n" + checks.joinToString("\n"))
+                finish(Activity.RESULT_OK, result)
+                return
+            }
             if (searchStreamOnly) {
                 captureSearchAndStreaming()
                 result.putString("stream", "\nUI17_SEARCH_STREAM_PASS ${checks.size}\n" + checks.joinToString("\n"))
@@ -713,6 +722,91 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         }
         screenshot("auto-initial-error", autoDialog)
         onMain { auto!!.dismiss() }
+    }
+
+    private fun captureEvidenceAuto() {
+        val vault = ApiKeyVault(activity.applicationContext)
+        check(!vault.exists()) { "Disposable fixture must start without a remembered key" }
+        val fixtureKey = "sk-ui19-keystore-fixture-not-a-real-key"
+        vault.save(fixtureKey) // Instrumentation worker thread; never an actual credential.
+        val host = HostSession("synthetic-fixture", 1, "Disposable evidence test target")
+        val target = FixtureCommandTarget(host)
+        var revision = 1L
+        var auto: AutoAssistPanel? = null
+        var screen: Dialog? = null
+        var photos = 0
+        var revisions = 0
+        val observer = object : AutoObservationClient {
+            override fun cancel() {}
+            override suspend fun observe(goal: String, step: SuggestedCommand, target: String, model: String,
+                key: String, jpeg: ByteArray, preflight: Boolean, collectionContext: String): AutoObservation {
+                check(key == fixtureKey && jpeg.size > 100 && jpeg[0] == 0xff.toByte())
+                photos++
+                if (preflight) return AutoObservation("", "shell_prompt", "appears_complete", "An idle test terminal is visible.", listOf("Idle prompt."), false)
+                val context = JSONObject(collectionContext)
+                val marker = context.getString("expected_marker")
+                val page = context.getInt("page")
+                val overflow = context.getString("original_command").contains("bc-ui19-overflow")
+                val state = when { page < 0 -> "cleaned"; page == 0 && overflow -> "truncated"; page == 0 -> "captured"; else -> "done" }
+                return AutoObservation("", "shell_prompt", if (state == "truncated") "unclear" else "appears_complete",
+                    if (state == "truncated") "The output is incomplete. I'll use a focused diagnostic before drawing a conclusion."
+                    else "The account information gives us the context we need for the next decision.",
+                    listOf("Synthetic complete operation marker and fresh prompt."), state == "truncated", marker, state,
+                    if (page > 0) "uid=1000(test)" else "", "0")
+            }
+        }
+        val planner = object : AutoPlanClient {
+            override fun cancel() {}
+            override suspend fun propose(goal: String, target: String, model: String, key: String): CommandPlan {
+                check(key == fixtureKey && goal.contains("INCOMPLETE"))
+                revisions++
+                return CommandPlan("The long capture was incomplete. Check account context with a focused query.", emptyList(), emptyList(),
+                    listOf(command("Check account context", "id")))
+            }
+        }
+        try {
+            onMain {
+                PendingApiKey.clear(activity)
+                activity.getSharedPreferences(TargetSystemPanel.PREFS, Activity.MODE_PRIVATE).edit()
+                    .putString(AssistantNarrator.VOICE_KEY, NarrationVoice.TEXT.name).apply()
+                val plan = CommandPlan("Inspect the diagnostic evidence.", emptyList(), emptyList(),
+                    listOf(command("Read diagnostic output", "cat /tmp/bc-ui19-overflow"), command("Old next task", "whoami")))
+                auto = AutoAssistPanel(activity, field(activity, "hid") as HidManager, plan, "Inspect this disposable Linux fixture",
+                    "Linux / POSIX sh", PlanCodec.DEFAULT_MODEL, 0, { revision }, { error("Expected automatic diagnostic revision") },
+                    { ++revision }, {}, observer, target, planner)
+                auto!!.show(); screen = field(auto!!, "dialog") as Dialog
+                screen!!.window!!.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                check(field(auto!!, "sessionKeyInput") == null)
+                check(descendants(screen!!.window!!.decorView).filterIsInstance<Button>().none { it.text == "Use a temporary API key here" })
+                pass("A remembered encrypted key removes temporary-key controls from Auto; opening it makes no API/HID request")
+                check(photos == 0 && target.reports.isEmpty())
+                (field(auto!!, "consentChoice") as android.widget.CheckBox).isChecked = true
+                findButton(screen!!, "Start live camera preview").performClick()
+            }
+            await("UI19 real camera preview", 90000) { field(auto!!, "cameraStarted") == true && (field(auto!!, "previewFrames") as Int) >= 3 }
+            screenshot("ui19-saved-key-auto-setup", screen)
+            onMain { findButton(screen!!, "Start reviewed session").performClick() }
+            await("UI19 diagnostic overflow and revision", 300000) { (field(auto!!, "session") as AutoRunSession?)?.stage == AutoStage.FINISHED }
+            onMain {
+                val session = field(auto!!, "session") as AutoRunSession
+                check(session.history.tasks.map { it.id } == listOf(1, 2, 3))
+                check(session.history.tasks.map { it.state } == listOf(AutoTaskState.UNCERTAIN, AutoTaskState.REPLACED, AutoTaskState.OBSERVED))
+                check(revisions == 1 && photos == 6 && target.reports.count { it.second == 40 } == 5)
+                check(session.transmitted.none { it == "whoami" })
+                pass("Truncated evidence cannot become success: cleanup and a focused diagnostic replace the unstarted next task automatically")
+                pass("Task identities survive helper operations and revision; uncertain, replaced and evidence-checked states remain distinct")
+                check(field(auto!!, "key") == "" && field(auto!!, "camera") == null)
+                check((field(auto!!, "phaseStatus") as TextView).text.toString().contains("finished"))
+                check((field(auto!!, "autoToggle") as Button).text.toString().contains("OFF"))
+                pass("Finished Auto reports OFF with cleared session key/camera and a truthful phase label")
+            }
+            check(vault.read() == fixtureKey)
+            pass("Stopping the session preserves the remembered Keystore-encrypted key for later plans")
+            screenshot("ui19-truncated-evidence-history", screen)
+        } finally {
+            onMain { auto?.dismiss() }
+            vault.forget()
+        }
     }
 
     private fun captureAutoTimeout() {
