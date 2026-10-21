@@ -92,6 +92,7 @@ class AutoReliabilityTest {
         val op = session.collection.operation(session.current!!.command)!!
         assertTrue(session.recordEvidence(observation(op.marker, "cleaned")))
         assertEquals(AutoTaskState.OBSERVED, session.history.tasks.single().state)
+        assertEquals("The evidence shows the account information we need.", session.history.tasks.single().finding)
     }
     @Test fun truncatedFailedAndLimitedEvidenceCannotBecomeSuccessEvenIfProviderClaimsCompletion() {
         for (session in listOf(collected(truncated = true), collected(code = "2"), collected(pageState = "limit"))) {
@@ -107,6 +108,7 @@ class AutoReliabilityTest {
         assertTrue(session.adopt(CommandPlan("Use OS evidence next", emptyList(), emptyList(), listOf(step("uname -a"))), 2))
         assertEquals(listOf(1, 2, 3), session.history.tasks.map { it.id })
         assertEquals(listOf(AutoTaskState.OBSERVED, AutoTaskState.REPLACED, AutoTaskState.PLANNED), session.history.tasks.map { it.state })
+        assertTrue(session.history.tasks.first().finding.contains("account information"))
         assertEquals("uname -a", session.current!!.command)
     }
     @Test fun staleOrWrongCleanupMarkersCannotCompleteATask() {

@@ -254,8 +254,8 @@ internal class AutoRunSession(
             value.collectionReady(op) && !op.ticket.truncated && op.ticket.exitCode == "0" &&
                 result.pageState == "done" && result.outcome == "appears_complete" &&
                 !result.revisionNeeded && op.ticket.pages.isNotEmpty()
-        note(if (complete) AutoTaskState.OBSERVED else if (result.outcome == "error" ||
-            op?.ticket?.exitCode?.let { it != "0" } == true) AutoTaskState.FAILED else AutoTaskState.UNCERTAIN)
+        history.evidence(task(step), if (complete) AutoTaskState.OBSERVED else if (result.outcome == "error" ||
+            op?.ticket?.exitCode?.let { it != "0" } == true) AutoTaskState.FAILED else AutoTaskState.UNCERTAIN, result.explanation)
         return complete
     }
 

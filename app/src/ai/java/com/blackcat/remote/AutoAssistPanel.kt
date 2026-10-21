@@ -377,7 +377,8 @@ internal class AutoAssistPanel(
         }
         body.addView(label("Task history · stable steps and evidence", 16f, true), lp())
         current.history.tasks.forEach { record ->
-            val detail = label(record.task.explanation + "\nExpected: " + record.task.expectedResult, 13f).apply {
+            val detail = label(record.task.explanation + "\nExpected: " + record.task.expectedResult +
+                if (record.finding.isBlank()) "" else "\nObserved: ${record.finding}", 13f).apply {
                 visibility = if (record.id in expandedTasks) View.VISIBLE else View.GONE
             }
             body.addView(label("${record.id}. ${record.state.label} · ${record.task.title}", 13f, true), lp())
@@ -492,6 +493,8 @@ internal class AutoAssistPanel(
                     if (operation.page < 0) {
                         val result = operation.ticket.conclusion!!
                         current.recordEvidence(value)
+                        observation = result
+                        renderSession()
                         narrator.explain(NarrationText.result(result), if (muted) NarrationVoice.TEXT else selectedVoice(), key)
                         if (result.revisionNeeded || result.outcome != "appears_complete" || operation.ticket.exitCode != "0" || result.pageState == "limit" || operation.ticket.truncated) {
                             proposeRevision(current, value, "Captured command exit code: ${operation.ticket.exitCode}.\n" + result.explanation + "\n" +

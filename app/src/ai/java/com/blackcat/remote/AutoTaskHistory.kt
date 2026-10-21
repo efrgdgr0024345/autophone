@@ -12,6 +12,8 @@ internal enum class AutoTaskState(val label: String) {
 internal class AutoTaskRecord(val id: Int, val task: SuggestedCommand, initial: AutoTaskState) {
     var state = initial
         internal set
+    var finding = ""
+        internal set
 }
 
 internal class AutoTaskHistory(steps: List<SuggestedCommand>, startIndex: Int) {
@@ -24,6 +26,9 @@ internal class AutoTaskHistory(steps: List<SuggestedCommand>, startIndex: Int) {
         byTask[task] = it; records.add(it)
     }
     fun note(task: SuggestedCommand, state: AutoTaskState) { add(task, AutoTaskState.PLANNED).state = state }
+    fun evidence(task: SuggestedCommand, state: AutoTaskState, finding: String) {
+        add(task, AutoTaskState.PLANNED).also { it.state = state; it.finding = finding.take(1500) }
+    }
     fun replaceRemaining(remaining: List<SuggestedCommand>, replacement: List<SuggestedCommand>) {
         remaining.forEach { task -> byTask[task]?.let { if (it.state == AutoTaskState.PLANNED) it.state = AutoTaskState.REPLACED } }
         replacement.forEach { add(it, AutoTaskState.PLANNED) }
