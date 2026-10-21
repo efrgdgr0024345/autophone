@@ -1,3 +1,21 @@
+## UI19 test download — evidence-driven diagnostics
+
+Full direct APK download URL:
+
+https://raw.githubusercontent.com/efrgdgr0024345/autophone/b79b9e357ec0f3327f9021e78d8f251bbc88da7f/docs/ui19/install/CatAI-19.apk
+
+Natural task explanations, explicit incomplete-output handling, stable task findings
+and automatic diagnostic plan revision. Auto uses positive diagnostic argument
+contracts; configuration changes remain manually reviewed. Remembered phone API keys
+stay in Settings and are reused across plans. [Voice sample](https://raw.githubusercontent.com/efrgdgr0024345/autophone/b79b9e357ec0f3327f9021e78d8f251bbc88da7f/docs/ui19/live-openai/narration-sample.wav).
+
+Source: `173946bb1172cea930dfd78ed032967b022d8fcf`. SHA-256: `3e42faac46d7a658c94e72553bce1564efebc699253639bf553f6bdacf7c357f`.
+213 Android unit tests, 105 Python checks, 40 planner contracts, both builds/Lint/APK
+checks and CodeQL (zero security findings). The unchanged UI passed 88 native baseline
+checks; 28 affected Auto regressions and the Linux/OCR loop ran on final bytes.
+Five bounded live API checks with final decoder replay. [Full evidence and screenshots](docs/ui19/README.md).
+Physical phone/Bluetooth/optics/audio acceptance remains; no baseline promotion or merge.
+
 # Black Cat AI Remote
 
 Android phone remote that preserves the proven Bluetooth HID keyboard/mouse core while adding a phone-first Linux AI planner and a fully offline Linux command library.

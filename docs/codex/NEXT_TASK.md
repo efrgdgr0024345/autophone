@@ -1,3 +1,13 @@
+# Current UI19 continuation
+
+Latest source: `173946bb1172cea930dfd78ed032967b022d8fcf` on `feature/ui19-evidence-driven-auto`.
+
+The user approved the reliability review and meaningful natural explanations. The diagnostic milestone is now an installable physical-test candidate. See [UI19 evidence](../ui19/README.md) for exact URLs, final-APK versus unchanged-UI baseline test scope and remaining hardware acceptance.
+
+Further work: narrow configuration contracts with prerequisites/post-checks/recovery, independent pre-Enter/camera-quality evaluation and device testing. The frozen Bluetooth/manual/camera/vault files, permissions, dependencies and model pins remain protected. Do not repeat the historical intake as a new permission requirement, merge or promote a baseline without physical acceptance.
+
+---
+
 # Next task — Codex UI09 intake, audit and continuation plan
 
 This is the first bounded task for the new Codex project.

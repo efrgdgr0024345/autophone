@@ -1,0 +1,23 @@
+{
+  "CatAI-19.apk": {
+    "url": "https://raw.githubusercontent.com/efrgdgr0024345/autophone/b79b9e357ec0f3327f9021e78d8f251bbc88da7f/docs/ui19/install/CatAI-19.apk",
+    "http": 200,
+    "bytes": 6522185,
+    "sha256": "3e42faac46d7a658c94e72553bce1564efebc699253639bf553f6bdacf7c357f",
+    "hash_match": true
+  },
+  "CatBT-19.apk": {
+    "url": "https://raw.githubusercontent.com/efrgdgr0024345/autophone/b79b9e357ec0f3327f9021e78d8f251bbc88da7f/docs/ui19/install/CatBT-19.apk",
+    "http": 200,
+    "bytes": 6097885,
+    "sha256": "d555e83b83faac606185c3024786e437dde47f33f28d7cfef41b2aa7a25343ed",
+    "hash_match": true
+  },
+  "narration-sample.wav": {
+    "url": "https://raw.githubusercontent.com/efrgdgr0024345/autophone/b79b9e357ec0f3327f9021e78d8f251bbc88da7f/docs/ui19/live-openai/narration-sample.wav",
+    "http": 200,
+    "bytes": 516044,
+    "sha256": "5bf7e5f5dee9332a9f2142d9fddee3936bfb9f099ffe7ea6b18ff7b2848b9d8e",
+    "hash_match": true
+  }
+}

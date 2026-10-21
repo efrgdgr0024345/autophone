@@ -1,6 +1,6 @@
 # CatAI-19 — evidence-driven diagnostics and natural explanations
 
-[Download CatAI-19.apk](install/CatAI-19.apk) · [Listen to the OpenAI voice sample](live-openai/narration-sample.wav)
+[Download CatAI-19.apk](https://raw.githubusercontent.com/efrgdgr0024345/autophone/b79b9e357ec0f3327f9021e78d8f251bbc88da7f/docs/ui19/install/CatAI-19.apk) · [Listen to the OpenAI voice sample](https://raw.githubusercontent.com/efrgdgr0024345/autophone/b79b9e357ec0f3327f9021e78d8f251bbc88da7f/docs/ui19/live-openai/narration-sample.wav)
 
 This is a physical-test candidate, version code 22 (`19.0-evidence-auto`), with the
 original application identity and signer. It can update CatAI-17. Saved encrypted
@@ -56,6 +56,8 @@ supported diagnostic argument contracts and may add diagnostic steps for the sam
   Real responses replay through the final production parser. Request source was the
   earlier candidate; final schema is unchanged and marker-prefix instructions clarified.
 
+One strict OCR run stopped safely on ambiguous nonce glyphs; its failure was retained. The fixture reader was then tested to reread those pixels without expected-value substitution. This is a test-harness feature, not an on-phone OCR claim.
+
 There is no continuous physical phone-camera/OpenAI/Bluetooth proof. Handset pairing,
 reconnection, keyboard layout/focus, optics, voice playback/dictation and hardware
 Keystore acceptance remain required. Photos are advisory, not proof that a system
@@ -71,11 +73,11 @@ is secure. No merge, physical-baseline promotion or overwrite of earlier APKs.
 
 ## Downloads and provenance
 
-CatAI: install/CatAI-19.apk
+CatAI: https://raw.githubusercontent.com/efrgdgr0024345/autophone/b79b9e357ec0f3327f9021e78d8f251bbc88da7f/docs/ui19/install/CatAI-19.apk
 
 SHA-256: `3e42faac46d7a658c94e72553bce1564efebc699253639bf553f6bdacf7c357f` (6,522,185 bytes).
 
-Offline alternative: install/CatBT-19.apk
+Offline alternative: https://raw.githubusercontent.com/efrgdgr0024345/autophone/b79b9e357ec0f3327f9021e78d8f251bbc88da7f/docs/ui19/install/CatBT-19.apk
 
 SHA-256: `d555e83b83faac606185c3024786e437dde47f33f28d7cfef41b2aa7a25343ed` (6,097,885 bytes).
 

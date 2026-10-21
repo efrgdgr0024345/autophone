@@ -1,8 +1,8 @@
 # Install CatAI-19
 
-AI APK: install/CatAI-19.apk
+AI APK: https://raw.githubusercontent.com/efrgdgr0024345/autophone/b79b9e357ec0f3327f9021e78d8f251bbc88da7f/docs/ui19/install/CatAI-19.apk
 
-Offline alternative: install/CatBT-19.apk
+Offline alternative: https://raw.githubusercontent.com/efrgdgr0024345/autophone/b79b9e357ec0f3327f9021e78d8f251bbc88da7f/docs/ui19/install/CatBT-19.apk
 
 Use one variant; both share the original application identity. This is a physical-test candidate.
 
