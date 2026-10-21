@@ -122,6 +122,7 @@ there is no SDK/Gradle/Kotlin/model migration. Offline has neither these classes
 the verifier dependency nor Internet/camera/microphone additions. Manifests retain
 the exact prior permission sets; the new UpdateActivity is non-exported. No
 `REQUEST_INSTALL_PACKAGES`, provider, broad storage access or silent install exists.
+The exact upstream Apache license is included as the AI-only `APKSIG_LICENSE` asset.
 
 ## Rollback, replay and failure state
 

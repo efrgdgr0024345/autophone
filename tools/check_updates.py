@@ -23,6 +23,7 @@ def check_source():
             assert forbidden not in text, f'{source.name} crossed boundary: {forbidden}'
     assert 'aiImplementation \'com.android.tools.build:apksig:8.7.3\'' in (ROOT / 'app/build.gradle').read_text()
     assert 'mlkit' not in (ROOT / 'app/build.gradle').read_text().lower(), 'OCR evaluation became implementation'
+    assert (ROOT / 'app/src/ai/assets/APKSIG_LICENSE').is_file()
     assert 'delay(5000)' in (AI / 'AutoAssistPanel.kt').read_text()
     activity = (AI / 'UpdateActivity.kt').read_text()
     assert 'Intent.ACTION_CREATE_DOCUMENT' in activity and 'uri?.scheme != "content"' in activity
@@ -42,6 +43,10 @@ def check_source():
 def check_apks(ai_apk, offline_apk):
     for file, online in ((ai_apk, True), (offline_apk, False)):
         with zipfile.ZipFile(file) as apk:
+            if online:
+                assert apk.read('assets/APKSIG_LICENSE') == (ROOT / 'app/src/ai/assets/APKSIG_LICENSE').read_bytes()
+            else:
+                assert 'assets/APKSIG_LICENSE' not in apk.namelist()
             dex = b''.join(apk.read(name) for name in apk.namelist() if name.endswith('.dex'))
             assert (b'Lcom/blackcat/remote/UpdateActivity;' in dex) == online
             assert (b'Lcom/android/apksig/ApkVerifier;' in dex) == online
