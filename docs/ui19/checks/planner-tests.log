@@ -1,0 +1,45 @@
+test_blank_command_rejected (planner_lab.test_contract.ContractTests.test_blank_command_rejected) ... ok
+test_crop_to_relevant_area (planner_lab.test_contract.ContractTests.test_crop_to_relevant_area) ... ok
+test_duplicate_id_rejected (planner_lab.test_contract.ContractTests.test_duplicate_id_rejected) ... ok
+test_edited_photo_invalidates_upload_consent (planner_lab.test_contract.ContractTests.test_edited_photo_invalidates_upload_consent) ... ok
+test_forward_or_cyclic_dependency_rejected (planner_lab.test_contract.ContractTests.test_forward_or_cyclic_dependency_rejected) ... ok
+test_hidden_controls_rejected (planner_lab.test_contract.ContractTests.test_hidden_controls_rejected) ... ok
+test_incomplete_response_rejected (planner_lab.test_contract.ContractTests.test_incomplete_response_rejected) ... ok
+test_invalid_redaction_not_silently_ignored (planner_lab.test_contract.ContractTests.test_invalid_redaction_not_silently_ignored) ... ok
+test_manual_command_rejected (planner_lab.test_contract.ContractTests.test_manual_command_rejected) ... ok
+test_model_cannot_set_completed_state (planner_lab.test_contract.ContractTests.test_model_cannot_set_completed_state) ... ok
+test_model_refusal_rejected (planner_lab.test_contract.ContractTests.test_model_refusal_rejected) ... ok
+test_no_photo_without_explicit_review (planner_lab.test_contract.ContractTests.test_no_photo_without_explicit_review) ... ok
+test_no_tools_no_saved_server_state (planner_lab.test_contract.ContractTests.test_no_tools_no_saved_server_state) ... ok
+test_opaque_redaction_is_flattened (planner_lab.test_contract.ContractTests.test_opaque_redaction_is_flattened) ... ok
+test_orientation_and_metadata_removed (planner_lab.test_contract.ContractTests.test_orientation_and_metadata_removed) ... ok
+test_photo_needs_readback (planner_lab.test_contract.ContractTests.test_photo_needs_readback) ... ok
+test_photo_observation_cannot_be_invented (planner_lab.test_contract.ContractTests.test_photo_observation_cannot_be_invented) ... ok
+test_photo_payload_uses_reviewed_bytes (planner_lab.test_contract.ContractTests.test_photo_payload_uses_reviewed_bytes) ... ok
+test_question_blocks_speculative_commands (planner_lab.test_contract.ContractTests.test_question_blocks_speculative_commands) ... ok
+test_unknown_dependency_rejected (planner_lab.test_contract.ContractTests.test_unknown_dependency_rejected) ... ok
+test_unreadable_photo_cannot_propose_commands (planner_lab.test_contract.ContractTests.test_unreadable_photo_cannot_propose_commands) ... ok
+test_unrelated_context_rejected (planner_lab.test_contract.ContractTests.test_unrelated_context_rejected) ... ok
+test_valid_plan (planner_lab.test_contract.ContractTests.test_valid_plan) ... ok
+test_valid_response (planner_lab.test_contract.ContractTests.test_valid_response) ... ok
+test_approval_requires_terminal_review (planner_lab.test_contract.StateTests.test_approval_requires_terminal_review) ... ok
+test_capture_invalidates_approval (planner_lab.test_contract.StateTests.test_capture_invalidates_approval) ... ok
+test_changed_photo_rejects_old_response (planner_lab.test_contract.StateTests.test_changed_photo_rejects_old_response) ... ok
+test_changed_step_rejects_previous_result (planner_lab.test_contract.StateTests.test_changed_step_rejects_previous_result) ... ok
+test_dependencies_require_human_confirmation (planner_lab.test_contract.StateTests.test_dependencies_require_human_confirmation) ... ok
+test_host_change_rejects_send (planner_lab.test_contract.StateTests.test_host_change_rejects_send) ... ok
+test_late_result_rejected (planner_lab.test_contract.StateTests.test_late_result_rejected) ... ok
+test_manual_step_not_sendable (planner_lab.test_contract.StateTests.test_manual_step_not_sendable) ... ok
+test_modified_step_does_not_inherit_completion (planner_lab.test_contract.StateTests.test_modified_step_does_not_inherit_completion) ... ok
+test_one_use_approval (planner_lab.test_contract.StateTests.test_one_use_approval) ... ok
+test_partial_send_never_resumes (planner_lab.test_contract.StateTests.test_partial_send_never_resumes) ... ok
+test_photo_approval_is_not_command_approval (planner_lab.test_contract.StateTests.test_photo_approval_is_not_command_approval) ... ok
+test_photo_response_does_not_advance (planner_lab.test_contract.StateTests.test_photo_response_does_not_advance) ... ok
+test_readback_confirmation_does_not_send (planner_lab.test_contract.StateTests.test_readback_confirmation_does_not_send) ... ok
+test_selection_does_not_type (planner_lab.test_contract.StateTests.test_selection_does_not_type) ... ok
+test_types_only_without_enter (planner_lab.test_contract.StateTests.test_types_only_without_enter) ... ok
+
+----------------------------------------------------------------------
+Ran 40 tests in 0.037s
+
+OK

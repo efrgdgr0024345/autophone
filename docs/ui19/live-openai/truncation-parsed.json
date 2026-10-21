@@ -1,0 +1,6 @@
+{
+  "success_disallowed": true,
+  "passed": true,
+  "live_truncation_recognized": true,
+  "explanation": "The capture reached its output limit and returned to an idle prompt. Some output is missing, so the account context cannot yet be confirmed."
+}

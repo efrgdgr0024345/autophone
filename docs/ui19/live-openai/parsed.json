@@ -1,0 +1,13 @@
+{
+  "natural_explanations": [
+    "I'll start by reading the system's OS identification so we know which Ubuntu release we're reviewing. This only displays information; check for the distribution name and version.",
+    "I'll check filesystem capacity to see whether storage pressure could affect normal operation. Look at available space and usage on the root filesystem and any separate home or data filesystem.",
+    "I'll ask the service manager which services are currently marked failed. This only reads their state; any listed service needs context before deciding whether it indicates a problem."
+  ],
+  "vision_page_and_exit_code_match": true,
+  "phone_transport_tested": false,
+  "diagnostic_contracts_passed": true,
+  "vision_explanation": "The output identifies the account as demo, with demo as its primary and only listed group. The identity check is complete, and the terminal is back at an idle prompt.",
+  "production_serializers_and_parsers": true,
+  "commands": 3
+}

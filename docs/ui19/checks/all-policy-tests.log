@@ -1,0 +1,9 @@
+.........................................................................................................
+----------------------------------------------------------------------
+Ran 105 tests in 22.035s
+
+OK
+PASS: scoped Auto Enter, foreground consent/stop, conservative vision, bounded revision, detailed plans and in-memory narration
+PASS: UI11 editable feedback, lazy AI-only dictation, reviewed revisions, verified optional key storage and cancelled stale results
+PASS: compact UI11 plan/settings navigation, exclusive API decisions, reviewed photos and frozen HID/transport/key/capture boundaries
+PASS: golden HID/manual mappings; explicit Bluetooth setup and visible non-restarting session; exact permissions and app identity
