@@ -36,7 +36,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private object ReferencePanelStyle {
+internal object ReferencePanelStyle {
     val DARK = 0xff101714.toInt()
     val DARK_SOFT = 0xff18221e.toInt()
     val LINE = 0xff30423b.toInt()
@@ -385,6 +385,12 @@ class AiSettingsPanel(private val activity: Activity, private val keyChecker: Ap
             activity.navigateHome()
         }, LinearLayout.LayoutParams(-1, dp(52)).apply { topMargin = dp(7) })
         body.addView(connectionCard, sectionLp())
+        val updatesCard = ReferencePanelStyle.card(activity)
+        updatesCard.addView(ReferencePanelStyle.label(activity, "App updates", 14f, ReferencePanelStyle.GREEN, true))
+        updatesCard.addView(ReferencePanelStyle.darkButton(activity, "Check for updates") {
+            activity.startActivity(android.content.Intent(activity, UpdateActivity::class.java))
+        }, LinearLayout.LayoutParams(-1, dp(52)).apply { topMargin = dp(8) })
+        body.addView(updatesCard, sectionLp())
         body.addView((activity as MainActivity).createDiagnosticsView(), sectionLp())
         val aboutCard = ReferencePanelStyle.card(activity)
         aboutCard.addView(ReferencePanelStyle.label(activity, "About Black Cat AI", 14f, ReferencePanelStyle.GREEN, true))

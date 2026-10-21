@@ -27,6 +27,8 @@ android {
     lint { abortOnError true; textReport true; xmlReport true; htmlReport true }
 }
 dependencies {
+    // AI-only APK signature verification; same pinned version as the Android build tools.
+    aiImplementation 'com.android.tools.build:apksig:8.7.3'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0'
     testImplementation 'junit:junit:4.13.2'
     testAiImplementation 'org.json:json:20240303'
