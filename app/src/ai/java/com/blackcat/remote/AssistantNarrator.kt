@@ -18,11 +18,14 @@ internal enum class NarrationVoice(val label: String) {
 
 internal object NarrationText {
     fun step(step: SuggestedCommand): String = buildString {
-        append(step.explanation.ifBlank { "Let's work through ${step.title.lowercase()} together." })
-        if (step.requiresAdmin) append(" This step needs administrator privileges. We'll check the result carefully.")
-        if (step.expectedResult.isNotBlank()) append(" Here's what to look for: ${step.expectedResult}.")
-        append(" You can stop me at any time.")
-    }.take(1800)
+        val purpose = step.explanation.trim().ifBlank {
+            AutoRunPolicy.contract(step)?.purpose ?: "I'll explain this step before we continue."
+        }
+        append(purpose.trimEnd('.', ' ')).append('.')
+        if (step.requiresAdmin) append(" This check needs administrator access; I'll pause if it isn't available.")
+    }.take(600)
+
+    fun result(value: AutoObservation): String = value.explanation.trim().take(600)
 }
 
 internal object OpenAiSpeechCodec {
@@ -32,7 +35,7 @@ internal object OpenAiSpeechCodec {
         require(text.isNotBlank() && text.length <= 1800)
         return JSONObject().put("model", MODEL).put("voice", "marin").put("input", text)
             .put("response_format", "pcm").put("instructions",
-                "Speak warmly and naturally, like a calm helpful companion. Explain without hype, pressure or theatrical voices. Use gentle pauses. Do not add words or claim commands succeeded.")
+                "Speak conversationally, like a thoughtful person helping someone beside their computer. Use a relaxed pace and natural pauses, with interest in what the evidence means. Avoid an announcer voice, sing-song delivery, hype or repeated reassurance. Speak the supplied words without adding claims or saying commands succeeded.")
     }
 }
 
@@ -46,11 +49,18 @@ internal class AssistantNarrator(private val activity: Activity, private val sta
     private var generation = 0L
     private var closed = false
     private var openAiUnavailable = false
+    private var requests = 0
+    val speechRequests get() = requests
+    val openAiReady get() = !openAiUnavailable && requests < MAX_REQUESTS
 
     fun explain(text: String, voice: NarrationVoice, key: String) {
         stop()
         if (closed || voice == NarrationVoice.TEXT || text.isBlank()) return
         if (voice == NarrationVoice.OPENAI && openAiUnavailable) return
+        if (voice == NarrationVoice.OPENAI && requests >= MAX_REQUESTS) {
+            status("Voice budget reached. Explanations continue on screen; no more paid audio requests in this session.")
+            return
+        }
         val token = generation
         if (voice == NarrationVoice.PHONE) {
             // Choose a voice that explicitly requires no network before passing it any text.
@@ -74,6 +84,7 @@ internal class AssistantNarrator(private val activity: Activity, private val sta
         job = scope.launch {
             var bytes: ByteArray? = null
             try {
+                requests++
                 bytes = withTimeout(35000) { fetch(text.take(1800), key) }
                 if (generation != token || closed) return@launch
                 val pcm = bytes
@@ -99,8 +110,15 @@ internal class AssistantNarrator(private val activity: Activity, private val sta
                             offset += count
                         }
                         // Let the final queued samples play, with cancellable checks.
-                        while (generation == token && !closed && player.playbackHeadPosition < offset / 2) delay(30)
+                        withTimeout(55000) {
+                            while (generation == token && !closed && player.playbackHeadPosition < offset / 2) delay(30)
+                        }
                     } finally { if (track === player) track = null; player.release() }
+                }
+            } catch (_: TimeoutCancellationException) {
+                if (generation == token && !closed) {
+                    openAiUnavailable = true
+                    status("OpenAI voice took too long. The explanation remains on screen; this session continues without audio retries.")
                 }
             } catch (e: CancellationException) { throw e }
               catch (_: Exception) {
@@ -165,5 +183,5 @@ internal class AssistantNarrator(private val activity: Activity, private val sta
     }
 
     fun close() { closed = true; stop(); scope.cancel() }
-    companion object { const val VOICE_KEY = "assistant_narration_voice" }
+    companion object { const val VOICE_KEY = "assistant_narration_voice"; const val MAX_REQUESTS = 80 }
 }
