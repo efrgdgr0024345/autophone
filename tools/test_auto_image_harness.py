@@ -1,9 +1,11 @@
 """Adversarial tests for the disposable Linux execution and independent OCR boundaries."""
 import json
 import unittest
+import tempfile
+import shutil
 from pathlib import Path
 
-from auto_image_demo_host import allowed, ocr_reply
+from auto_image_demo_host import allowed, ocr_reply, read_nonce_regions, render
 
 
 class AutoImageHarnessTests(unittest.TestCase):
@@ -56,6 +58,29 @@ class AutoImageHarnessTests(unittest.TestCase):
                    'collection_context': json.dumps({'expected_marker': marker, 'page': 0})}
         response = ocr_reply(Path('/unused-test-output'), request, f"BC{'b' * 24}_CAP_0_DONE\ndemo@linux:~$ ")
         self.assertEqual('', json.loads(response['output'][0]['content'][0]['text'])['page_marker'])
+
+    def test_nonce_region_is_read_from_pixels_without_request_context(self):
+        nonce = '2ba2b502b1af27d9253b9f0c'
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary)
+            render(output, f'BC{nonce}_P1_1_8_END_0_MORE\ndemo@linux:~$ ', full_width=True)
+            text, reads = read_nonce_regions(output / 'feed.jpg')
+            self.assertGreater(reads, 0)
+            self.assertIn('BC' + nonce, text)
+
+    def test_field_reread_never_substitutes_the_expected_nonce(self):
+        actual = '2ba2b502b1af27d9253b9f0c'
+        expected = 'a' * 24
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary)
+            render(output, f'BC{actual}_P1_1_8_END_0_MORE\ndemo@linux:~$ ', full_width=True)
+            shutil.copyfile(output / 'feed.jpg', output / 'photo-001.jpg')
+            request = {'kind': 'observation', 'preflight': False, 'id': '001', 'production_schema': {},
+                       'collection_context': json.dumps({'expected_marker': f'BC{expected}_P1_1_8', 'page': 1,
+                                                        'earlier_pages_untrusted': []})}
+            reply = ocr_reply(output, request, field_reader=True)
+            value = json.loads(reply['output'][0]['content'][0]['text'])
+            self.assertEqual('', value['page_marker'])
 
 
 if __name__ == '__main__':

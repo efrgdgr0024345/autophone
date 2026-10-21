@@ -8,12 +8,14 @@ bounded capture/page/cleanup wrappers. The reviewing assistant supplies observat
 and plan JSON after inspecting the actual Camera2 JPEGs. No OpenAI credentials.
 """
 import argparse
+import csv
 import json
 import os
 from pathlib import Path
 import re
 import subprocess
 import time
+import tempfile
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -27,7 +29,49 @@ def provider_response(value):
         {'type': 'output_text', 'text': json.dumps(value)}]}]}
 
 
-def ocr_reply(output, request, text_override=None):
+def read_nonce_regions(photo, mode=6):
+    """Independent field OCR for the known injected terminal grid, without request context.
+
+    Body text stays from one OCR pass. Hexadecimal nonce cells are reread from the
+    SAME pixels with their format's alphabet, never repaired from expected values.
+    This is a fixture-specific reader, not a general camera/OCR claim.
+    """
+    image = Image.open(photo)
+    if image.size != (1280, 720):
+        return '', 0
+    font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf', 26)
+    advance = font.getlength('0')
+    with tempfile.TemporaryDirectory(prefix='bc-ocr-fields-') as temporary:
+        base = Path(temporary) / 'page'
+        subprocess.run(['tesseract', str(photo), str(base), '--psm', str(mode),
+                        '-c', 'tessedit_create_txt=1', '-c', 'tessedit_create_tsv=1'],
+                       check=True, capture_output=True, timeout=15, env={**os.environ, 'OMP_THREAD_LIMIT': '1'})
+        text = base.with_suffix('.txt').read_text()
+        reads = 0
+        with base.with_suffix('.tsv').open() as stream:
+            words = list(csv.DictReader(stream, delimiter='\t'))
+        for word in words:
+            token = word.get('text', '')
+            if not re.match(r'^BC[0-9A-Za-z]{24}', token):
+                continue
+            top, height = int(word['top']), int(word['height'])
+            box = (round(22 + 2 * advance), max(0, top - 4), round(22 + 26 * advance), top + height + 4)
+            crop = image.crop(box)
+            crop = crop.resize((crop.width * 3, crop.height * 3))
+            target = Path(temporary) / 'nonce.png'
+            crop.save(target)
+            result = subprocess.run(['tesseract', str(target), 'stdout', '--psm', '7', '-c',
+                                     'tessedit_char_whitelist=0123456789abcdef'], check=True,
+                                    capture_output=True, text=True, timeout=15,
+                                    env={**os.environ, 'OMP_THREAD_LIMIT': '1'})
+            nonce = result.stdout.strip()
+            if re.fullmatch(r'[0-9a-f]{24}', nonce):
+                text = text.replace(token[:26], 'BC' + nonce, 1)
+                reads += 1
+        return text, reads
+
+
+def ocr_reply(output, request, text_override=None, field_reader=False):
     """Independent perception from the Camera2 JPEG, never from captured stdout/context.
 
     This is a deterministic test provider, not an OpenAI vision/model test. Missing
@@ -66,9 +110,23 @@ def ocr_reply(output, request, text_override=None):
                 break
             if fallback is None or value['page_state'] == 'unreadable':
                 fallback = item
+        field_reads = 0
+        current = json.loads(fallback[0]['output'][0]['content'][0]['text'])
+        if field_reader and not current['page_marker'] and not request['preflight']:
+            for field_mode in (6, 11, 4):
+                field_text, count = read_nonce_regions(photo, field_mode)
+                if not count:
+                    continue
+                candidate = ocr_reply(output, request, field_text)
+                value = json.loads(candidate['output'][0]['content'][0]['text'])
+                if value['page_marker'] and value['terminal_state'] == 'shell_prompt':
+                    fallback = (candidate, field_text, field_mode, False)
+                    field_reads = count
+                    break
         reply, text, mode, ascii_only = fallback
         (output / ('ocr-' + request['id'] + '.txt')).write_text(text)
-        (output / ('ocr-' + request['id'] + '-mode.json')).write_text(json.dumps({'psm': mode, 'ascii_only': ascii_only}))
+        (output / ('ocr-' + request['id'] + '-mode.json')).write_text(json.dumps({'psm': mode, 'ascii_only': ascii_only,
+                                                                                 'nonce_region_reads': field_reads}))
         return reply
     text = text_override
     lines = text.splitlines()
@@ -267,7 +325,7 @@ def main():
                     handled_requests.add(name)
                     print(json.dumps({'needs_review': name, 'kind': request['kind']}), flush=True)
                     if args.automatic_ocr:
-                        response = ocr_reply(output, request)
+                        response = ocr_reply(output, request, field_reader=args.inject_vision_frame)
                         reply = output / ('reply-' + request['id'] + '.json')
                         temporary = reply.with_suffix('.tmp')
                         temporary.write_text(json.dumps(response))
