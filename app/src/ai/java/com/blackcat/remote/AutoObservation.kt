@@ -16,7 +16,7 @@ internal class AutoObservation(
     fun collectionReady(op: AutoOutputCollection.Operation) = terminalState == "shell_prompt" &&
         pageMarker == op.marker && evidence.any { it.isNotBlank() } &&
         exitCode.toIntOrNull() in 0..255 && (op.page < 0 || op.ticket.exitCode == null || op.ticket.exitCode == exitCode) &&
-        when { op.page == 0 -> pageState == "captured"; op.page < 0 -> pageState == "cleaned" && exitCode == "0"; else -> pageState in setOf("more", "done", "limit") }
+        when { op.page == 0 -> pageState in setOf("captured", "truncated"); op.page < 0 -> pageState == "cleaned" && exitCode == "0"; else -> pageState in setOf("more", "done", "limit") }
     fun canResizePage(op: AutoOutputCollection.Operation) = op.page > 0 && pageState == "unreadable" &&
         terminalState == "shell_prompt" && pageMarker == op.marker && evidence.any { it.isNotBlank() } &&
         op.ticket.exitCode == exitCode
@@ -34,7 +34,7 @@ internal object AutoObservationCodec {
             .put("visible_evidence", ProposalWire.stringsType(1000))
             .put("revision_needed", JSONObject().put("type", "boolean"))
             .put("page_marker", ProposalWire.stringType(64))
-            .put("page_state", JSONObject().put("type", "string").put("enum", JSONArray(listOf("none", "captured", "cleaned", "more", "done", "limit", "unreadable"))))
+            .put("page_state", JSONObject().put("type", "string").put("enum", JSONArray(listOf("none", "captured", "truncated", "cleaned", "more", "done", "limit", "unreadable"))))
             .put("page_text", ProposalWire.stringType(1024))
             .put("exit_code", ProposalWire.stringType(3)))
         val context = JSONObject().put("goal", goal).put("target_os_and_shell", target)
@@ -65,7 +65,10 @@ internal object AutoObservationCodec {
                 Read the unique expected_marker from the PHOTO, never copy it from context unless
                 it is actually visible. Exact command echo may have scrolled away: the complete
                 unique marker and a fresh prompt establish collection identity instead.
-                For capture: read BC<token>_CAP_<exit code>, set page_state=captured, page_text empty.
+                For capture: require the FULL BC<token>_CAP_<exit code>_DONE or _TRUNCATED marker.
+                Missing suffix is unreadable, never complete. _DONE means page_state=captured;
+                _TRUNCATED means page_state=truncated, outcome=unclear and revision_needed=true.
+                The byte limit hid some output: no success conclusion is possible. Keep page_text empty.
                 For cleanup (page=-1): read BC<token>_CLEAN_0, page_state=cleaned, exit_code=0.
                 If ONLY the page footer is visible but the beginning/body scrolled away, return
                 page_state=unreadable, its visible page_marker and exit_code, and shell_prompt only
@@ -88,7 +91,16 @@ internal object AutoObservationCodec {
                 diagnostic information is needed; never request manual scrolling or more photos.
                 Set revision_needed only if evidence warrants changing the remaining plan.
                 Explain what appears to have happened and what to do next in friendly natural
-                language, without just reciting command syntax or claiming certainty. Do not
+                language. Speak like a calm companion: say what you found, why it matters for the
+                goal, and the useful next action. Prefer 1-2 short sentences. Describe evidence
+                as observed, not independently proven. For internal capture/page operations keep
+                the explanation factual and brief; the app speaks only meaningful task results.
+                For a final task result, address the person conversationally: for example,
+                "We're using the demo account, so I'll check its available access before suggesting changes."
+                Explain the practical meaning and next decision. Keep raw completion markers,
+                numeric exit codes and transcription details in visible_evidence/page_text;
+                do not read those out as the explanation. Do not invent the next action or access.
+                Never just recite command syntax, repeat generic reassurance or claim certainty. Do not
                 claim the system is secure. No suggestions to type keystrokes or passwords.
             """.trimIndent())
             .put("input", JSONArray().put(JSONObject().put("role", "user").put("content", content)))
@@ -130,7 +142,7 @@ internal object AutoObservationCodec {
                 throw PlanException("Invalid photo-check state.")
             val pageState = ProposalWire.value(obj, "page_state", 16)
             val exitCode = ProposalWire.value(obj, "exit_code", 3)
-            if (pageState !in setOf("none", "captured", "cleaned", "more", "done", "limit", "unreadable") ||
+            if (pageState !in setOf("none", "captured", "truncated", "cleaned", "more", "done", "limit", "unreadable") ||
                 (exitCode.isNotEmpty() && exitCode.toIntOrNull() !in 0..255)) throw PlanException("Invalid collection state.")
             return AutoObservation(ProposalWire.value(obj, "observed_command", 512), terminal, outcome,
                 ProposalWire.value(obj, "explanation", 1500), ProposalWire.list(obj, "visible_evidence", 1000),
