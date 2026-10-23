@@ -9,8 +9,8 @@ import java.util.Base64
 
 /** No downloaded root keys, TOFU, unsigned fallback or production test-key substitution. */
 internal object ProductionUpdateTrust {
-    // Deliberately unprovisioned. A reviewed public key AND release service are required.
-    fun configured(): UpdateTrust? = null
+    // Owner-approved real authority. Test keys and downloaded roots are never consulted.
+    fun configured(): UpdateTrust? = ProvisionedUpdateTrust.configured()
 }
 
 internal class UpdateTrust(

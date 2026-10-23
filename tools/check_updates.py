@@ -2,6 +2,9 @@
 """Additional release-boundary checks; crypto behavior lives in SignedUpdatesTest."""
 from pathlib import Path
 import subprocess
+import base64
+import hashlib
+import json
 import sys
 import zipfile
 
@@ -11,7 +14,16 @@ AI = ROOT / 'app/src/ai/java/com/blackcat/remote'
 
 def check_source():
     trust = (AI / 'SignedUpdateMetadata.kt').read_text()
-    assert 'fun configured(): UpdateTrust? = null' in trust, 'Unreviewed production trust provisioning'
+    assert 'fun configured(): UpdateTrust? = ProvisionedUpdateTrust.configured()' in trust
+    config = json.loads((ROOT / 'updates/production-trust-v1.json').read_text())
+    approved_fingerprint = '8cb2f3d61ba630c526a2b3dd47449f540e1a2666414da6166655eba441147a1f'
+    assert config['public_key_sha256'] == approved_fingerprint, 'Unexpected metadata authority rotation'
+    assert hashlib.sha256(base64.b64decode(config['public_key_spki_base64'], validate=True)).hexdigest() == approved_fingerprint
+    generated = (AI / 'ProvisionedUpdateTrust.kt').read_text()
+    assert config['public_key_spki_base64'] in generated and approved_fingerprint in generated
+    assert config['metadata_url'] == 'https://raw.githubusercontent.com/efrgdgr0024345/autophone/blackcat-update-feed/updates/ai.json'
+    assert config['metadata_url'] in generated
+    assert config['metadata_hosts'] == config['apk_hosts'] == ['raw.githubusercontent.com']
     assert 'BEGIN PUBLIC KEY' not in trust and 'BEGIN PRIVATE KEY' not in trust
     assert 'unit-test-only' not in trust
     for source in (AI / name for name in ('SignedUpdateMetadata.kt', 'UpdateHttps.kt',
@@ -37,7 +49,7 @@ def check_source():
                  'app/src/ai/java/com/blackcat/remote/AiEntry.kt'):
         before = subprocess.check_output(['git', 'show', f'bd7f38295404721c984ede7813a363a46ae02aba:{file}'], cwd=ROOT)
         assert before == (ROOT / file).read_bytes(), f'Unexpected baseline change: {file}'
-    print('PASS: unprovisioned trust, isolated updater, unchanged camera/Auto/planner/offline, no install capability')
+    print('PASS: approved production public trust, isolated updater, unchanged camera/Auto/planner/offline, no install capability')
 
 
 def check_apks(ai_apk, offline_apk):

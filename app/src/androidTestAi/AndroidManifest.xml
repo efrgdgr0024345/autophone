@@ -1,0 +1,7 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- Disposable-emulator fixture only; never merged into an application APK. -->
+        <provider android:name="com.blackcat.remote.UpdateExportFixtureProvider"
+            android:authorities="com.blackcat.remote.test.update-export" android:exported="true" />
+    </application>
+</manifest>

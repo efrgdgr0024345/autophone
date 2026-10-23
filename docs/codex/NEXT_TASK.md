@@ -5,10 +5,12 @@ existing APK signing identity and permissions must remain unchanged. Branch:
 `feature/ui20-provisioned-release`; rollback `b51ef53538aa95adfd884329eda9763b63bce413`.
 
 New offline provisioning/signing/publishing tools and 17 dedicated tests are
-prepared. All 122 Python tests pass. No production authority has been generated:
-the owner is adding secret `BLACKCAT_UPDATE_KEY_PASSWORD` through the attached
-environment settings. Never print its value. GitHub Actions secrets access was
-denied HTTP403 over HTTPS; no private material was uploaded. See
+prepared. All 122 Python tests passed before trust integration. The owner supplied
+secret `BLACKCAT_UPDATE_KEY_PASSWORD`; the real encrypted authority was generated
+outside Git and its public manifest is provisioned. Never print secret values.
+See [provisioned release state](../updates/PROVISIONED-RELEASE.md).
+GitHub Actions secrets access was denied HTTP403 over HTTPS; no private material
+was uploaded. See
 [publishing prerequisites and steps](../updates/PUBLISHING.md). Finish genuine
 public trust provisioning, version23/build tests and live feed verification once
 the secret and protected owner backup are available. No placeholder trust,

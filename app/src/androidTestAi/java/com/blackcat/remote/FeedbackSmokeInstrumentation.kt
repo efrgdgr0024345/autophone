@@ -55,6 +55,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
     private var searchStreamOnly = false
     private var evidenceOnly = false
     private var updatesOnly = false
+    private var liveUpdatesOnly = false
 
     override fun onCreate(arguments: Bundle?) {
         super.onCreate(arguments)
@@ -66,6 +67,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         searchStreamOnly = arguments?.getString("scenario") == "search-stream"
         evidenceOnly = arguments?.getString("scenario") == "evidence"
         updatesOnly = arguments?.getString("scenario") == "updates"
+        liveUpdatesOnly = arguments?.getString("scenario") == "updates-live"
         timeoutOnly = arguments?.getString("scenario") == "timeout"
         imageAuto = arguments?.getString("scenario") == "image-auto" || injectedImages
         layoutOnly = arguments?.getString("scenario") == "layout"
@@ -104,6 +106,12 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                 decor.isShown && decor.isAttachedToWindow && decor.isLaidOut && SystemClock.uptimeMillis() - stableSince >= 2000
             }
             startupSettled = true
+            if (liveUpdatesOnly) {
+                captureLiveUpdates()
+                result.putString("stream", "\nUI20_LIVE_UPDATES_PASS ${checks.size}\n" + checks.joinToString("\n"))
+                finish(Activity.RESULT_OK, result)
+                return
+            }
             if (updatesOnly) {
                 captureUpdates()
                 result.putString("stream", "\nUI20_UPDATES_PASS ${checks.size}\n" + checks.joinToString("\n"))
@@ -732,6 +740,86 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         onMain { auto!!.dismiss() }
     }
 
+    private fun captureLiveUpdates() {
+        val authority = ProductionUpdateTrust.configured() ?: error("Real authority required")
+        val installed = AndroidUpdateSecurity.installed(targetContext)
+        val v = UpdateVerifier(authority, installed, AndroidUpdateSecurity.packageInfo(targetContext).requestedPermissions.orEmpty().toSet(),
+            AndroidUpdateLedger(targetContext), UpdateApkInspector { AndroidUpdateSecurity.inspect(targetContext, it) }, UpdateHttps())
+        val release = v.check()
+        check(release.version >= installed.version && release.signer == installed.signer)
+        pass("Real HTTPS feed authenticates with the owner-approved public key and installed APK identity")
+        val monitor = addMonitor(UpdateActivity::class.java.name, null, false)
+        onMain { activity.startActivity(Intent(activity, UpdateActivity::class.java)) }
+        val updates = waitForMonitorWithTimeout(monitor, 15000) ?: error("Update Activity unavailable")
+        waitForIdleSync()
+        runOnMainSync {
+            check(field(updates, "verifier") == null)
+            findButton(updates.window.decorView, "Check for updates").performClick()
+        }
+        var remaining = 180000L
+        while (remaining > 0) {
+            var complete = false
+            runOnMainSync { complete = (field(updates, "checkButton") as Button).isEnabled }
+            if (complete) break
+            Thread.sleep(250); remaining -= 250
+        }
+        check(remaining > 0)
+        runOnMainSync {
+            val message = (field(updates, "status") as TextView).text.toString()
+            check(!message.contains("failed", true)) { message }
+        }
+        if (release.version > installed.version) {
+            runOnMainSync {
+                val download = findButton(updates.window.decorView, "Download & verify APK")
+                check(download.isEnabled); download.performClick()
+            }
+            remaining = 240000
+            while (remaining > 0) {
+                var ready = false
+                runOnMainSync { ready = (field(updates, "saveButton") as Button).isEnabled }
+                if (ready) break
+                Thread.sleep(250); remaining -= 250
+            }
+            check(remaining > 0) { "Real APK verification did not enable export" }
+            pass("Actual newer hosted APK passes hash/size/package/version/permission and cryptographic signer checks")
+            val uri = android.net.Uri.parse(UpdateExportFixtureProvider.URI)
+            val picker = addMonitor(IntentFilter(Intent.ACTION_CREATE_DOCUMENT),
+                ActivityResult(Activity.RESULT_OK, Intent().setData(uri)), true)
+            try {
+                runOnMainSync { findButton(updates.window.decorView, "Save verified APK…").performClick() }
+                remaining = 180000
+                while (remaining > 0) {
+                    var saved = false
+                    runOnMainSync { saved = (field(updates, "status") as TextView).text.toString().startsWith("Verified APK saved.") }
+                    if (saved) break
+                    Thread.sleep(250); remaining -= 250
+                }
+                check(remaining > 0)
+                check(picker.hits == 1)
+                val bytes = targetContext.contentResolver.openInputStream(uri)!!.use { it.readBytes() }
+                check(bytes.size.toLong() == release.size && SignedUpdateMetadata.sha256(bytes) == release.hash)
+                pass("Explicit simulated picker selection exports exact authenticated APK bytes through Android ContentResolver; no installer is opened")
+                runOnMainSync {
+                    check(field(updates, "release") == null && field(updates, "verifier") == null)
+                    check(!(field(updates, "saveButton") as Button).isEnabled)
+                }
+                pass("Export clears the private offer and session; it cannot silently replay or install")
+            } finally {
+                removeMonitor(picker)
+                targetContext.contentResolver.delete(uri, null, null)
+            }
+        } else {
+            runOnMainSync {
+                check(!(field(updates, "downloadButton") as Button).isEnabled)
+                check(!(field(updates, "saveButton") as Button).isEnabled)
+                check((field(updates, "status") as TextView).text.toString().contains("already installed"))
+            }
+            pass("Current signed version reports already installed without downloading or enabling export")
+        }
+        runOnMainSync { updates.finish() }
+        removeMonitor(monitor)
+    }
+
     private fun captureUpdates() {
         val installed = AndroidUpdateSecurity.installed(targetContext)
         check(installed.signer == "fc5c0b42b9da40c2507d8f2e77ed92db9e023740aa1a44d1a3b2c14a6e9f4764")
@@ -774,13 +862,13 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         waitForIdleSync()
         runOnMainSync {
             val root = updates.window.decorView
-            check(descendants(root).filterIsInstance<TextView>().any { it.text.toString() == UpdateActivity.NOT_PROVISIONED })
-            findButton(root, "Check for updates").performClick()
+            check(ProductionUpdateTrust.configured() != null)
+            check(descendants(root).filterIsInstance<TextView>().none { it.text.toString() == UpdateActivity.NOT_PROVISIONED })
+            check(field(updates, "verifier") == null && field(updates, "release") == null)
             check(!findButton(root, "Download & verify APK").isEnabled)
             check(!findButton(root, "Save verified APK…").isEnabled)
-            check(descendants(root).filterIsInstance<TextView>().any { it.text.toString() == UpdateActivity.NOT_PROVISIONED })
         }
-        pass("Unprovisioned production screen exposes no download, save or installer path")
+        pass("Provisioned production screen opens without a network request; download/save remain disabled until an explicit authenticated check")
         // Capture the real Activity Window with PixelCopy; only this fixture clears FLAG_SECURE.
         val copied = CountDownLatch(1)
         var code = -1
@@ -794,10 +882,10 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         }
         check(copied.await(10, TimeUnit.SECONDS) && code == PixelCopy.SUCCESS)
         File(targetContext.filesDir, "ui12-rendered").apply { mkdirs() }.let { dir ->
-            File(dir, "ui20-updates-unprovisioned.png").outputStream().use { check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)) }
+            File(dir, "ui20-updates-configured.png").outputStream().use { check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)) }
         }
         bitmap.recycle()
-        pass("Actual update Activity window rendered and captured; no placeholder trust installed")
+        pass("Actual update Activity window rendered and captured with the approved real public authority")
         runOnMainSync { updates.finish() }
         removeMonitor(monitor)
     }
