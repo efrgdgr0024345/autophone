@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "key_id": "blackcat-8cb2f3d61ba630c5",
+  "public_key_spki_base64": "MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEA0lcJgZMqOOXnNmLvMB7zNzNszXPo4YBDaWbP6GDtphY7guhPf72ogZLhfqIkaa5dAcWggAbqSsfnAAKSUvwsfpV2C4C+q4X/q8jyeylmp5+xEDvMtuX05tZHrK6mxDn89cYMo2tNJx5anrC/L0Wv7yTTvqlvlUYtZ+vVpYp30zNwOLPHWWaUl+/MgAkgpI1VWaxINlBO3sV1wQDkQ2fB9ct0DaJM+/NXqu/4n10omH565p9C0Zgj/fVGytCvG+UBrLzDpGzgWxRm3ZAOsZh9Qk5Px91K5tQN0RgTEzBEqH9sVtaGDHqPfUXRikgNXcBtICC/A8m7CvQKKU+vPTShyj9Q6QJqKCMv3T+26I3J+f8i2N3dfnITJk16FF2RebAE/wRLehzaNfrWOGCVgVjZqXhZIkE5HboYHmunxL2RwsTCNBLegSdRW8dVQZY9gq61DiyQsaLq82joMSeLT/C/Bjk6D5ZVzwdzy89tcPzYHnkTc5r5MNZyQ8+gFbVYhoaVAgMBAAE=",
+  "public_key_sha256": "8cb2f3d61ba630c526a2b3dd47449f540e1a2666414da6166655eba441147a1f",
+  "metadata_url": "https://raw.githubusercontent.com/efrgdgr0024345/autophone/blackcat-update-feed/updates/ai.json",
+  "metadata_hosts": [
+    "raw.githubusercontent.com"
+  ],
+  "apk_hosts": [
+    "raw.githubusercontent.com"
+  ],
+  "channel": "testing",
+  "flavor": "ai"
+}
