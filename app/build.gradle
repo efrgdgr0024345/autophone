@@ -9,8 +9,8 @@ android {
         applicationId 'com.blackcat.remote'
         minSdk 28
         targetSdk 35
-        versionCode 23
-        versionName '20.0-signed-updates'
+        versionCode 24
+        versionName '20.1-signed-updates'
     }
     flavorDimensions 'capability'
     productFlavors {

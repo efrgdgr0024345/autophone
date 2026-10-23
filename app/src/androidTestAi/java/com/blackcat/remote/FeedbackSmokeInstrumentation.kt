@@ -56,6 +56,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
     private var evidenceOnly = false
     private var updatesOnly = false
     private var liveUpdatesOnly = false
+    private var oldFeedUrl = ""
 
     override fun onCreate(arguments: Bundle?) {
         super.onCreate(arguments)
@@ -68,6 +69,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         evidenceOnly = arguments?.getString("scenario") == "evidence"
         updatesOnly = arguments?.getString("scenario") == "updates"
         liveUpdatesOnly = arguments?.getString("scenario") == "updates-live"
+        oldFeedUrl = arguments?.getString("oldFeedUrl").orEmpty()
         timeoutOnly = arguments?.getString("scenario") == "timeout"
         imageAuto = arguments?.getString("scenario") == "image-auto" || injectedImages
         layoutOnly = arguments?.getString("scenario") == "layout"
@@ -748,6 +750,16 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         val release = v.check()
         check(release.version >= installed.version && release.signer == installed.signer)
         pass("Real HTTPS feed authenticates with the owner-approved public key and installed APK identity")
+        if (oldFeedUrl.isNotBlank()) {
+            check(oldFeedUrl.matches(Regex("https://raw\\.githubusercontent\\.com/efrgdgr0024345/autophone/[0-9a-f]{40}/updates/ai\\.json")))
+            val replay = UpdateTrust(oldFeedUrl, authority.metadataHosts, authority.apkHosts, authority.keys, authority.channel)
+            val old = UpdateVerifier(replay, installed, AndroidUpdateSecurity.packageInfo(targetContext).requestedPermissions.orEmpty().toSet(),
+                AndroidUpdateLedger(targetContext), UpdateApkInspector { AndroidUpdateSecurity.inspect(targetContext, it) }, UpdateHttps())
+            var rejected = false
+            try { old.check() } catch (_: Exception) { rejected = true }
+            check(rejected) { "Authentic older metadata must fail against the persistent floor" }
+            pass("Authentic older published metadata is rejected after a newer release raises the persistent rollback floor")
+        }
         val monitor = addMonitor(UpdateActivity::class.java.name, null, false)
         onMain { activity.startActivity(Intent(activity, UpdateActivity::class.java)) }
         val updates = waitForMonitorWithTimeout(monitor, 15000) ?: error("Update Activity unavailable")
@@ -769,6 +781,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
             check(!message.contains("failed", true)) { message }
         }
         if (release.version > installed.version) {
+            captureUpdateWindow(updates, "ui20-live-update-offer")
             runOnMainSync {
                 val download = findButton(updates.window.decorView, "Download & verify APK")
                 check(download.isEnabled); download.performClick()
@@ -782,6 +795,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
             }
             check(remaining > 0) { "Real APK verification did not enable export" }
             pass("Actual newer hosted APK passes hash/size/package/version/permission and cryptographic signer checks")
+            captureUpdateWindow(updates, "ui20-live-apk-verified")
             val uri = android.net.Uri.parse(UpdateExportFixtureProvider.URI)
             val picker = addMonitor(IntentFilter(Intent.ACTION_CREATE_DOCUMENT),
                 ActivityResult(Activity.RESULT_OK, Intent().setData(uri)), true)
@@ -804,6 +818,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                     check(!(field(updates, "saveButton") as Button).isEnabled)
                 }
                 pass("Export clears the private offer and session; it cannot silently replay or install")
+                captureUpdateWindow(updates, "ui20-live-apk-saved")
             } finally {
                 removeMonitor(picker)
                 targetContext.contentResolver.delete(uri, null, null)
@@ -815,6 +830,7 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
                 check((field(updates, "status") as TextView).text.toString().contains("already installed"))
             }
             pass("Current signed version reports already installed without downloading or enabling export")
+            captureUpdateWindow(updates, "ui20-live-current-version")
         }
         runOnMainSync { updates.finish() }
         removeMonitor(monitor)
@@ -869,6 +885,13 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
             check(!findButton(root, "Save verified APK…").isEnabled)
         }
         pass("Provisioned production screen opens without a network request; download/save remain disabled until an explicit authenticated check")
+        captureUpdateWindow(updates, "ui20-updates-configured")
+        pass("Actual update Activity window rendered and captured with the approved real public authority")
+        runOnMainSync { updates.finish() }
+        removeMonitor(monitor)
+    }
+
+    private fun captureUpdateWindow(updates: Activity, name: String) {
         // Capture the real Activity Window with PixelCopy; only this fixture clears FLAG_SECURE.
         val copied = CountDownLatch(1)
         var code = -1
@@ -882,12 +905,9 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
         }
         check(copied.await(10, TimeUnit.SECONDS) && code == PixelCopy.SUCCESS)
         File(targetContext.filesDir, "ui12-rendered").apply { mkdirs() }.let { dir ->
-            File(dir, "ui20-updates-configured.png").outputStream().use { check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)) }
+            File(dir, "$name.png").outputStream().use { check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)) }
         }
         bitmap.recycle()
-        pass("Actual update Activity window rendered and captured with the approved real public authority")
-        runOnMainSync { updates.finish() }
-        removeMonitor(monitor)
     }
 
     private fun captureEvidenceAuto() {

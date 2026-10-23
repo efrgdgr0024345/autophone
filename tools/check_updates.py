@@ -63,6 +63,8 @@ def check_apks(ai_apk, offline_apk):
             assert (b'Lcom/blackcat/remote/UpdateActivity;' in dex) == online
             assert (b'Lcom/android/apksig/ApkVerifier;' in dex) == online
             assert b'unit-test-only' not in dex and b'updates.example.test' not in dex
+            assert b'Lcom/blackcat/remote/UpdateExportFixtureProvider;' not in dex
+            assert not any('published-release-v1.json' in name for name in apk.namelist())
             assert b'com/google/mlkit' not in dex
     print('PASS: AI-only packaged updater/apksig; no test metadata authority, endpoint or ML Kit in app APKs')
 

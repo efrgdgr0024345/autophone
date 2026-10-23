@@ -87,6 +87,15 @@ class SignedUpdatesTest {
         assertEquals(23L, r.version); assertEquals(SIGNER, r.signer)
         assertEquals(10L, SignedUpdateMetadata.nextFloor(r, installed, UpdateFloor(), NOW).sequence)
     }
+    @Test fun realPublishedPythonEnvelopeAuthenticatesWithProductionKotlinVerifier() {
+        val bytes = javaClass.getResourceAsStream("/published-release-v1.json")!!.use { it.readBytes() }
+        val r = SignedUpdateMetadata.authenticate(bytes, ProductionUpdateTrust.configured()!!)
+        assertEquals(23L, r.version)
+        assertEquals("20.0-signed-updates", r.versionName)
+        assertEquals("2f812311109f65bf324abf472a8f9d4782b4f42814d270e043f875c300a5beeb", r.hash)
+        assertEquals(23L, SignedUpdateMetadata.nextFloor(r, installed, UpdateFloor(), r.issued + 1).version)
+        reject { SignedUpdateMetadata.nextFloor(r, installed, UpdateFloor(), r.expires) }
+    }
     @Test fun unsignedOrModifiedMetadataCannotAdvanceFloor() {
         val signed = envelope().toString(Charsets.US_ASCII)
         val b64 = Base64.getEncoder().encodeToString(payload("version_code" to 24))
