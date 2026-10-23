@@ -1,0 +1,19 @@
+{
+  "source": "844dda4db94b185a7bcefd6353a56b37ad346f82",
+  "version_code": 24,
+  "version_name": "20.1-signed-updates",
+  "apks": {
+    "ai": {
+      "size": 6971868,
+      "sha256": "78301aba1a0d9d9430a8cbbf450f55e730af568cff6cb5df70f7139369b9e531"
+    },
+    "offline": {
+      "size": 6097889,
+      "sha256": "ca7fa96e8c22195deb0575366a7a5227e21361cbc4d7d3268e78e7053d36cfb2"
+    }
+  },
+  "android_unit_tests": 244,
+  "lint_errors": 0,
+  "codeql_open_existing_security_findings": 5,
+  "status": "Testing candidate; hosted upgrade test follows publication; no physical baseline promotion"
+}
