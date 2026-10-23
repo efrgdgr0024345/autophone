@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blackcat.remote.AiRegressionTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-23T04:50:52" hostname="1d8d0e40bb1a" time="2.061">
+  <properties/>
+  <testcase name="cancelledSequenceHasNoReplay" classname="com.blackcat.remote.AiRegressionTest" time="0.074"/>
+  <testcase name="disconnectStopsRemainingCharacters" classname="com.blackcat.remote.AiRegressionTest" time="0.042"/>
+  <testcase name="allPrintableCharactersNeverProduceEnter" classname="com.blackcat.remote.AiRegressionTest" time="1.922"/>
+  <testcase name="oversizedOrInvisibleTextRejectedBeforeAnySend" classname="com.blackcat.remote.AiRegressionTest" time="0.001"/>
+  <testcase name="reconnectToSameAddressStillInvalidatesApproval" classname="com.blackcat.remote.AiRegressionTest" time="0.021"/>
+  <testcase name="rejectedReportDoesNotContinue" classname="com.blackcat.remote.AiRegressionTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

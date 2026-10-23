@@ -1,3 +1,7 @@
+> Historical unprovisioned implementation checkpoint. Real trust and the live test
+> release are now documented in [CatAI-20.1 evidence](../ui20/README.md).
+> The claims below describe source64d3 only, not the current provisioned release.
+
 # Signed update checks — review delivery
 
 Exact tested application/test source:

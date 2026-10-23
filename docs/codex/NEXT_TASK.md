@@ -1,4 +1,42 @@
-# Current continuation: signed update checks and OCR evaluation
+# Current continuation — provisioned CatAI-20.1
+
+Real metadata authority and public feed are provisioned under the owner's separate
+approval. App source `844dda4db94b185a7bcefd6353a56b37ad346f82`; later test-driver-only
+source `ef64b1ce155991b9c4b8a96ae36b0d0c723e17b1`. Branch
+`feature/ui20-provisioned-release`; rollback `b51ef53538aa95adfd884329eda9763b63bce413`.
+[Release evidence and exact public URLs](../ui20/README.md).
+
+Do not recreate/rotate the authority or change the existing APK signer. Private
+metadata key and encrypted owner backup are outside Git. The owner must retain the
+backup and passphrase separately outside this workspace. OpenAI test keys are not
+needed for updates. Scheduled feed renewal remains blocked by GitHub Actions secrets
+HTTP403 over HTTPS. Current feed expires 29 October 2026 00:55:58 EDT. Follow
+[manual renewal](../updates/PUBLISHING.md); do not claim scheduled operation.
+No merge, baseline promotion, OCR implementation or physical acceptance is implied.
+Frozen Bluetooth/manual/planner/Camera2/vault and offline boundaries remain protected.
+
+---
+
+# Current continuation: owner-approved metadata-key setup
+
+The user separately approved setup of the update-metadata signing key. The
+existing APK signing identity and permissions must remain unchanged. Branch:
+`feature/ui20-provisioned-release`; rollback `b51ef53538aa95adfd884329eda9763b63bce413`.
+
+New offline provisioning/signing/publishing tools and 17 dedicated tests are
+prepared. All 122 Python tests passed before trust integration. The owner supplied
+secret `BLACKCAT_UPDATE_KEY_PASSWORD`; the real encrypted authority was generated
+outside Git and its public manifest is provisioned. Never print secret values.
+See [provisioned release state](../updates/PROVISIONED-RELEASE.md).
+GitHub Actions secrets access was denied HTTP403 over HTTPS; no private material
+was uploaded. See
+[publishing prerequisites and steps](../updates/PUBLISHING.md). Finish genuine
+public trust provisioning, version23/build tests and live feed verification once
+the secret and protected owner backup are available. No placeholder trust,
+production APK release, OCR implementation, baseline promotion or signing
+configuration change is authorized by this intermediate tooling checkpoint.
+
+# Previous continuation: signed update checks and OCR evaluation
 
 Tested feature source: `64d3caae9d807bcd07c0caf5e8b0d23c576d3fee` on
 `feature/ui20-authenticated-updates`, from approved CatAI-19 lineage

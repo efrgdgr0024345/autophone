@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blackcat.remote.AutoRunSessionTest" tests="24" skipped="0" failures="0" errors="0" timestamp="2026-10-23T04:51:50" hostname="1d8d0e40bb1a" time="8.052">
+  <properties/>
+  <testcase name="openingSessionNeverCreatesAnApprovalAndGuidedCannotAutoApprove" classname="com.blackcat.remote.AutoRunSessionTest" time="0.0"/>
+  <testcase name="fullAutoSupportsReviewedChangesButRejectsDestructiveOrCompoundInput" classname="com.blackcat.remote.AutoRunSessionTest" time="0.0"/>
+  <testcase name="revisedCommandsCanAdaptToTheGoalButCannotRetryATransmittedChange" classname="com.blackcat.remote.AutoRunSessionTest" time="0.001"/>
+  <testcase name="quotedOrNoninteractiveVariantsCannotReplayATransmittedChange" classname="com.blackcat.remote.AutoRunSessionTest" time="0.0"/>
+  <testcase name="guidedApprovalTypesWithoutEnter" classname="com.blackcat.remote.AutoRunSessionTest" time="0.042"/>
+  <testcase name="countdownStopHandsOffCanonicalCommandsForAFreshReviewedSession" classname="com.blackcat.remote.AutoRunSessionTest" time="0.002"/>
+  <testcase name="stoppingBetweenTypingAndEnterBlocksExecution" classname="com.blackcat.remote.AutoRunSessionTest" time="0.042"/>
+  <testcase name="guidedAndReadOnlySessionsCannotAutomaticallyAdoptPlans" classname="com.blackcat.remote.AutoRunSessionTest" time="0.0"/>
+  <testcase name="stopInvalidatesLatePhotoAndAllApprovals" classname="com.blackcat.remote.AutoRunSessionTest" time="0.001"/>
+  <testcase name="consentedReadOnlyAutoSendsEnterExactlyOnceAndNeverReplays" classname="com.blackcat.remote.AutoRunSessionTest" time="0.041"/>
+  <testcase name="stoppingDuringPagesDropsHelpersButPreservesLaterReadOnlyVerification" classname="com.blackcat.remote.AutoRunSessionTest" time="0.0"/>
+  <testcase name="aReconciledEmptyRemainingPlanFinishesWithoutAskingForAnotherStep" classname="com.blackcat.remote.AutoRunSessionTest" time="0.0"/>
+  <testcase name="collectionStepsAreVisibleAndPreserveTheRemainingPlanAndRevisionBoundary" classname="com.blackcat.remote.AutoRunSessionTest" time="0.001"/>
+  <testcase name="noStepAdvanceBeforePhotoOrAfterUncertainEvidence" classname="com.blackcat.remote.AutoRunSessionTest" time="0.0"/>
+  <testcase name="changedHostEpochOrRevisionRejectsApproval" classname="com.blackcat.remote.AutoRunSessionTest" time="0.0"/>
+  <testcase name="advancingOrStoppingInvalidatesAPlanRevisionFromThePreviousResult" classname="com.blackcat.remote.AutoRunSessionTest" time="0.0"/>
+  <testcase name="hostChangeDuringTypingPreventsEnterAndNextCommand" classname="com.blackcat.remote.AutoRunSessionTest" time="0.022"/>
+  <testcase name="finishedHandoffHasNoRunnableCommandsAndDoesNotClaimHumanConfirmation" classname="com.blackcat.remote.AutoRunSessionTest" time="0.0"/>
+  <testcase name="interruptedTransmissionIsExcludedFromHandoffEvenBeforeTypedCompletes" classname="com.blackcat.remote.AutoRunSessionTest" time="7.41"/>
+  <testcase name="stoppingAndReopeningCannotAuthorizeOldCollectionShell" classname="com.blackcat.remote.AutoRunSessionTest" time="0.001"/>
+  <testcase name="readOnlyAllowlistDoesNotTrustAModelRiskLabel" classname="com.blackcat.remote.AutoRunSessionTest" time="0.0"/>
+  <testcase name="rejectionDoesNotExecuteOrRetry" classname="com.blackcat.remote.AutoRunSessionTest" time="0.001"/>
+  <testcase name="diagnosticAutoCannotExecuteAChangeEvenAfterSessionConsent" classname="com.blackcat.remote.AutoRunSessionTest" time="0.484"/>
+  <testcase name="busyRecaptureCannotReplayAnApprovalAndHasABoundedPhotoBudget" classname="com.blackcat.remote.AutoRunSessionTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

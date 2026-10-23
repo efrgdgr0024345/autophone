@@ -1,0 +1,148 @@
+Activity Resolver Table:
+  Non-Data Actions:
+      android.intent.action.MAIN:
+        2612e8e com.blackcat.remote/.MainActivity filter f6446af
+          Action: "android.intent.action.MAIN"
+          Category: "android.intent.category.LAUNCHER"
+
+Domain verification status:
+
+Key Set Manager:
+  [com.blackcat.remote]
+      Signing KeySets: 9
+
+Packages:
+  Package [com.blackcat.remote] (a11283f):
+    userId=10068
+    pkg=Package{7fa46e6 com.blackcat.remote}
+    codePath=/data/app/~~Lzqyl408m3f_Z88Nm0uDSw==/com.blackcat.remote-SeEHgnsvwFUevtRZA9HzFQ==
+    resourcePath=/data/app/~~Lzqyl408m3f_Z88Nm0uDSw==/com.blackcat.remote-SeEHgnsvwFUevtRZA9HzFQ==
+    legacyNativeLibraryDir=/data/app/~~Lzqyl408m3f_Z88Nm0uDSw==/com.blackcat.remote-SeEHgnsvwFUevtRZA9HzFQ==/lib
+    extractNativeLibs=false
+    primaryCpuAbi=null
+    secondaryCpuAbi=null
+    cpuAbiOverride=null
+    versionCode=23 minSdk=28 targetSdk=35
+    minExtensionVersions=[]
+    versionName=20.0-signed-updates
+    usesNonSdkApi=false
+    splits=[base]
+    apkSigningVersion=2
+    applicationInfo=PackageImpl{7fa46e6 com.blackcat.remote}
+    flags=[ HAS_CODE ALLOW_CLEAR_USER_DATA ]
+    privateFlags=[ PRIVATE_FLAG_ACTIVITIES_RESIZE_MODE_RESIZEABLE_VIA_SDK_VERSION ALLOW_AUDIO_PLAYBACK_CAPTURE PRIVATE_FLAG_ALLOW_NATIVE_HEAP_POINTER_TAGGING ]
+    forceQueryable=false
+    queriesPackages=[]
+    queriesIntents=[Intent { act=android.speech.RecognitionService }, Intent { act=android.intent.action.TTS_SERVICE }]
+    dataDir=/data/user/0/com.blackcat.remote
+    supportsScreens=[small, medium, large, xlarge, resizeable, anyDensity]
+    timeStamp=2026-10-23 04:47:26
+    firstInstallTime=2026-10-20 21:55:24
+    lastUpdateTime=2026-10-23 04:47:27
+    signatures=PackageSignatures{cf97e55 version:2, signatures:[170a0776], past signatures:[]}
+    installPermissionsFixed=true
+    pkgFlags=[ HAS_CODE ALLOW_CLEAR_USER_DATA ]
+    requested permissions:
+      android.permission.INTERNET
+      android.permission.CAMERA
+      android.permission.RECORD_AUDIO
+      android.permission.BLUETOOTH_CONNECT
+      android.permission.BLUETOOTH_ADVERTISE
+      android.permission.FOREGROUND_SERVICE
+      android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE
+    install permissions:
+      android.permission.FOREGROUND_SERVICE: granted=true
+      android.permission.INTERNET: granted=true
+    User 0: ceDataInode=123214 installed=true hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false
+      gids=[3003]
+      runtime permissions:
+        android.permission.BLUETOOTH_CONNECT: granted=true, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+        android.permission.CAMERA: granted=true, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+        android.permission.BLUETOOTH_ADVERTISE: granted=true, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+        android.permission.RECORD_AUDIO: granted=true, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+
+Queries:
+  system apps queryable: false
+  queries via package name:
+    com.blackcat.remote:
+      com.blackcat.remote.test
+    com.blackcat.remote.test:
+      com.blackcat.remote
+  queries via intent:
+  queryable via interaction:
+    User 0:
+      [com.android.dynsystem,com.android.localtransport,com.android.location.fused,com.android.providers.settings,com.android.keychain,com.android.server.telecom,com.android.emulator.multidisplay,com.android.wallpaperbackup,com.android.inputdevices,android]:
+        com.blackcat.remote
+      com.blackcat.remote:
+        com.blackcat.remote.test
+  queryable via uses-library:
+
+Package Changes:
+  Sequence number=8
+  User 0:
+    seq=1, package=com.android.stk
+    seq=4, package=com.blackcat.remote
+    seq=7, package=com.blackcat.remote.test
+
+
+Dexopt state:
+  [com.blackcat.remote]
+    path: /data/app/~~Lzqyl408m3f_Z88Nm0uDSw==/com.blackcat.remote-SeEHgnsvwFUevtRZA9HzFQ==/base.apk
+      x86_64: [status=verify] [reason=install]
+
+
+Compiler stats:
+  [com.blackcat.remote]
+     base.apk - 3924
+
+APEX session state:
+
+Active APEX packages:
+
+
+Inactive APEX packages:
+
+
+Factory APEX packages:
+
+
+Snapshot statistics
+   Unrecorded-hits: 9  Cork-level: 0
+   Summary stats               TotBlds     TotUsed     TotCork     BigBlds    ShortLvd     TotTime     MaxTime
+          0:52         now           2        4574           0           0           0           5           4
+          1:52        0:52           0           0           0           0           0           0           0
+          2:52        1:52           0           0           0           0           0           0           0
+          3:52        2:52           0           0           0           0           0           0           0
+          4:52        3:52           0           0           0           0           0           0           0
+          5:52        4:52           0           0           0           0           0           0           0
+          6:52        5:52           0           0           0           0           0           0           0
+          7:52        6:52           0           0           0           0           0           0           0
+          8:52        7:52           3        4964           0           0           0          14           6
+          9:52        8:52           0           0           0           0           0           0           0
+         30:28         now          53       55566           0          11           8         709         205
+
+   Build times                  <= 1ms      <= 2ms      <= 5ms     <= 10ms     <= 20ms     <= 50ms    <= 100ms     > 100ms
+          0:52         now           1           0           1           0           0           0           0           0
+          1:52        0:52           0           0           0           0           0           0           0           0
+          2:52        1:52           0           0           0           0           0           0           0           0
+          3:52        2:52           0           0           0           0           0           0           0           0
+          4:52        3:52           0           0           0           0           0           0           0           0
+          5:52        4:52           0           0           0           0           0           0           0           0
+          6:52        5:52           0           0           0           0           0           0           0           0
+          7:52        6:52           0           0           0           0           0           0           0           0
+          8:52        7:52           1           0           0           2           0           0           0           0
+          9:52        8:52           0           0           0           0           0           0           0           0
+         30:28         now          36           1           1           4           5           2           2           2
+
+   Use counters                   <= 1        <= 2        <= 5       <= 10       <= 20       <= 50      <= 100       > 100
+          0:52         now           0           0           0           0           0           0           0           2
+          1:52        0:52           0           0           0           0           0           0           0           0
+          2:52        1:52           0           0           0           0           0           0           0           0
+          3:52        2:52           0           0           0           0           0           0           0           0
+          4:52        3:52           0           0           0           0           0           0           0           0
+          5:52        4:52           0           0           0           0           0           0           0           0
+          6:52        5:52           0           0           0           0           0           0           0           0
+          7:52        6:52           0           0           0           0           0           0           0           0
+          8:52        7:52           0           0           0           0           1           0           1           1
+          9:52        8:52           0           0           0           0           0           0           0           0
+         30:28         now           4           2           1           4           1           7           6          27

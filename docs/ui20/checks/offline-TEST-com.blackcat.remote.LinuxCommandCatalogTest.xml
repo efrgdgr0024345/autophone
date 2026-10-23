@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blackcat.remote.LinuxCommandCatalogTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-10-23T04:50:54" hostname="1d8d0e40bb1a" time="0.029">
+  <properties/>
+  <testcase name="duplicateIdentifiersAreRejected" classname="com.blackcat.remote.LinuxCommandCatalogTest" time="0.016"/>
+  <testcase name="blankSearchDoesNotDumpTheWholeCatalog" classname="com.blackcat.remote.LinuxCommandCatalogTest" time="0.002"/>
+  <testcase name="controlCharactersInCommandsAreRejected" classname="com.blackcat.remote.LinuxCommandCatalogTest" time="0.003"/>
+  <testcase name="parsesAndPreservesTreeOrder" classname="com.blackcat.remote.LinuxCommandCatalogTest" time="0.001"/>
+  <testcase name="searchUsesTaskWordsAndSynonyms" classname="com.blackcat.remote.LinuxCommandCatalogTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

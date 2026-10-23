@@ -71,11 +71,30 @@ class SignedUpdatesTest {
     private fun https(status: Int = 200, bytes: ByteArray = byteArrayOf(1), headers: Map<String, String> = emptyMap()) =
         UpdateHttps { Response(it, status, bytes, headers) }
 
-    @Test fun productionTrustIsExplicitlyAbsent() { assertNull(ProductionUpdateTrust.configured()) }
+    @Test fun productionTrustMatchesOwnerApprovedPublicAuthority() {
+        val config = org.json.JSONObject(File("../updates/production-trust-v1.json").readText())
+        val actual = ProductionUpdateTrust.configured()!!
+        assertEquals(config.getString("metadata_url"), actual.metadataUrl)
+        assertEquals(setOf("raw.githubusercontent.com"), actual.metadataHosts)
+        assertEquals(actual.metadataHosts, actual.apkHosts)
+        assertEquals(setOf(config.getString("key_id")), actual.keys.keys)
+        assertEquals(config.getString("public_key_sha256"), SignedUpdateMetadata.sha256(actual.keys.values.single().encoded))
+        assertEquals("testing", actual.channel)
+        reject { SignedUpdateMetadata.authenticate(envelope(), actual) }
+    }
     @Test fun authenticMetadataPassesAndBindsAllReleaseFields() {
         val r = release()
         assertEquals(23L, r.version); assertEquals(SIGNER, r.signer)
         assertEquals(10L, SignedUpdateMetadata.nextFloor(r, installed, UpdateFloor(), NOW).sequence)
+    }
+    @Test fun realPublishedPythonEnvelopeAuthenticatesWithProductionKotlinVerifier() {
+        val bytes = javaClass.getResourceAsStream("/published-release-v1.json")!!.use { it.readBytes() }
+        val r = SignedUpdateMetadata.authenticate(bytes, ProductionUpdateTrust.configured()!!)
+        assertEquals(23L, r.version)
+        assertEquals("20.0-signed-updates", r.versionName)
+        assertEquals("2f812311109f65bf324abf472a8f9d4782b4f42814d270e043f875c300a5beeb", r.hash)
+        assertEquals(23L, SignedUpdateMetadata.nextFloor(r, installed, UpdateFloor(), r.issued + 1).version)
+        reject { SignedUpdateMetadata.nextFloor(r, installed, UpdateFloor(), r.expires) }
     }
     @Test fun unsignedOrModifiedMetadataCannotAdvanceFloor() {
         val signed = envelope().toString(Charsets.US_ASCII)

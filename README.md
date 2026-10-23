@@ -1,15 +1,20 @@
-## Development: authenticated update checks
+## CatAI-20.1 test download — signed update checks
 
-The latest approved CatAI-19 source now has an isolated Settings update-check feature
-on `feature/ui20-authenticated-updates`. **Production update trust is unprovisioned**:
-no network check/download is enabled until a reviewed public metadata key, endpoint
-and host policy are provided. No new APK is published; the UI19 download below stays
-the testing release. Installation remains manual and no installation permission or
-signing change was added. [Security design and exact-commit evidence](docs/updates/SECURITY-DESIGN.md).
+Full direct APK URL:
 
-The final scan also surfaced five certificate-pinning warnings in unchanged OpenAI
-clients; they are recorded for review. [Local OCR evaluation](docs/updates/OCR-EVALUATION.md)
-is a proposal only: Camera2, the five-second wait and exact nonce/page checks are unchanged.
+https://raw.githubusercontent.com/efrgdgr0024345/autophone/cb900fa3def981ee72c2c01a0fbb7cc8de6ab6ea/docs/ui20/install/CatAI-20.1.apk
+
+Version `20.1-signed-updates` / build24. Real public metadata trust and a signed HTTPS
+feed are provisioned. Settings → Check for updates authenticates metadata and verifies
+APK size/hash/package/version/permissions/signing identity before explicit file export.
+Installation remains a separate user action; no installation permission or APK signing
+change was added. [Exact app-source, emulator and security evidence](docs/ui20/README.md).
+
+Automatic feed renewal is **not configured**: GitHub denied this integration Actions
+secrets access. Current metadata expires **29 October 2026, 00:55:58 EDT**; renew it
+before then. The checker rejects expired metadata. [Owner renewal instructions](docs/updates/PUBLISHING.md).
+Five existing OpenAI certificate-pinning warnings remain open. OCR is evaluation-only;
+Camera2, observation timing, Bluetooth, planner and phone key storage are unchanged.
 
 ## UI19 test download — evidence-driven diagnostics
 

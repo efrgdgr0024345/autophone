@@ -1,0 +1,13 @@
+UI12_SMOKE_START
+PASS: Real HTTPS feed authenticates with the owner-approved public key and installed APK identity
+PASS: Authentic older published metadata is rejected after a newer release raises the persistent rollback floor
+PASS: Actual newer hosted APK passes hash/size/package/version/permission and cryptographic signer checks
+PASS: Explicit simulated picker selection exports exact authenticated APK bytes through Android ContentResolver; no installer is opened
+PASS: Export clears the private offer and session; it cannot silently replay or install
+
+UI20_LIVE_UPDATES_PASS 5
+PASS: Real HTTPS feed authenticates with the owner-approved public key and installed APK identity
+PASS: Authentic older published metadata is rejected after a newer release raises the persistent rollback floor
+PASS: Actual newer hosted APK passes hash/size/package/version/permission and cryptographic signer checks
+PASS: Explicit simulated picker selection exports exact authenticated APK bytes through Android ContentResolver; no installer is opened
+PASS: Export clears the private offer and session; it cannot silently replay or install

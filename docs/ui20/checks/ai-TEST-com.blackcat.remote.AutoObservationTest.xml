@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blackcat.remote.AutoObservationTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2026-10-23T04:51:50" hostname="1d8d0e40bb1a" time="0.034">
+  <properties/>
+  <testcase name="passwordBusyErrorAndUnclearScreensAlwaysPause" classname="com.blackcat.remote.AutoObservationTest" time="0.011"/>
+  <testcase name="printedPageAndCleanupFootersRequireTheirExactSeparateStateAndCode" classname="com.blackcat.remote.AutoObservationTest" time="0.01"/>
+  <testcase name="requestUsesImageAndNoToolsOrStoredState" classname="com.blackcat.remote.AutoObservationTest" time="0.004"/>
+  <testcase name="executionFieldsRejected" classname="com.blackcat.remote.AutoObservationTest" time="0.001"/>
+  <testcase name="speechExplainsPurposeRatherThanReadingShellSyntax" classname="com.blackcat.remote.AutoObservationTest" time="0.001"/>
+  <testcase name="revisionRequiresTheActualCommandAndAFreshPromptWithEvidence" classname="com.blackcat.remote.AutoObservationTest" time="0.001"/>
+  <testcase name="inconsistentExitCodeOrStateIsNeverNormalizedIntoAnAcceptedMarker" classname="com.blackcat.remote.AutoObservationTest" time="0.001"/>
+  <testcase name="unknownStateRejected" classname="com.blackcat.remote.AutoObservationTest" time="0.0"/>
+  <testcase name="coercibleBooleanRejected" classname="com.blackcat.remote.AutoObservationTest" time="0.0"/>
+  <testcase name="canonicalPrefixesRemainUnchangedAndWrongNoncesRemainDifferent" classname="com.blackcat.remote.AutoObservationTest" time="0.001"/>
+  <testcase name="exactCommandAndVisibleEvidenceRequiredForAdvance" classname="com.blackcat.remote.AutoObservationTest" time="0.001"/>
+  <testcase name="errorCannotAuthorizeARevisionFromPasswordBusyOrUnclearInput" classname="com.blackcat.remote.AutoObservationTest" time="0.0"/>
+  <testcase name="exactPrintedCaptureFooterFromTheLiveProviderHasACanonicalPrefix" classname="com.blackcat.remote.AutoObservationTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

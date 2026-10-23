@@ -3,7 +3,7 @@ set -euo pipefail
 task_serial=${ANDROID_SERIAL:-emulator-5554}
 task_output=${1:-app/build/reports/ui12-rendered}
 task_scenario=${2:-all}
-case "$task_scenario" in all|auto|layout|timeout|learning|workflows|search-stream|evidence|updates) ;; *) exit 2 ;; esac
+case "$task_scenario" in all|auto|layout|timeout|learning|workflows|search-stream|evidence|updates|updates-live) ;; *) exit 2 ;; esac
 mkdir -p "$task_output"
 test "$(adb -s "$task_serial" shell getprop ro.kernel.qemu | tr -d '\r')" = 1
 # Automated Test Device images disable drawing by default. Enable real rendering;
@@ -11,6 +11,11 @@ test "$(adb -s "$task_serial" shell getprop ro.kernel.qemu | tr -d '\r')" = 1
 adb -s "$task_serial" shell setprop debug.hwui.drawing_enabled 1
 adb -s "$task_serial" install -r -g app/build/outputs/apk/ai/debug/app-ai-debug.apk
 adb -s "$task_serial" install -r -g app/build/outputs/apk/androidTest/ai/debug/app-ai-debug-androidTest.apk
+if test "$task_scenario" = updates-live; then
+  # ATD lacks DocumentsUI. Grant only the fixed test-only picker destination,
+  # after install (reinstall can revoke grants). Provider checks emulator + signer.
+  adb -s "$task_serial" shell content call --uri content://com.blackcat.remote.test.update-export/checked.apk --method grant-fixture-destination
+fi
 task_local_hash=$(sha256sum app/build/outputs/apk/ai/debug/app-ai-debug.apk | cut -d ' ' -f 1)
 task_apk_path=$(adb -s "$task_serial" shell pm path com.blackcat.remote | tr -d '\r' | sed 's/^package://')
 task_device_hash=$(adb -s "$task_serial" shell sha256sum "$task_apk_path" | tr -d '\r' | cut -d ' ' -f 1)
@@ -41,6 +46,7 @@ if test "$task_scenario" = workflows; then task_pass_marker=UI16_WORKFLOWS_PASS;
 if test "$task_scenario" = search-stream; then task_pass_marker=UI17_SEARCH_STREAM_PASS; fi
 if test "$task_scenario" = evidence; then task_pass_marker=UI19_EVIDENCE_PASS; fi
 if test "$task_scenario" = updates; then task_pass_marker=UI20_UPDATES_PASS; fi
+if test "$task_scenario" = updates-live; then task_pass_marker=UI20_LIVE_UPDATES_PASS; fi
 if test "$task_status" != 0 || test "$task_pull_status" != 0 || ! grep -q "$task_pass_marker" "$task_output/instrumentation.log" || grep -q 'UI12_SMOKE_FAIL' "$task_output/instrumentation.log"; then
   exit 1
 fi
