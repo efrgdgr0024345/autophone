@@ -797,14 +797,22 @@ class FeedbackSmokeInstrumentation : Instrumentation() {
             pass("Actual newer hosted APK passes hash/size/package/version/permission and cryptographic signer checks")
             captureUpdateWindow(updates, "ui20-live-apk-verified")
             val uri = android.net.Uri.parse(UpdateExportFixtureProvider.URI)
-            val picker = addMonitor(IntentFilter(Intent.ACTION_CREATE_DOCUMENT),
+            val pickerFilter = IntentFilter(Intent.ACTION_CREATE_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                addDataType("application/vnd.android.package-archive")
+            }
+            val picker = addMonitor(pickerFilter,
                 ActivityResult(Activity.RESULT_OK, Intent().setData(uri)), true)
             try {
                 runOnMainSync { findButton(updates.window.decorView, "Save verified APK…").performClick() }
                 remaining = 180000
                 while (remaining > 0) {
                     var saved = false
-                    runOnMainSync { saved = (field(updates, "status") as TextView).text.toString().startsWith("Verified APK saved.") }
+                    runOnMainSync {
+                        val message = (field(updates, "status") as TextView).text.toString()
+                        check(!message.startsWith("Saving cancelled.") && !message.startsWith("Update verification or saving failed.")) { message }
+                        saved = message.startsWith("Verified APK saved.")
+                    }
                     if (saved) break
                     Thread.sleep(250); remaining -= 250
                 }
