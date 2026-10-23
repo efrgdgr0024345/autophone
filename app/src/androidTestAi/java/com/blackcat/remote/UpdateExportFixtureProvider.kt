@@ -8,6 +8,8 @@ import android.net.Uri
 import android.os.Binder
 import android.os.Build
 import android.os.ParcelFileDescriptor
+import android.os.Bundle
+import android.content.Intent
 import java.io.File
 
 /** Test APK only: simulates one explicit file-picker destination, never an installer. */
@@ -23,6 +25,19 @@ class UpdateExportFixtureProvider : ContentProvider() {
         check(c.packageManager.getPackagesForUid(caller).orEmpty().any { it == "com.blackcat.remote" || it == "com.blackcat.remote.test" })
         check(c.packageManager.checkSignatures(caller, android.os.Process.myUid()) == PackageManager.SIGNATURE_MATCH)
         return File(c.cacheDir, "explicit-fixture-export.apk")
+    }
+    override fun call(method: String, arg: String?, extras: Bundle?): Bundle {
+        // The fake picker cannot issue framework URI grants. Only the disposable-emulator
+        // shell may prepare this fixed, signature-checked test destination before the run.
+        check(Build.HARDWARE in setOf("ranchu", "goldfish") && Binder.getCallingUid() in setOf(0, 2000))
+        check(method == "grant-fixture-destination")
+        val token = Binder.clearCallingIdentity()
+        try {
+            val c = context!!
+            check(c.packageManager.checkSignatures("com.blackcat.remote", c.packageName) == PackageManager.SIGNATURE_MATCH)
+            c.grantUriPermission("com.blackcat.remote", Uri.parse(URI), Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+            return Bundle().apply { putBoolean("granted", true) }
+        } finally { Binder.restoreCallingIdentity(token) }
     }
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor {
         val file = file(uri)
