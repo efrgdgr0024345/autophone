@@ -1,3 +1,22 @@
+# Current continuation — provisioned CatAI-20.1
+
+Real metadata authority and public feed are provisioned under the owner's separate
+approval. App source `844dda4db94b185a7bcefd6353a56b37ad346f82`; later test-driver-only
+source `ef64b1ce155991b9c4b8a96ae36b0d0c723e17b1`. Branch
+`feature/ui20-provisioned-release`; rollback `b51ef53538aa95adfd884329eda9763b63bce413`.
+[Release evidence and exact public URLs](../ui20/README.md).
+
+Do not recreate/rotate the authority or change the existing APK signer. Private
+metadata key and encrypted owner backup are outside Git. The owner must retain the
+backup and passphrase separately outside this workspace. OpenAI test keys are not
+needed for updates. Scheduled feed renewal remains blocked by GitHub Actions secrets
+HTTP403 over HTTPS. Current feed expires 29 October 2026 00:55:58 EDT. Follow
+[manual renewal](../updates/PUBLISHING.md); do not claim scheduled operation.
+No merge, baseline promotion, OCR implementation or physical acceptance is implied.
+Frozen Bluetooth/manual/planner/Camera2/vault and offline boundaries remain protected.
+
+---
+
 # Current continuation: owner-approved metadata-key setup
 
 The user separately approved setup of the update-metadata signing key. The

@@ -20,9 +20,10 @@ Branch `feature/ui20-provisioned-release`, rollback
 only the public metadata authority and a fixed HTTPS feed/host policy. New tests
 pin the exact approved fingerprint and reject synthetic test authorities.
 
-The isolated `blackcat-update-feed` branch will contain public signed metadata,
-not private keys. APK links use immutable full commits. No live feed or published
-APK is claimed before the hosted-byte checks and publication commands succeed.
+The isolated `blackcat-update-feed` branch now contains real public signed metadata,
+not private keys. APK links use immutable full commits. Hosted-byte checks, Android
+HTTPS verification, export and the emulator23→24 upgrade have passed. See
+[exact release evidence](../ui20/README.md) for source identities and test limitations.
 
 The native live-feed fixture checks the real Android HTTPS/signature/rollback path.
 With a genuinely newer release, it also checks the actual downloaded APK through

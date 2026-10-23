@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blackcat.remote.SignedUpdatesTest" tests="31" skipped="0" failures="0" errors="0" timestamp="2026-10-23T04:52:05" hostname="1d8d0e40bb1a" time="1.579">
+  <properties/>
+  <testcase name="unsignedOrModifiedMetadataCannotAdvanceFloor" classname="com.blackcat.remote.SignedUpdatesTest" time="1.084"/>
+  <testcase name="apkAndSignerHashFormatsAreStrict" classname="com.blackcat.remote.SignedUpdatesTest" time="0.011"/>
+  <testcase name="expiredFutureAndRolledBackClocksFail" classname="com.blackcat.remote.SignedUpdatesTest" time="0.006"/>
+  <testcase name="actualCat19ApksHaveOriginalCryptographicallyVerifiedSigner" classname="com.blackcat.remote.SignedUpdatesTest" time="0.067"/>
+  <testcase name="duplicateUnknownNestedAndCoercedFieldsAreRejectedEvenWhenSigned" classname="com.blackcat.remote.SignedUpdatesTest" time="0.032"/>
+  <testcase name="productionTrustMatchesOwnerApprovedPublicAuthority" classname="com.blackcat.remote.SignedUpdatesTest" time="0.008"/>
+  <testcase name="releaseSizesAndLifetimesAreBounded" classname="com.blackcat.remote.SignedUpdatesTest" time="0.029"/>
+  <testcase name="wrongSizeHashOrManifestDeletesStagingAndFailsClosed" classname="com.blackcat.remote.SignedUpdatesTest" time="0.054"/>
+  <testcase name="chunkedBodyIsBoundedAndCancelledTransportIsNotReusable" classname="com.blackcat.remote.SignedUpdatesTest" time="0.001"/>
+  <testcase name="authenticButOlderMetadataNeverPoisonsHighWaterState" classname="com.blackcat.remote.SignedUpdatesTest" time="0.008"/>
+  <testcase name="alteredFileIsRecheckedBeforeExport" classname="com.blackcat.remote.SignedUpdatesTest" time="0.01"/>
+  <testcase name="alteredRealApkFailsCryptographicVerificationEvenWithOriginalCertificateBlock" classname="com.blackcat.remote.SignedUpdatesTest" time="0.013"/>
+  <testcase name="partialResponsesEncodingErrorsAndWrongLengthsAreRejected" classname="com.blackcat.remote.SignedUpdatesTest" time="0.001"/>
+  <testcase name="unknownAuthorityAndWrongSignatureAreRejected" classname="com.blackcat.remote.SignedUpdatesTest" time="0.009"/>
+  <testcase name="malformedAndDisallowedUrlsNeverConnect" classname="com.blackcat.remote.SignedUpdatesTest" time="0.001"/>
+  <testcase name="inspectionFailureAndCancellationDeleteUnverifiedDownloads" classname="com.blackcat.remote.SignedUpdatesTest" time="0.015"/>
+  <testcase name="exactBytesAndIdentityAreRequiredBeforeAFileIsOffered" classname="com.blackcat.remote.SignedUpdatesTest" time="0.01"/>
+  <testcase name="packageAndExistingSigningIdentityMustMatch" classname="com.blackcat.remote.SignedUpdatesTest" time="0.009"/>
+  <testcase name="installedAndRememberedVersionsBothPreventRollback" classname="com.blackcat.remote.SignedUpdatesTest" time="0.013"/>
+  <testcase name="installedVersionCanBeReportedButNeverDownloadedAgain" classname="com.blackcat.remote.SignedUpdatesTest" time="0.005"/>
+  <testcase name="durableStateFailurePreventsAnyDownload" classname="com.blackcat.remote.SignedUpdatesTest" time="0.009"/>
+  <testcase name="oversizeEnvelopeAndNoncanonicalBase64AreRejected" classname="com.blackcat.remote.SignedUpdatesTest" time="0.005"/>
+  <testcase name="onlyExplicitRedirectHostsAreAllowedWithoutCredentials" classname="com.blackcat.remote.SignedUpdatesTest" time="0.0"/>
+  <testcase name="signatureFromAnotherAuthorityIsRejected" classname="com.blackcat.remote.SignedUpdatesTest" time="0.132"/>
+  <testcase name="checkAuthenticatesBeforePersistingAndUsesMetadataHostPolicy" classname="com.blackcat.remote.SignedUpdatesTest" time="0.005"/>
+  <testcase name="replayOfSameMetadataIsRetryableButEquivocationIsNot" classname="com.blackcat.remote.SignedUpdatesTest" time="0.012"/>
+  <testcase name="downgradeCrossHostLoopsAndTooManyRedirectsAreBlocked" classname="com.blackcat.remote.SignedUpdatesTest" time="0.001"/>
+  <testcase name="wrongFlavorChannelSchemaAndInvalidNamesAreRejected" classname="com.blackcat.remote.SignedUpdatesTest" time="0.015"/>
+  <testcase name="realPublishedPythonEnvelopeAuthenticatesWithProductionKotlinVerifier" classname="com.blackcat.remote.SignedUpdatesTest" time="0.002"/>
+  <testcase name="authenticMetadataPassesAndBindsAllReleaseFields" classname="com.blackcat.remote.SignedUpdatesTest" time="0.004"/>
+  <testcase name="existingStagingFileCannotBeOverwritten" classname="com.blackcat.remote.SignedUpdatesTest" time="0.008"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

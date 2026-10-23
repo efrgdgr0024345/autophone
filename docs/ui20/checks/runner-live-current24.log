@@ -1,0 +1,14 @@
+Performing Streamed Install
+Success
+Performing Streamed Install
+Success
+Result: Bundle[{granted=true}]
+UI12_SMOKE_START
+PASS: Real HTTPS feed authenticates with the owner-approved public key and installed APK identity
+PASS: Current signed version reports already installed without downloading or enabling export
+
+UI20_LIVE_UPDATES_PASS 2
+PASS: Real HTTPS feed authenticates with the owner-approved public key and installed APK identity
+PASS: Current signed version reports already installed without downloading or enabling export
+adbd is already running as root
+/data/user/0/com.blackcat.remote/files/ui12-rendered/./: 1 file pulled, 0 skipped. 0.3 MB/s (36621 bytes in 0.104s)

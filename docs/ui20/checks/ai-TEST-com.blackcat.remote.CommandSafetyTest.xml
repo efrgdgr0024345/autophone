@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blackcat.remote.CommandSafetyTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-10-23T04:51:59" hostname="1d8d0e40bb1a" time="0.087">
+  <properties/>
+  <testcase name="invalidWholeCommandBlockedBeforeTyping" classname="com.blackcat.remote.CommandSafetyTest" time="0.001"/>
+  <testcase name="approvalCannotReplay" classname="com.blackcat.remote.CommandSafetyTest" time="0.041"/>
+  <testcase name="controlsRejected" classname="com.blackcat.remote.CommandSafetyTest" time="0.001"/>
+  <testcase name="normalCommandAccepted" classname="com.blackcat.remote.CommandSafetyTest" time="0.0"/>
+  <testcase name="approvalDoesNotTypeByItself" classname="com.blackcat.remote.CommandSafetyTest" time="0.0"/>
+  <testcase name="senderTypesWithoutEnter" classname="com.blackcat.remote.CommandSafetyTest" time="0.042"/>
+  <testcase name="allPrintableAsciiMapsWithoutEnterOrTab" classname="com.blackcat.remote.CommandSafetyTest" time="0.001"/>
+  <testcase name="wrongSessionBlocked" classname="com.blackcat.remote.CommandSafetyTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,191 @@
+{
+  "app_source": "844dda4db94b185a7bcefd6353a56b37ad346f82",
+  "test_driver_source": "ef64b1ce155991b9c4b8a96ae36b0d0c723e17b1",
+  "bootstrap_app_source": "65a358563ab4ffa298ee2847fb414b09ed801e85",
+  "branch": "feature/ui20-provisioned-release",
+  "rollback": "b51ef53538aa95adfd884329eda9763b63bce413",
+  "signing_configuration_changed": false,
+  "installation_permissions_added": false,
+  "metadata_key_created_with_separate_owner_approval": true,
+  "automatic_feed_renewal_configured": false,
+  "ocr_implementation_or_timing_change": false,
+  "lint": {
+    "ai": {
+      "Warning": 98
+    },
+    "offline": {
+      "Warning": 30
+    }
+  },
+  "android_unit_tests": {
+    "ai": {
+      "tests": 217,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "offline": {
+      "tests": 27,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "python_tests": {
+    "tests": 122,
+    "passed": true,
+    "source": "ef64b1ce155991b9c4b8a96ae36b0d0c723e17b1"
+  },
+  "planner_tests": {
+    "tests": 40,
+    "passed": true,
+    "source": "ef64b1ce155991b9c4b8a96ae36b0d0c723e17b1"
+  },
+  "apks": {
+    "ai": {
+      "source": "844dda4db94b185a7bcefd6353a56b37ad346f82",
+      "version_code": 24,
+      "version_name": "20.1-signed-updates",
+      "size": 6971868,
+      "sha256": "78301aba1a0d9d9430a8cbbf450f55e730af568cff6cb5df70f7139369b9e531",
+      "url": "https://raw.githubusercontent.com/efrgdgr0024345/autophone/cb900fa3def981ee72c2c01a0fbb7cc8de6ab6ea/docs/ui20/install/CatAI-20.1.apk"
+    },
+    "offline": {
+      "source": "844dda4db94b185a7bcefd6353a56b37ad346f82",
+      "version_code": 24,
+      "version_name": "20.1-signed-updates",
+      "size": 6097889,
+      "sha256": "ca7fa96e8c22195deb0575366a7a5227e21361cbc4d7d3268e78e7053d36cfb2",
+      "url": "https://raw.githubusercontent.com/efrgdgr0024345/autophone/cb900fa3def981ee72c2c01a0fbb7cc8de6ab6ea/docs/ui20/install/CatBT-20.1.apk"
+    }
+  },
+  "signer_continuity": {
+    "sha256": "fc5c0b42b9da40c2507d8f2e77ed92db9e023740aa1a44d1a3b2c14a6e9f4764",
+    "existing_identity": "Android Debug; no APK signing migration",
+    "previous_release_verification": "../updates/checks/previous-ai-signature.log",
+    "private_apk_signing_key_exported": false
+  },
+  "feed": {
+    "url": "https://raw.githubusercontent.com/efrgdgr0024345/autophone/blackcat-update-feed/updates/ai.json",
+    "commit": "c8c5c7beb35580a14b54e28b6103ed42ba6704b5",
+    "sequence": 2,
+    "expires_unix": 1793249758,
+    "expires_new_york": "2026-10-29T00:55:58-04:00",
+    "metadata_spki_sha256": "8cb2f3d61ba630c526a2b3dd47449f540e1a2666414da6166655eba441147a1f"
+  },
+  "native_emulator": {
+    "api": 31,
+    "android": "12",
+    "avd": "blackcat-atd31",
+    "software_tcg": true,
+    "driver_source": "ef64b1ce155991b9c4b8a96ae36b0d0c723e17b1",
+    "suites": {
+      "live-upgrade23": {
+        "checks": 5,
+        "passed": true,
+        "installed_apk_sha256": "2f812311109f65bf324abf472a8f9d4782b4f42814d270e043f875c300a5beeb",
+        "screenshots": 3
+      },
+      "live-current24": {
+        "checks": 3,
+        "passed": true,
+        "installed_apk_sha256": "78301aba1a0d9d9430a8cbbf450f55e730af568cff6cb5df70f7139369b9e531",
+        "screenshots": 1
+      },
+      "final-native-updates": {
+        "checks": 5,
+        "passed": true,
+        "installed_apk_sha256": "78301aba1a0d9d9430a8cbbf450f55e730af568cff6cb5df70f7139369b9e531",
+        "screenshots": 1
+      },
+      "final-native-evidence": {
+        "checks": 5,
+        "passed": true,
+        "installed_apk_sha256": "78301aba1a0d9d9430a8cbbf450f55e730af568cff6cb5df70f7139369b9e531",
+        "screenshots": 2
+      },
+      "final-native-all": {
+        "checks": 22,
+        "passed": true,
+        "installed_apk_sha256": "78301aba1a0d9d9430a8cbbf450f55e730af568cff6cb5df70f7139369b9e531",
+        "screenshots": 38
+      }
+    },
+    "total_checks": 40,
+    "network": "Real hosted HTTPS and signed metadata; disposable emulator proxy/public test CA only; default app TLS unchanged",
+    "export": "Production ContentResolver export after explicit simulated ACTION_CREATE_DOCUMENT selection; test provider only in instrumentation APK",
+    "installation": "Separate owner-directed adb install of independently downloaded exact public APK, outside app; no physical installer/Files-picker acceptance",
+    "regressions": "Real Android Camera2 JPEG/Keystore/rendering with synthetic planner/observer/HID fixtures; no paid OpenAI requests or physical Bluetooth claim",
+    "artifact_collection_note": "All22 instrumentation checks completed successfully. Runner was edited during its blocked shell execution, so its remaining shell parse failed. Screenshots were then pulled manually and hashes/pass markers checked independently; no instrumentation assertions were skipped. Revised runner syntax check passed; separate real current-version runner test recorded below."
+  },
+  "codeql": {
+    "app_source": "844dda4db94b185a7bcefd6353a56b37ad346f82",
+    "completed": true,
+    "security_findings": 5,
+    "quality_notes": 30,
+    "covered_kotlin_files": 69,
+    "cli_coverage": "69/70 Java/Kotlin",
+    "security_triage": [
+      {
+        "file": "app/src/ai/java/com/blackcat/remote/AssistantNarrator.kt",
+        "line": 137,
+        "rule": "java/android/missing-certificate-pinning",
+        "status": "Open, unchanged OpenAI platform-TLS client; not suppressed or fixed in updater scope"
+      },
+      {
+        "file": "app/src/ai/java/com/blackcat/remote/OpenAiAutoObserver.kt",
+        "line": 27,
+        "rule": "java/android/missing-certificate-pinning",
+        "status": "Open, unchanged OpenAI platform-TLS client; not suppressed or fixed in updater scope"
+      },
+      {
+        "file": "app/src/ai/java/com/blackcat/remote/OpenAiKeyChecker.kt",
+        "line": 40,
+        "rule": "java/android/missing-certificate-pinning",
+        "status": "Open, unchanged OpenAI platform-TLS client; not suppressed or fixed in updater scope"
+      },
+      {
+        "file": "app/src/ai/java/com/blackcat/remote/OpenAiPhotoAnalyzer.kt",
+        "line": 31,
+        "rule": "java/android/missing-certificate-pinning",
+        "status": "Open, unchanged OpenAI platform-TLS client; not suppressed or fixed in updater scope"
+      },
+      {
+        "file": "app/src/ai/java/com/blackcat/remote/OpenAiPlanner.kt",
+        "line": 24,
+        "rule": "java/android/missing-certificate-pinning",
+        "status": "Open, unchanged OpenAI platform-TLS client; not suppressed or fixed in updater scope"
+      }
+    ],
+    "clean_security_gate": false,
+    "later_driver_changes": "Test-only driver fixes at ef64 are runtime-tested; not represented as part of source844 CodeQL trace"
+  },
+  "toolchain": {
+    "java": "17.0.20.1",
+    "gradle": "8.9",
+    "agp": "8.7.3",
+    "kotlin": "1.9.23",
+    "compile_target_sdk": 35,
+    "min_sdk": 28,
+    "codeql": "2.27.2",
+    "java_queries": "1.11.12"
+  },
+  "remaining_limits": [
+    "Actions secrets API HTTP403 over HTTPS: no scheduled renewal; manual signed refresh required before expiry",
+    "Owner must retain encrypted metadata-key backup and password separately outside temporary workspace",
+    "Existing Android Debug APK identity retained; no production-signing custody claim",
+    "Five unchanged OpenAI certificate-pinning warnings remain open",
+    "App-local rollback history can reset with uninstall/data clearing or privileged filesystem rollback; installed version remains separate floor",
+    "Physical Bluetooth, phone optics/audio, Files picker and interactive installation not established by emulator",
+    "OCR evaluation only; no ML Kit dependency or observation timing changes"
+  ],
+  "test_runner_source": "9f83424cb62998abaa79f103a1c48497885962cf",
+  "supplemental_runner_regression": {
+    "source": "9f83424cb62998abaa79f103a1c48497885962cf",
+    "checks": 2,
+    "passed": true,
+    "log": "runner-live-current24/instrumentation.log",
+    "included_in_main40_count": false
+  },
+  "instrumentation_apk_sha256": "ada48b2492ed9605ffa71fe7c0874ec47083790bf66e5018bd8c3e3715873ac5"
+}

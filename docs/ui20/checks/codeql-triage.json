@@ -1,0 +1,42 @@
+{
+  "app_source": "844dda4db94b185a7bcefd6353a56b37ad346f82",
+  "completed": true,
+  "security_findings": 5,
+  "quality_notes": 30,
+  "covered_kotlin_files": 69,
+  "cli_coverage": "69/70 Java/Kotlin",
+  "security_triage": [
+    {
+      "file": "app/src/ai/java/com/blackcat/remote/AssistantNarrator.kt",
+      "line": 137,
+      "rule": "java/android/missing-certificate-pinning",
+      "status": "Open, unchanged OpenAI platform-TLS client; not suppressed or fixed in updater scope"
+    },
+    {
+      "file": "app/src/ai/java/com/blackcat/remote/OpenAiAutoObserver.kt",
+      "line": 27,
+      "rule": "java/android/missing-certificate-pinning",
+      "status": "Open, unchanged OpenAI platform-TLS client; not suppressed or fixed in updater scope"
+    },
+    {
+      "file": "app/src/ai/java/com/blackcat/remote/OpenAiKeyChecker.kt",
+      "line": 40,
+      "rule": "java/android/missing-certificate-pinning",
+      "status": "Open, unchanged OpenAI platform-TLS client; not suppressed or fixed in updater scope"
+    },
+    {
+      "file": "app/src/ai/java/com/blackcat/remote/OpenAiPhotoAnalyzer.kt",
+      "line": 31,
+      "rule": "java/android/missing-certificate-pinning",
+      "status": "Open, unchanged OpenAI platform-TLS client; not suppressed or fixed in updater scope"
+    },
+    {
+      "file": "app/src/ai/java/com/blackcat/remote/OpenAiPlanner.kt",
+      "line": 24,
+      "rule": "java/android/missing-certificate-pinning",
+      "status": "Open, unchanged OpenAI platform-TLS client; not suppressed or fixed in updater scope"
+    }
+  ],
+  "clean_security_gate": false,
+  "later_driver_changes": "Test-only driver fixes at ef64 are runtime-tested; not represented as part of source844 CodeQL trace"
+}

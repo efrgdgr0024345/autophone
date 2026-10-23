@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blackcat.remote.BluetoothStatusTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-10-23T04:50:54" hostname="1d8d0e40bb1a" time="0.001">
+  <properties/>
+  <testcase name="bluetoothOffIsAnActionableFailure" classname="com.blackcat.remote.BluetoothStatusTest" time="0.0"/>
+  <testcase name="permissionDenialDoesNotSuggestTheRadioIsBroken" classname="com.blackcat.remote.BluetoothStatusTest" time="0.0"/>
+  <testcase name="disconnectedCannotBeMistakenForConnected" classname="com.blackcat.remote.BluetoothStatusTest" time="0.0"/>
+  <testcase name="actualConnectedEventShowsInputReadiness" classname="com.blackcat.remote.BluetoothStatusTest" time="0.0"/>
+  <testcase name="registrationLossRemovesReadyStatus" classname="com.blackcat.remote.BluetoothStatusTest" time="0.0"/>
+  <testcase name="registrationMeansReadyToPairOnly" classname="com.blackcat.remote.BluetoothStatusTest" time="0.0"/>
+  <testcase name="deviceDetailsInAnExceptionDoNotEnterNormalStatus" classname="com.blackcat.remote.BluetoothStatusTest" time="0.0"/>
+  <testcase name="contentAndUnrelatedEventsNeverBecomeStatus" classname="com.blackcat.remote.BluetoothStatusTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

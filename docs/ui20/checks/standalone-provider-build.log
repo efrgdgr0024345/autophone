@@ -1,0 +1,69 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.9/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:buildKotlinToolingMetadata UP-TO-DATE
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preAiDebugBuild UP-TO-DATE
+> Task :app:checkAiDebugAarMetadata UP-TO-DATE
+> Task :app:generateAiDebugResValues UP-TO-DATE
+> Task :app:mapAiDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateAiDebugResources UP-TO-DATE
+> Task :app:mergeAiDebugResources UP-TO-DATE
+> Task :app:packageAiDebugResources UP-TO-DATE
+> Task :app:parseAiDebugLocalResources UP-TO-DATE
+> Task :app:createAiDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksAiDebug UP-TO-DATE
+> Task :app:processAiDebugMainManifest UP-TO-DATE
+> Task :app:processAiDebugManifest UP-TO-DATE
+> Task :app:processAiDebugManifestForPackage UP-TO-DATE
+> Task :app:processAiDebugResources UP-TO-DATE
+> Task :app:compileAiDebugKotlin UP-TO-DATE
+> Task :app:javaPreCompileAiDebug UP-TO-DATE
+> Task :app:compileAiDebugJavaWithJavac NO-SOURCE
+> Task :app:bundleAiDebugClassesToCompileJar UP-TO-DATE
+> Task :app:preAiDebugAndroidTestBuild SKIPPED
+> Task :app:checkAiDebugAndroidTestAarMetadata UP-TO-DATE
+> Task :app:generateAiDebugAndroidTestResValues UP-TO-DATE
+> Task :app:mapAiDebugAndroidTestSourceSetPaths UP-TO-DATE
+> Task :app:generateAiDebugAndroidTestResources UP-TO-DATE
+> Task :app:mergeAiDebugAndroidTestResources UP-TO-DATE
+> Task :app:processAiDebugAndroidTestManifest UP-TO-DATE
+> Task :app:processAiDebugAndroidTestResources UP-TO-DATE
+
+> Task :app:compileAiDebugAndroidTestKotlin
+w: file:///workspace/autophone/app/src/androidTestAi/java/com/blackcat/remote/FeedbackSmokeInstrumentation.kt:1019:33 Unreachable code
+w: file:///workspace/autophone/app/src/androidTestAi/java/com/blackcat/remote/FeedbackSmokeInstrumentation.kt:1220:36 'updateConfiguration(Configuration!, DisplayMetrics!): Unit' is deprecated. Deprecated in Java
+w: file:///workspace/autophone/app/src/androidTestAi/java/com/blackcat/remote/FeedbackSmokeInstrumentation.kt:1239:37 'updateConfiguration(Configuration!, DisplayMetrics!): Unit' is deprecated. Deprecated in Java
+w: file:///workspace/autophone/app/src/androidTestAi/java/com/blackcat/remote/FeedbackSmokeInstrumentation.kt:1353:36 'updateConfiguration(Configuration!, DisplayMetrics!): Unit' is deprecated. Deprecated in Java
+w: file:///workspace/autophone/app/src/androidTestAi/java/com/blackcat/remote/FeedbackSmokeInstrumentation.kt:1399:32 'updateConfiguration(Configuration!, DisplayMetrics!): Unit' is deprecated. Deprecated in Java
+w: file:///workspace/autophone/app/src/androidTestAi/java/com/blackcat/remote/FeedbackSmokeInstrumentation.kt:1514:36 'updateConfiguration(Configuration!, DisplayMetrics!): Unit' is deprecated. Deprecated in Java
+w: file:///workspace/autophone/app/src/androidTestAi/java/com/blackcat/remote/FeedbackSmokeInstrumentation.kt:1536:63 'updateConfiguration(Configuration!, DisplayMetrics!): Unit' is deprecated. Deprecated in Java
+
+> Task :app:javaPreCompileAiDebugAndroidTest UP-TO-DATE
+> Task :app:compileAiDebugAndroidTestJavaWithJavac
+> Task :app:mergeAiDebugAndroidTestShaders UP-TO-DATE
+> Task :app:compileAiDebugAndroidTestShaders NO-SOURCE
+> Task :app:generateAiDebugAndroidTestAssets UP-TO-DATE
+> Task :app:mergeAiDebugAndroidTestAssets UP-TO-DATE
+> Task :app:compressAiDebugAndroidTestAssets UP-TO-DATE
+> Task :app:desugarAiDebugAndroidTestFileDependencies UP-TO-DATE
+> Task :app:dexBuilderAiDebugAndroidTest
+> Task :app:mergeAiDebugAndroidTestGlobalSynthetics UP-TO-DATE
+> Task :app:processAiDebugAndroidTestJavaRes UP-TO-DATE
+> Task :app:mergeAiDebugAndroidTestJavaResource UP-TO-DATE
+> Task :app:checkAiDebugAndroidTestDuplicateClasses UP-TO-DATE
+> Task :app:mergeExtDexAiDebugAndroidTest UP-TO-DATE
+> Task :app:mergeDexAiDebugAndroidTest
+> Task :app:mergeAiDebugAndroidTestJniLibFolders UP-TO-DATE
+> Task :app:mergeAiDebugJniLibFolders UP-TO-DATE
+> Task :app:mergeAiDebugNativeLibs NO-SOURCE
+> Task :app:mergeAiDebugAndroidTestNativeLibs NO-SOURCE
+> Task :app:stripAiDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :app:validateSigningAiDebugAndroidTest UP-TO-DATE
+> Task :app:writeAiDebugAndroidTestSigningConfigVersions UP-TO-DATE
+> Task :app:packageAiDebugAndroidTest
+> Task :app:createAiDebugAndroidTestApkListingFileRedirect UP-TO-DATE
+> Task :app:assembleAiDebugAndroidTest
+
+BUILD SUCCESSFUL in 27s
+45 actionable tasks: 6 executed, 39 up-to-date

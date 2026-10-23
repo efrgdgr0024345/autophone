@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blackcat.remote.PlanCodecTest" tests="22" skipped="0" failures="0" errors="0" timestamp="2026-10-23T04:52:04" hostname="1d8d0e40bb1a" time="0.005">
+  <properties/>
+  <testcase name="endpointIsFixedHttps" classname="com.blackcat.remote.PlanCodecTest" time="0.0"/>
+  <testcase name="commandInProseCannotBypassControlPolicy" classname="com.blackcat.remote.PlanCodecTest" time="0.001"/>
+  <testcase name="extraCommandFieldRejected" classname="com.blackcat.remote.PlanCodecTest" time="0.0"/>
+  <testcase name="responseLimitHasUsefulFeedbackWithoutAcceptingPartialPlan" classname="com.blackcat.remote.PlanCodecTest" time="0.0"/>
+  <testcase name="unsupportedModelCannotReachRequest" classname="com.blackcat.remote.PlanCodecTest" time="0.0"/>
+  <testcase name="detailedRoadmapSurvivesClarificationWithoutInventingExecutableChanges" classname="com.blackcat.remote.PlanCodecTest" time="0.0"/>
+  <testcase name="emptyClarificationBranchRejected" classname="com.blackcat.remote.PlanCodecTest" time="0.0"/>
+  <testcase name="keyCannotInjectHeader" classname="com.blackcat.remote.PlanCodecTest" time="0.001"/>
+  <testcase name="extraRootFieldRejected" classname="com.blackcat.remote.PlanCodecTest" time="0.0"/>
+  <testcase name="schemaMakesQuestionsAndCommandsMutuallyExclusive" classname="com.blackcat.remote.PlanCodecTest" time="0.0"/>
+  <testcase name="roadmapCannotInjectExecutionFields" classname="com.blackcat.remote.PlanCodecTest" time="0.0"/>
+  <testcase name="quotaAndRateLimitFeedbackAreDistinct" classname="com.blackcat.remote.PlanCodecTest" time="0.0"/>
+  <testcase name="unexpectedDecisionModeRejected" classname="com.blackcat.remote.PlanCodecTest" time="0.0"/>
+  <testcase name="clarificationBranchReturnsQuestionsWithoutCommands" classname="com.blackcat.remote.PlanCodecTest" time="0.001"/>
+  <testcase name="incompleteRejected" classname="com.blackcat.remote.PlanCodecTest" time="0.0"/>
+  <testcase name="multilineRejected" classname="com.blackcat.remote.PlanCodecTest" time="0.0"/>
+  <testcase name="questionsAndCommandsCannotMix" classname="com.blackcat.remote.PlanCodecTest" time="0.001"/>
+  <testcase name="unicodeControlRejected" classname="com.blackcat.remote.PlanCodecTest" time="0.0"/>
+  <testcase name="commandsBeyondFortyRejected" classname="com.blackcat.remote.PlanCodecTest" time="0.0"/>
+  <testcase name="largePlanKeepsEveryOrderedStepAndDetailedInstructions" classname="com.blackcat.remote.PlanCodecTest" time="0.001"/>
+  <testcase name="requestHasNoToolsOrStoredState" classname="com.blackcat.remote.PlanCodecTest" time="0.0"/>
+  <testcase name="completedResponseParses" classname="com.blackcat.remote.PlanCodecTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

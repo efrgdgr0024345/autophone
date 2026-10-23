@@ -15,5 +15,5 @@
   "android_unit_tests": 244,
   "lint_errors": 0,
   "codeql_open_existing_security_findings": 5,
-  "status": "Testing candidate; hosted upgrade test follows publication; no physical baseline promotion"
+  "status": "Hosted signed feed, actual Android23\u219224 export/upgrade/current-version and32 final regression checks passed; physical acceptance and scheduled feed renewal remain"
 }

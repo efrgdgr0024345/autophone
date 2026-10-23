@@ -1,0 +1,144 @@
+Activity Resolver Table:
+  Non-Data Actions:
+      android.intent.action.MAIN:
+        fc2057d com.blackcat.remote/.MainActivity filter ef69c72
+          Action: "android.intent.action.MAIN"
+          Category: "android.intent.category.LAUNCHER"
+
+Domain verification status:
+
+Key Set Manager:
+  [com.blackcat.remote]
+      Signing KeySets: 9
+
+Packages:
+  Package [com.blackcat.remote] (a11283f):
+    userId=10068
+    pkg=Package{8ccf784 com.blackcat.remote}
+    codePath=/data/app/~~aPz1gDmTQWMJPwM8SSbHrA==/com.blackcat.remote-rFsCk9MtZUGm1OZC2HhIaA==
+    resourcePath=/data/app/~~aPz1gDmTQWMJPwM8SSbHrA==/com.blackcat.remote-rFsCk9MtZUGm1OZC2HhIaA==
+    legacyNativeLibraryDir=/data/app/~~aPz1gDmTQWMJPwM8SSbHrA==/com.blackcat.remote-rFsCk9MtZUGm1OZC2HhIaA==/lib
+    extractNativeLibs=false
+    primaryCpuAbi=null
+    secondaryCpuAbi=null
+    cpuAbiOverride=null
+    versionCode=24 minSdk=28 targetSdk=35
+    minExtensionVersions=[]
+    versionName=20.1-signed-updates
+    usesNonSdkApi=false
+    splits=[base]
+    apkSigningVersion=2
+    applicationInfo=PackageImpl{8ccf784 com.blackcat.remote}
+    flags=[ HAS_CODE ALLOW_CLEAR_USER_DATA ]
+    privateFlags=[ PRIVATE_FLAG_ACTIVITIES_RESIZE_MODE_RESIZEABLE_VIA_SDK_VERSION ALLOW_AUDIO_PLAYBACK_CAPTURE PRIVATE_FLAG_ALLOW_NATIVE_HEAP_POINTER_TAGGING ]
+    forceQueryable=false
+    queriesPackages=[]
+    queriesIntents=[Intent { act=android.speech.RecognitionService }, Intent { act=android.intent.action.TTS_SERVICE }]
+    dataDir=/data/user/0/com.blackcat.remote
+    supportsScreens=[small, medium, large, xlarge, resizeable, anyDensity]
+    timeStamp=2026-10-23 05:10:03
+    firstInstallTime=2026-10-20 21:55:24
+    lastUpdateTime=2026-10-23 05:10:03
+    signatures=PackageSignatures{cf97e55 version:2, signatures:[170a0776], past signatures:[]}
+    installPermissionsFixed=true
+    pkgFlags=[ HAS_CODE ALLOW_CLEAR_USER_DATA ]
+    requested permissions:
+      android.permission.INTERNET
+      android.permission.CAMERA
+      android.permission.RECORD_AUDIO
+      android.permission.BLUETOOTH_CONNECT
+      android.permission.BLUETOOTH_ADVERTISE
+      android.permission.FOREGROUND_SERVICE
+      android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE
+    install permissions:
+      android.permission.FOREGROUND_SERVICE: granted=true
+      android.permission.INTERNET: granted=true
+    User 0: ceDataInode=123214 installed=true hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false
+      gids=[3003]
+      runtime permissions:
+        android.permission.BLUETOOTH_CONNECT: granted=true, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+        android.permission.CAMERA: granted=true, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+        android.permission.BLUETOOTH_ADVERTISE: granted=true, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+        android.permission.RECORD_AUDIO: granted=true, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+
+Queries:
+  system apps queryable: false
+  queries via package name:
+    com.blackcat.remote:
+      com.blackcat.remote.test
+    com.blackcat.remote.test:
+      com.blackcat.remote
+  queries via intent:
+  queryable via interaction:
+    User 0:
+  queryable via uses-library:
+
+Package Changes:
+  Sequence number=11
+  User 0:
+    seq=1, package=com.android.stk
+    seq=9, package=com.blackcat.remote
+    seq=10, package=com.blackcat.remote.test
+
+
+Dexopt state:
+  [com.blackcat.remote]
+    path: /data/app/~~aPz1gDmTQWMJPwM8SSbHrA==/com.blackcat.remote-rFsCk9MtZUGm1OZC2HhIaA==/base.apk
+      x86_64: [status=verify] [reason=install]
+
+
+Compiler stats:
+  [com.blackcat.remote]
+     base.apk - 4948
+
+APEX session state:
+
+Active APEX packages:
+
+
+Inactive APEX packages:
+
+
+Factory APEX packages:
+
+
+Snapshot statistics
+   Unrecorded-hits: 8522  Cork-level: 0
+   Summary stats               TotBlds     TotUsed     TotCork     BigBlds    ShortLvd     TotTime     MaxTime
+          0:59         now           6        9084           0           3           0          62          23
+          1:59        0:59           2        4574           0           0           0           5           4
+          2:59        1:59           0           0           0           0           0           0           0
+          3:59        2:59           0           0           0           0           0           0           0
+          4:59        3:59           0           0           0           0           0           0           0
+          5:59        4:59           0           0           0           0           0           0           0
+          6:59        5:59           0           0           0           0           0           0           0
+          7:59        6:59           0           0           0           0           0           0           0
+          8:59        7:59           0           0           0           0           0           0           0
+          9:59        8:59           3        4964           0           0           0          14           6
+         31:35         now          59       64650           0          14           8         771         205
+
+   Build times                  <= 1ms      <= 2ms      <= 5ms     <= 10ms     <= 20ms     <= 50ms    <= 100ms     > 100ms
+          0:59         now           2           0           1           0           2           1           0           0
+          1:59        0:59           1           0           1           0           0           0           0           0
+          2:59        1:59           0           0           0           0           0           0           0           0
+          3:59        2:59           0           0           0           0           0           0           0           0
+          4:59        3:59           0           0           0           0           0           0           0           0
+          5:59        4:59           0           0           0           0           0           0           0           0
+          6:59        5:59           0           0           0           0           0           0           0           0
+          7:59        6:59           0           0           0           0           0           0           0           0
+          8:59        7:59           0           0           0           0           0           0           0           0
+          9:59        8:59           1           0           0           2           0           0           0           0
+         31:35         now          38           1           2           4           7           3           2           2
+
+   Use counters                   <= 1        <= 2        <= 5       <= 10       <= 20       <= 50      <= 100       > 100
+          0:59         now           0           0           0           0           1           1           1           3
+          1:59        0:59           0           0           0           0           0           0           0           2
+          2:59        1:59           0           0           0           0           0           0           0           0
+          3:59        2:59           0           0           0           0           0           0           0           0
+          4:59        3:59           0           0           0           0           0           0           0           0
+          5:59        4:59           0           0           0           0           0           0           0           0
+          6:59        5:59           0           0           0           0           0           0           0           0
+          7:59        6:59           0           0           0           0           0           0           0           0
+          8:59        7:59           0           0           0           0           0           0           0           0
+          9:59        8:59           0           0           0           0           1           0           1           1
+         31:35         now           4           2           1           4           2           8           7          30

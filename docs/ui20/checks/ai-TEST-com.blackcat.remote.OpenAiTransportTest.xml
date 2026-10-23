@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.blackcat.remote.OpenAiTransportTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-10-23T04:52:04" hostname="1d8d0e40bb1a" time="0.156">
+  <properties/>
+  <testcase name="timeoutAndTlsFailuresDisconnectAndKeepTheirUsefulDiagnosis" classname="com.blackcat.remote.OpenAiTransportTest" time="0.1"/>
+  <testcase name="observerSendsActualImageBytesAndParsesAllCollectionFields" classname="com.blackcat.remote.OpenAiTransportTest" time="0.003"/>
+  <testcase name="cancellationDisconnectsAnInFlightClientAndClearsItsBody" classname="com.blackcat.remote.OpenAiTransportTest" time="0.009"/>
+  <testcase name="providerFailuresAreBoundedAndNeverExposeTheRawMessageOrRetry" classname="com.blackcat.remote.OpenAiTransportTest" time="0.016"/>
+  <testcase name="photoClientUsesTheSameProtectedWireAndParsesAnalysis" classname="com.blackcat.remote.OpenAiTransportTest" time="0.007"/>
+  <testcase name="streamedPlannerUsesTheSameSchemaAndDeliversDisplayOnlyDrafts" classname="com.blackcat.remote.OpenAiTransportTest" time="0.007"/>
+  <testcase name="explicitKeyCheckUsesMetadataOnlyAndValidatesTheModelIdentity" classname="com.blackcat.remote.OpenAiTransportTest" time="0.002"/>
+  <testcase name="plannerUsesTheCompleteProductionWireAndParsesProviderOutput" classname="com.blackcat.remote.OpenAiTransportTest" time="0.001"/>
+  <testcase name="streamingCancellationClosesTheReaderWithoutPublishingADraftOrAPlan" classname="com.blackcat.remote.OpenAiTransportTest" time="0.005"/>
+  <testcase name="malformedMixedAndOversizedProviderOutputNeverBecomesAPlan" classname="com.blackcat.remote.OpenAiTransportTest" time="0.006"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
