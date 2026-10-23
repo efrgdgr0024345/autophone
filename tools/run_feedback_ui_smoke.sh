@@ -11,6 +11,11 @@ test "$(adb -s "$task_serial" shell getprop ro.kernel.qemu | tr -d '\r')" = 1
 adb -s "$task_serial" shell setprop debug.hwui.drawing_enabled 1
 adb -s "$task_serial" install -r -g app/build/outputs/apk/ai/debug/app-ai-debug.apk
 adb -s "$task_serial" install -r -g app/build/outputs/apk/androidTest/ai/debug/app-ai-debug-androidTest.apk
+if test "$task_scenario" = updates-live; then
+  # ATD lacks DocumentsUI. Grant only the fixed test-only picker destination,
+  # after install (reinstall can revoke grants). Provider checks emulator + signer.
+  adb -s "$task_serial" shell content call --uri content://com.blackcat.remote.test.update-export/checked.apk --method grant-fixture-destination
+fi
 task_local_hash=$(sha256sum app/build/outputs/apk/ai/debug/app-ai-debug.apk | cut -d ' ' -f 1)
 task_apk_path=$(adb -s "$task_serial" shell pm path com.blackcat.remote | tr -d '\r' | sed 's/^package://')
 task_device_hash=$(adb -s "$task_serial" shell sha256sum "$task_apk_path" | tr -d '\r' | cut -d ' ' -f 1)
