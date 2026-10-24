@@ -1,0 +1,59 @@
+# REVIEW TEMPLATE ONLY: not active from docs/ or this feature branch.
+# Owner activates by adding this exact file to .github/workflows/ on the default branch.
+name: Renew signed update feed
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 7 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: blackcat-signed-feed-publisher
+  cancel-in-progress: false
+
+jobs:
+  renew:
+    if: >-
+      github.repository == 'efrgdgr0024345/autophone' &&
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch) &&
+      (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Check out exact reviewed renewal tooling
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: b57b90cd7f4e08fccc7a18125801f339f2974e9a
+          persist-credentials: false
+          sparse-checkout: |
+            tools
+            updates
+
+      - name: Check required Android tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -x "$ANDROID_HOME/build-tools/35.0.0/aapt"
+          test -x "$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          command -v openssl >/dev/null
+          command -v gh >/dev/null
+          command -v python3 >/dev/null
+
+      - name: Renew and verify existing release metadata
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: efrgdgr0024345/autophone
+          BLACKCAT_UPDATE_KEY_PASSWORD: ${{ secrets.BLACKCAT_UPDATE_KEY_PASSWORD }}
+          BLACKCAT_UPDATE_SIGNING_KEY_ENCRYPTED: ${{ secrets.BLACKCAT_UPDATE_SIGNING_KEY_ENCRYPTED }}
+        run: |
+          set -euo pipefail
+          umask 077
+          python3 tools/renew_update_feed.py \
+            --aapt "$ANDROID_HOME/build-tools/35.0.0/aapt" \
+            --apksigner "$ANDROID_HOME/build-tools/35.0.0/apksigner"

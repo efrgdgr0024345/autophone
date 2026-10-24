@@ -1,0 +1,32 @@
+test_authentic_expired_feed_renews_only_times_and_sequence (tools.test_renew_update_feed.RenewalTest.test_authentic_expired_feed_renews_only_times_and_sequence) ... ok
+test_changed_apk_identity_cannot_publish (tools.test_renew_update_feed.RenewalTest.test_changed_apk_identity_cannot_publish) ... ok
+test_concurrent_ref_change_is_not_reported_as_success (tools.test_renew_update_feed.RenewalTest.test_concurrent_ref_change_is_not_reported_as_success) ... ok
+test_download_checks_https_no_redirects_bounds_and_hash (tools.test_renew_update_feed.RenewalTest.test_download_checks_https_no_redirects_bounds_and_hash) ... ok
+test_encrypted_secret_is_private_and_removed_from_child_environment (tools.test_renew_update_feed.RenewalTest.test_encrypted_secret_is_private_and_removed_from_child_environment) ... ok
+test_final_published_bytes_must_match (tools.test_renew_update_feed.RenewalTest.test_final_published_bytes_must_match) ... ok
+test_future_feed_cannot_download_or_publish (tools.test_renew_update_feed.RenewalTest.test_future_feed_cannot_download_or_publish) ... ok
+test_missing_plaintext_or_oversized_key_secret_rejected (tools.test_renew_update_feed.RenewalTest.test_missing_plaintext_or_oversized_key_secret_rejected) ... ok
+test_real_manifest_is_pinned_and_synthetic_authority_is_rejected (tools.test_renew_update_feed.RenewalTest.test_real_manifest_is_pinned_and_synthetic_authority_is_rejected) ... ok
+test_tampered_feed_cannot_download_sign_or_publish (tools.test_renew_update_feed.RenewalTest.test_tampered_feed_cannot_download_sign_or_publish) ... ok
+test_bad_signature_unknown_envelope_or_duplicate_fields_rejected (tools.test_update_release.UpdateReleaseTest.test_bad_signature_unknown_envelope_or_duplicate_fields_rejected) ... ok
+test_existing_authority_cannot_be_overwritten (tools.test_update_release.UpdateReleaseTest.test_existing_authority_cannot_be_overwritten) ... ok
+test_expired_feed_is_rejected_for_clients_but_usable_for_publisher_floor (tools.test_update_release.UpdateReleaseTest.test_expired_feed_is_rejected_for_clients_but_usable_for_publisher_floor) ... ok
+test_generated_kotlin_contains_public_key_only_and_exact_host_policy (tools.test_update_release.UpdateReleaseTest.test_generated_kotlin_contains_public_key_only_and_exact_host_policy) ... ok
+test_modified_metadata_fails_authentication (tools.test_update_release.UpdateReleaseTest.test_modified_metadata_fails_authentication) ... ok
+test_no_password_no_key_generation (tools.test_update_release.UpdateReleaseTest.test_no_password_no_key_generation) ... ok
+test_only_immutable_public_apk_urls_allowed (tools.test_update_release.UpdateReleaseTest.test_only_immutable_public_apk_urls_allowed) ... ok
+test_private_key_is_encrypted_private_and_separate_from_public_config (tools.test_update_release.UpdateReleaseTest.test_private_key_is_encrypted_private_and_separate_from_public_config) ... ok
+test_private_key_under_checkout_is_rejected (tools.test_update_release.UpdateReleaseTest.test_private_key_under_checkout_is_rejected) ... ok
+test_public_output_cannot_overwrite_private_key (tools.test_update_release.UpdateReleaseTest.test_public_output_cannot_overwrite_private_key) ... ok
+test_publication_rejects_apk_with_another_authority (tools.test_update_release.UpdateReleaseTest.test_publication_rejects_apk_with_another_authority) ... ok
+test_publication_rejects_hosted_apk_mismatch_before_any_github_write (tools.test_update_release.UpdateReleaseTest.test_publication_rejects_hosted_apk_mismatch_before_any_github_write) ... ok
+test_publication_verifies_hosted_bytes_and_writes_public_data_only (tools.test_update_release.UpdateReleaseTest.test_publication_verifies_hosted_bytes_and_writes_public_data_only) ... ok
+test_sequence_reuse_and_rollback_rejected (tools.test_update_release.UpdateReleaseTest.test_sequence_reuse_and_rollback_rejected) ... ok
+test_signature_uses_exact_app_domain_and_payload (tools.test_update_release.UpdateReleaseTest.test_signature_uses_exact_app_domain_and_payload) ... ok
+test_tampered_public_fingerprint_is_rejected (tools.test_update_release.UpdateReleaseTest.test_tampered_public_fingerprint_is_rejected) ... ok
+test_wrong_password_cannot_sign (tools.test_update_release.UpdateReleaseTest.test_wrong_password_cannot_sign) ... ok
+
+----------------------------------------------------------------------
+Ran 27 tests in 1.069s
+
+OK
