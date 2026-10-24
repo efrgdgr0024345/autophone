@@ -24,6 +24,9 @@ class MainActivity:Activity(){
   root.addView(TextView(this).apply{text="Computer: Bluetooth → Add device → select this phone → Pair"})
   log=TextView(this).apply{textSize=10f};val ls=ScrollView(this).apply{addView(log);setOnClickListener{layoutParams.height=if(layoutParams.height<500)dp(320)else dp(90);requestLayout()}};root.addView(ls,LinearLayout.LayoutParams(-1,dp(90)))
   val da=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL};da.addView(Button(this).apply{text="COPY LOG";setOnClickListener{(getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager).setPrimaryClip(android.content.ClipData.newPlainText("Black Cat diagnostics",diagnostics.snapshot()))}},weight());da.addView(Button(this).apply{text="CLEAR";setOnClickListener{diagnostics.clear()}},weight());root.addView(da)
+  // BEGIN AI-ONLY ENTRY
+  AiEntry.attach(this,da){hid}
+  // END AI-ONLY ENTRY
   val input=EditText(this).apply{hint="Type text to send"};root.addView(input);root.addView(Button(this).apply{text="SEND";setOnClickListener{sendText(input.text.toString());input.text.clear()}})
   val pad=TextView(this).apply{text="TOUCHPAD";gravity=Gravity.CENTER;setBackgroundColor(0xffdddddd.toInt())};var x=0f;var y=0f;pad.setOnTouchListener{_,e->when(e.actionMasked){MotionEvent.ACTION_DOWN->{x=e.x;y=e.y;true};MotionEvent.ACTION_MOVE->{hid.sendMouse(0,(e.x-x).toInt(),(e.y-y).toInt());x=e.x;y=e.y;true};else->true}};root.addView(pad,LinearLayout.LayoutParams(-1,0,1f))
   val clicks=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}

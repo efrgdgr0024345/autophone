@@ -1,19 +1,21 @@
 name: Android CI
-
 on:
   pull_request:
   push:
-    branches: [ main ]
+    branches: [main, fix/ai-preserve-v2]
   workflow_dispatch:
-
 permissions:
   contents: read
-
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -21,36 +23,90 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Unit tests, Android Lint and debug build
-        env:
-          ANDROID_HOME: /usr/local/lib/android/sdk
-          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-        run: gradle testDebugUnitTest lintDebug assembleDebug --stacktrace
-      - name: Enforce security invariants
-        shell: bash
+      - name: Verify full V2 behaviour boundary
+        run: |
+          python3 tools/check_policy.py
+          python3 tools/test_policy.py -v
+      - name: Build, test and lint both variants
+        run: gradle testOfflineDebugUnitTest testAiDebugUnitTest lintOfflineDebug lintAiDebug assembleOfflineDebug assembleAiDebug --continue --console=plain --stacktrace
+      - name: Upload full reports even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports-${{ github.run_id }}
+          path: |
+            app/build/reports/
+            app/build/test-results/
+          if-no-files-found: warn
+      - name: Inspect, hash and record signed previews
         run: |
           set -euo pipefail
-          manifest="app/src/main/AndroidManifest.xml"
-          if grep -q 'android.permission.INTERNET' "$manifest"; then echo '::error::INTERNET permission is forbidden for V1'; exit 1; fi
-          if grep -R -E -i --exclude-dir=build --exclude='*.md' '(firebase-analytics|google-analytics|appsflyer|adjust|mixpanel|amplitude)' app build.gradle settings.gradle 2>/dev/null; then echo '::error::Potential analytics/telemetry dependency detected'; exit 1; fi
-          if grep -q 'android.permission.BIND_ACCESSIBILITY_SERVICE' "$manifest"; then echo '::error::Accessibility Service is forbidden for V1'; exit 1; fi
-          if ! grep -q 'android:allowBackup="false"' "$manifest"; then echo '::error::android:allowBackup must remain false'; exit 1; fi
-      - name: Check APK manifest
-        shell: bash
-        run: |
-          set -euo pipefail
-          APK="app/build/outputs/apk/debug/app-debug.apk"
-          test -f "$APK"
-          "${ANDROID_HOME}/build-tools/35.0.0/aapt" dump permissions "$APK" | tee apk-permissions.txt
-          if grep -q 'android.permission.INTERNET' apk-permissions.txt; then echo '::error::Built APK unexpectedly contains INTERNET permission'; exit 1; fi
-      - name: Generate checksum
-        run: sha256sum app/build/outputs/apk/debug/app-debug.apk | tee app-debug.apk.sha256
+          AAPT=$(find "$ANDROID_HOME/build-tools" -name aapt -type f | sort -V | tail -n 1)
+          SIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)
+          mkdir -p preview
+          for flavor in ai offline; do
+            apk="app/build/outputs/apk/$flavor/debug/app-$flavor-debug.apk"
+            python3 tools/check_apk.py "$apk" "$flavor" "$AAPT" | tee "preview/$flavor-manifest.txt"
+            "$SIGNER" verify --verbose --print-certs "$apk" > "preview/$flavor-signature.txt"
+          done
+          cp app/build/outputs/apk/ai/debug/app-ai-debug.apk preview/CatAI-02.apk
+          cp app/build/outputs/apk/offline/debug/app-offline-debug.apk preview/CatBT-02.apk
+          git rev-parse HEAD > preview/SOURCE.txt
+          cp docs/AI02_INSTALL.md preview/INSTALL.txt
+          (cd preview && sha256sum *.apk > SHA256SUMS)
       - uses: actions/upload-artifact@v4
         with:
-          name: BlackCatRemote-CI-${{ github.sha }}
-          path: |
-            app/build/outputs/apk/debug/app-debug.apk
-            app-debug.apk.sha256
-            apk-permissions.txt
-            app/build/reports/lint-results-debug.html
+          name: repair-preview-${{ github.run_id }}
+          path: preview/
           if-no-files-found: error
+  analyze:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: java-kotlin
+          build-mode: manual
+          queries: security-and-quality
+      - run: gradle clean assembleOfflineDebug assembleAiDebug --console=plain --stacktrace
+      - uses: github/codeql-action/analyze@v4
+  publish:
+    needs: [verify, analyze]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/fix/ai-preserve-v2'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: repair-preview-${{ github.run_id }}
+          path: preview
+      - name: Publish exact tested bytes, never rebuild or overwrite V2
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          test "$(cat preview/SOURCE.txt)" = "$GITHUB_SHA"
+          (cd preview && sha256sum -c SHA256SUMS)
+          TAG="catai-02-${GITHUB_SHA:0:12}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release exists; will not overwrite it."
+          else
+            gh release create "$TAG" preview/CatAI-02.apk preview/CatBT-02.apk preview/SHA256SUMS preview/SOURCE.txt preview/INSTALL.txt preview/ai-signature.txt \
+              --target "$GITHUB_SHA" --prerelease --title "Black Cat AI repair preview 02" --notes-file preview/INSTALL.txt
+          fi

@@ -1,0 +1,11 @@
+# Superseded. Do not rebuild or overwrite the original preview under the same filename.
+name: Preview publication information
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  information:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'android-ci.yml publishes the exact checked artifact after build, tests, lint and CodeQL succeed.'
